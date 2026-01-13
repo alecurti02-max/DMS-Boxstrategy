@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Box Strategist Pro - CLOUD FIX</title>
+    <title>Box Strategist Pro - v7.3 DEFINITIVE CLOUD</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -24,7 +24,7 @@
         #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
         .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; }
-        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; }
         .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #2b3548; }
@@ -45,7 +45,10 @@
         <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--missile)"></span>
     </div>
     <div style="font-size: 1.5em; font-weight: bold; color: var(--success);">PIT NOSTRI: <span id="ourPitCount">0</span></div>
-    <div><button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">RESET CLOUD</button></div>
+    <div>
+        <button onclick="exportData()" style="background: #1d8cf8; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; margin-right:5px;">ESPORTA CSV</button>
+        <button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">RESET CLOUD</button>
+    </div>
 </div>
 
 <div class="grid-top">
@@ -94,7 +97,7 @@
             <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
             <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
             <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
-            <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
+            <div id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</div>
         </div>
     </div>
 </div>
@@ -108,6 +111,7 @@
 </div>
 
 <script>
+    // --- CONFIGURAZIONE FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
         authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
@@ -124,11 +128,15 @@
     let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [] };
     let localPending = { dropLane: null, takeLane: null, teamIdx: null };
 
-    // Sincronizzazione Realtime
+    // --- SINCRONIZZAZIONE ---
     db.ref('raceState').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             state = data;
+            // Aggiorno il valore dell'input solo se non ci sto scrivendo
+            if (document.activeElement.id !== "ourKartId") {
+                document.getElementById('ourKartId').value = state.ourKartId || "";
+            }
             render();
         }
     });
@@ -136,14 +144,12 @@
     function save() { db.ref('raceState').set(state); }
 
     function render() {
-        // Aggiorna Corsie
         ['sx', 'dx'].forEach(lane => {
             document.getElementById('list' + lane.charAt(0).toUpperCase() + lane.slice(1)).innerHTML = (state[lane] || []).map((k, i) => `
                 <div class="kart-item"><span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
                 <button onclick="removeKart('${lane}', ${i})" style="background:none; border:none; color:gray; cursor:pointer;">x</button></div>`).join('');
         });
 
-        // Aggiorna Database Team
         let totalOurPits = 0;
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => {
             if(state.ourKartId && (t.num === state.ourKartId || t.name.toLowerCase() === state.ourKartId.toLowerCase())) totalOurPits = t.pitCount || 0;
@@ -167,21 +173,35 @@
         updateButtonsUI();
     }
 
-    // GESTIONE INPUT E RATING
-    function autoFetchTeam() {
-        const val = document.getElementById('entryInput').value.trim();
-        const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
-        if(team && val !== "") {
-            document.getElementById('teamInfo').innerText = `Rilevato: ${team.name} (#${team.kart})`;
-            document.getElementById('ratingEntry').value = team.rating || "normale"; // Fix Rating automatico
-            localPending.teamIdx = state.teams.indexOf(team);
-        } else {
-            document.getElementById('teamInfo').innerText = "";
-            localPending.teamIdx = null;
-        }
+    // --- FUNZIONI LOGICHE ---
+    function searchKart() {
+        const val = document.getElementById('searchKart').value.trim();
+        const res = document.getElementById('searchResult');
+        if(!val) { res.innerText = ""; return; }
+        let found = null;
+        ['sx','dx'].forEach(l => (state[l] || []).forEach((k, idx) => { if(k.num == val) found = `CORSIA ${l.toUpperCase()} (Pos: ${idx+1})`; }));
+        if(!found) { (state.teams || []).forEach(t => { if(t.kart == val) found = `IN PISTA (Team: ${t.name})`; }); }
+        res.innerText = found || "NON TROVATO";
     }
 
-    // GESTIONE TASTI PIT (LOCALE)
+    function exportData() {
+        let csv = "Timestamp,Evento\n";
+        (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_gara.csv'; a.click();
+    }
+
+    function autoFetchTeam() {
+        const val = document.getElementById('entryInput').value.trim();
+        const info = document.getElementById('teamInfo');
+        const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
+        if(team && val !== "") {
+            info.innerText = `Rilevato: ${team.name} (#${team.kart})`;
+            document.getElementById('ratingEntry').value = team.rating || "normale";
+            localPending.teamIdx = state.teams.indexOf(team);
+        } else { info.innerText = ""; localPending.teamIdx = null; }
+    }
+
     function setPending(type, lane) {
         if(type === 'drop') localPending.dropLane = lane;
         if(type === 'take') localPending.takeLane = lane;
@@ -189,16 +209,25 @@
     }
 
     function updateButtonsUI() {
-        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
-        if(localPending.dropLane) document.getElementById('btnDrop' + localPending.dropLane.toUpperCase()).style.background = (localPending.dropLane==='sx'?'#1d8cf8':'#fd5d93');
-        if(localPending.takeLane) document.getElementById('btnTake' + localPending.takeLane.toUpperCase()).style.background = (localPending.takeLane==='sx'?'#1d8cf8':'#fd5d93');
+        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => {
+            document.getElementById(id).style.background = '#2c2c44';
+            document.getElementById(id).style.border = 'none';
+        });
+        if(localPending.dropLane) {
+            const btn = document.getElementById('btnDrop' + localPending.dropLane.charAt(0).toUpperCase() + 'x');
+            btn.style.background = (localPending.dropLane==='sx'?'#1d8cf8':'#fd5d93');
+        }
+        if(localPending.takeLane) {
+            const btn = document.getElementById('btnTake' + localPending.takeLane.charAt(0).toUpperCase() + 'x');
+            btn.style.background = (localPending.takeLane==='sx'?'#1d8cf8':'#fd5d93');
+        }
         document.getElementById('confirmBtn').style.display = (localPending.dropLane && localPending.takeLane) ? "block" : "none";
     }
 
     function executePit() {
         const p = localPending;
-        if(!state[p.takeLane] || state[p.takeLane].length == 0) { alert("Corsia di uscita vuota!"); return; }
-
+        if(!state[p.takeLane] || state[p.takeLane].length == 0) return;
+        
         let teamName = p.teamIdx !== null ? state.teams[p.teamIdx].name : "Team " + document.getElementById('entryInput').value;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value;
         const entryRating = document.getElementById('ratingEntry').value;
@@ -213,7 +242,6 @@
 
         if(!state[p.dropLane]) state[p.dropLane] = [];
         state[p.dropLane].push({ num: kartIn, rating: entryRating });
-        
         if(!state.log) state.log = [];
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}` });
         
@@ -223,11 +251,11 @@
     }
 
     function addManual(lane) {
-        const n = document.getElementById('add'+lane.charAt(0).toUpperCase()+'xN').value;
-        if(n) { 
+        const nInput = document.getElementById('add'+lane.charAt(0).toUpperCase()+'xN');
+        if(nInput.value) { 
             if(!state[lane]) state[lane] = []; 
-            state[lane].push({num: n, rating: 'normale'}); 
-            document.getElementById('add'+lane.charAt(0).toUpperCase()+'xN').value = "";
+            state[lane].push({num: nInput.value, rating: 'normale'}); 
+            nInput.value = "";
             save(); 
         }
     }
@@ -238,7 +266,6 @@
     function deleteTeam(i) { if(confirm("Eliminare?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
     function resetAll() { if(confirm("Resettare tutto il CLOUD?")) { db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); } }
-    function searchKart() { /* la tua funzione searchKart rimane invariata */ }
 </script>
 </body>
 </html>
