@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Box Strategist Pro - v8.4 FULL STABLE</title>
+    <title>DMS Box Strategist Pro - v8.5 ULTIMATE</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -11,8 +11,8 @@
         :root {
             --bg-color: #0b0e14; --card-bg: #151921; --text-color: #e9ecef;
             --accent-sx: #1d8cf8; --accent-dx: #fd5d93; --success: #00f2c3;
-            --missile: #ffdf00; --prestazione: #00f2c3; --normale: #ffffff;
-            --lento: #ff8d72; --osceno: #fd5d93;
+            --warning-red: #ff4757; --missile: #ffdf00; --prestazione: #00f2c3; 
+            --normale: #ffffff; --lento: #ff8d72; --osceno: #fd5d93;
         }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2b3548; }
@@ -21,11 +21,15 @@
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
         .kart-item { background: #1e2430; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; cursor: grab; }
-        .sortable-ghost { opacity: 0.3; background: var(--accent-sx); }
         .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 430px; display: flex; flex-direction: column; }
         #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
         .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; width: 100%; }
+        
+        /* Animazione Lampeggio Errore */
+        @keyframes blink-red { 0% { background: var(--success); } 50% { background: var(--warning-red); } 100% { background: var(--success); } }
+        .blink-error { animation: blink-red 0.5s infinite; color: white !important; }
+
         .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; border: none; }
         .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -58,18 +62,12 @@
         <div class="lane-container lane-sx">
             <strong>CORSIA SX</strong>
             <div class="kart-list" id="listSx"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="addSxN" placeholder="#" style="width:40%">
-                <button class="btn-plus" onclick="addManual('sx')">+</button>
-            </div>
+            <div style="display:flex; gap:5px;"><input type="number" id="addSxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('sx')">+</button></div>
         </div>
         <div class="lane-container lane-dx">
             <strong>CORSIA DX</strong>
             <div class="kart-list" id="listDx"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="addDxN" placeholder="#" style="width:40%">
-                <button class="btn-plus" onclick="addManual('dx')">+</button>
-            </div>
+            <div style="display:flex; gap:5px;"><input type="number" id="addDxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('dx')">+</button></div>
         </div>
     </div>
     <div class="side-panel">
@@ -129,12 +127,7 @@
         const data = snapshot.val();
         if (data && !isDragging) {
             state = data;
-            // Assicuriamoci che i campi obbligatori esistano
-            if(!state.sx) state.sx = [];
-            if(!state.dx) state.dx = [];
-            if(!state.teams) state.teams = [];
-            if(!state.log) state.log = [];
-            
+            if(!state.sx) state.sx = []; if(!state.dx) state.dx = []; if(!state.teams) state.teams = []; if(!state.log) state.log = [];
             if (document.activeElement.id !== "ourKartId") document.getElementById('ourKartId').value = state.ourKartId || "";
             render();
         }
@@ -143,30 +136,36 @@
     function save() { db.ref('raceState').set(state); }
 
     function initSortable() {
-        sortables.forEach(s => s.destroy());
-        sortables = [];
+        sortables.forEach(s => s.destroy()); sortables = [];
         ['listSx', 'listDx'].forEach(id => {
             const el = document.getElementById(id);
             if(el) {
-                const s = new Sortable(el, {
+                sortables.push(new Sortable(el, {
                     group: 'lanes', animation: 150,
-                    onStart: () => { isDragging = true; },
-                    onEnd: () => {
+                    onStart: (evt) => { isDragging = true; evt.item.dataset.fromLane = id; },
+                    onEnd: (evt) => {
                         isDragging = false;
+                        const kartNum = evt.item.dataset.num;
+                        const fromLane = evt.from.id.replace('list', '').toUpperCase();
+                        const toLane = evt.to.id.replace('list', '').toUpperCase();
+                        
+                        // Aggiorna Stato
                         state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                        
+                        // Log del movimento
+                        let msg = (fromLane === toLane) ? `Riordinata corsia ${toLane}` : `Spostato #${kartNum} da ${fromLane} a ${toLane}`;
+                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] ${msg}` });
                         save();
                     }
-                });
-                sortables.push(s);
+                }));
             }
         });
     }
 
     function render() {
         ['sx', 'dx'].forEach(l => {
-            const list = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
-            list.innerHTML = (state[l] || []).map((k, idx) => `
+            document.getElementById('list' + l.charAt(0).toUpperCase() + 'x').innerHTML = (state[l] || []).map((k, idx) => `
                 <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
                     <span>#${k.num}</span> 
                     <span class="rating-badge r-${k.rating}">${k.rating}</span>
@@ -198,43 +197,33 @@
         initSortable();
     }
 
-    // --- AGGIUNTA TEAM (CORRETTA) ---
-    function addNewTeam() {
-        if(!state.teams) state.teams = [];
-        state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0});
-        save(); // Invia a Firebase
-    }
-
-    function addManual(l) {
-        const input = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
-        const n = input.value.trim();
-        if(n) {
-            if(!state[l]) state[l] = [];
-            state[l].push({num: n, rating: 'normale'});
-            input.value = "";
-            save();
-        }
-    }
-
-    function setPending(type, lane) {
-        if(type === 'drop') localPending.drop = (localPending.drop === lane) ? null : lane;
-        if(type === 'take') localPending.take = (localPending.take === lane) ? null : lane;
-        updateButtonsUI();
-    }
-
     function updateButtonsUI() {
+        const entryNum = document.getElementById('entryInput').value.trim();
+        const btnConf = document.getElementById('confirmBtn');
+        
+        // Reset colori bottoni
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
         if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
         if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
-        document.getElementById('confirmBtn').style.display = (localPending.drop) ? "block" : "none";
+        
+        // Mostra/Nascondi conferma
+        btnConf.style.display = (localPending.drop) ? "block" : "none";
+
+        // CONTROLLO "GIÀ PRESO" (Pignolo mode)
+        const isAlreadyInLanes = (state.sx.some(k => k.num === entryNum) || state.dx.some(k => k.num === entryNum));
+        if (isAlreadyInLanes && entryNum !== "") {
+            btnConf.classList.add('blink-error');
+            btnConf.innerText = "ATTENZIONE: KART GIÀ NEL BOX!";
+        } else {
+            btnConf.classList.remove('blink-error');
+            btnConf.innerText = "CONFERMA MOVIMENTO";
+        }
     }
 
     function executePit() {
         const p = localPending;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
-        const entryRating = document.getElementById('ratingEntry').value;
-
         if(!kartIn) return alert("Inserisci il numero del kart entrante!");
 
         let logMsg = "";
@@ -250,8 +239,7 @@
             logMsg = `${teamName}: Lasciato #${kartIn} (Solo deposito)`;
         }
 
-        if(!state[p.drop]) state[p.drop] = [];
-        state[p.drop].push({ num: kartIn, rating: entryRating });
+        state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         
         localPending = { drop: null, take: null, teamIdx: null };
@@ -259,6 +247,36 @@
         save();
     }
 
+    // --- UTILITIES ---
+    function autoFetchTeam() {
+        const val = document.getElementById('entryInput').value.trim();
+        const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
+        if(team && val !== "") {
+            document.getElementById('teamInfo').innerText = `Rilevato: ${team.name}`;
+            document.getElementById('ratingEntry').value = team.rating || "normale";
+            localPending.teamIdx = state.teams.indexOf(team);
+        } else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
+        updateButtonsUI();
+    }
+
+    function addManual(l) {
+        const input = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
+        if(input.value) {
+            state[l].push({num: input.value, rating: 'normale'});
+            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${input.value} in ${l.toUpperCase()}` });
+            input.value = ""; save();
+        }
+    }
+    function setPending(type, lane) {
+        if(type === 'drop') localPending.drop = (localPending.drop === lane) ? null : lane;
+        if(type === 'take') localPending.take = (localPending.take === lane) ? null : lane;
+        updateButtonsUI();
+    }
+    function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
+    function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
+    function addNewTeam() { state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
+    function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
+    function removeKart(l, i) { state[l].splice(i,1); save(); }
     function searchKart() {
         const val = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult');
@@ -268,28 +286,13 @@
         if(!found) (state.teams||[]).forEach(t => { if(t.kart == val) found = `PISTA (${t.name})`; });
         res.innerText = found || "NON TROVATO";
     }
-
-    function autoFetchTeam() {
-        const val = document.getElementById('entryInput').value.trim();
-        const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
-        if(team && val !== "") {
-            document.getElementById('teamInfo').innerText = `Rilevato: ${team.name}`;
-            document.getElementById('ratingEntry').value = team.rating || "normale";
-            localPending.teamIdx = state.teams.indexOf(team);
-        } else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
-    }
-
-    function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
-    function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
-    function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
-    function removeKart(l, i) { state[l].splice(i,1); save(); }
+    function resetAll() { if(confirm("Resetta tutto?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
     function exportData() {
         let csv = "Ora,Evento\n";
         state.log.forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
         const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log.csv'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_completo.csv'; a.click();
     }
-    function resetAll() { if(confirm("Resetta tutto?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
 </script>
 </body>
 </html>
