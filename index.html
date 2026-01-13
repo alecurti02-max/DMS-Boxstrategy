@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Strategist Pro - v7.0 CLOUD SYNC</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0b0e14; --card-bg: #151921; --text-color: #e9ecef;
+            --accent-sx: #1d8cf8; --accent-dx: #fd5d93; --success: #00f2c3;
+            --missile: #ffdf00; --prestazione: #00f2c3; --normale: #ffffff;
+            --lento: #ff8d72; --osceno: #fd5d93; --warning: #ff4757;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2b3548; }
+        .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; height: 350px; }
+        .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
+        .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
+        .kart-item { background: #1e2430; margin-bottom: 8px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; }
+        .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; display: flex; flex-direction: column; height: 350px; }
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
+        .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
+        .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; }
+        @keyframes blinker { 50% { background-color: #ff0000; color: white; } }
+        .alert-duplicate { animation: blinker 0.6s linear infinite; border: 2px solid white !important; }
+        .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #2b3548; }
+        .db-input { background: #0b0e14; border: 1px solid #30363d; width: 100%; color: white; padding: 8px; border-radius: 4px; }
+        input, select { padding: 10px; border-radius: 5px; border: 1px solid #2b3548; background: #0b0e14; color: white; }
+        .rating-badge { padding: 3px 7px; border-radius: 4px; font-size: 0.8em; color: black; font-weight: bold; text-transform: uppercase; }
+        .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale); } .r-lento { background: var(--lento); } .r-osceno { background: var(--osceno); }
+        .btn-plus { background: #e9ecef; color: black; width: 45px; cursor: pointer; font-size: 1.4em; font-weight: bold; border-radius: 5px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        NOSTRO KART: <input type="text" id="ourKartId" style="width: 80px;" oninput="localUpdateOurKart()" placeholder="N°">
+        <span style="margin-left:20px;">🔍 CERCA:</span> 
+        <input type="text" id="searchKart" placeholder="#" oninput="searchKart()" style="width:70px;">
+        <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--missile)"></span>
+    </div>
+    <div style="font-size: 1.5em; font-weight: bold; color: var(--success);">PIT NOSTRI: <span id="ourPitCount">0</span></div>
+    <div>
+        <button onclick="exportData()" style="background: #1d8cf8; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">ESPORTA CSV</button>
+        <button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">RESET</button>
+    </div>
+</div>
+
+<div class="grid-top">
+    <div style="display: flex; gap: 15px;">
+        <div class="lane-container lane-sx">
+            <div style="font-weight: bold; color: var(--accent-sx); margin-bottom: 10px;">CORSIA SX</div>
+            <div class="kart-list" id="listSx"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="number" id="addSxN" placeholder="#" style="width:30%">
+                <select id="addSxR" style="width:50%"><option value="normale">Normale</option><option value="missile">Missile</option><option value="prestazione">Prestazione</option><option value="lento">Lento</option><option value="osceno">Osceno</option></select>
+                <button class="btn-plus" onclick="addManual('sx')">+</button>
+            </div>
+        </div>
+        <div class="lane-container lane-dx">
+            <div style="font-weight: bold; color: var(--accent-dx); margin-bottom: 10px;">CORSIA DX</div>
+            <div class="kart-list" id="listDx"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="number" id="addDxN" placeholder="#" style="width:30%">
+                <select id="addDxR" style="width:50%"><option value="normale">Normale</option><option value="missile">Missile</option><option value="prestazione">Prestazione</option><option value="lento">Lento</option><option value="osceno">Osceno</option></select>
+                <button class="btn-plus" onclick="addManual('dx')">+</button>
+            </div>
+        </div>
+    </div>
+    <div class="side-panel">
+        <strong style="color: var(--accent-sx)">BLACK BOX (Log Eventi)</strong>
+        <div id="raceLog"></div>
+    </div>
+</div>
+
+<div class="control-panel">
+    <div class="input-group" style="display:flex; flex-direction:column; gap:10px;">
+        <label>TEAM IN ENTRATA</label>
+        <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome...">
+        <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
+        <label>VALUTAZIONE KART ENTRANTE</label>
+        <select id="ratingEntry">
+            <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <label>GESTIONE PIT</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+            <button id="btnDropSx" class="btn-action" onclick="prepPit('sx')" style="background:#2c2c44; color:white;">1. Lascia a SX</button>
+            <button id="btnDropDx" class="btn-action" onclick="prepPit('dx')" style="background:#2c2c44; color:white;">1. Lascia a DX</button>
+            <button id="btnTakeSx" class="btn-action" onclick="prepTake('sx')" style="background:#2c2c44; color:white;">2. Prendi da SX</button>
+            <button id="btnTakeDx" class="btn-action" onclick="prepTake('dx')" style="background:#2c2c44; color:white;">2. Prendi da DX</button>
+            <button id="confirmBtn" class="btn-confirm btn-action" onclick="executePit()">CONFERMA MOVIMENTO</button>
+        </div>
+    </div>
+</div>
+
+<div class="database-section">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">DATABASE TEAM & KART IN PISTA</h3>
+        <button onclick="addNewTeam()" style="background: #2ea44f; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">+ AGGIUNGI TEAM</button>
+    </div>
+    <table id="dbTable">
+        <thead>
+            <tr><th>Nome Team</th><th>Numero</th><th>Kart Attuale</th><th>Rating Kart</th><th>Pit Fatti</th><th>Azioni</th></tr>
+        </thead>
+        <tbody id="dbBody"></tbody>
+    </table>
+</div>
+
+<script>
+    // --- 1. CONFIGURAZIONE FIREBASE ---
+    const firebaseConfig = {
+    apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
+    authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
+    databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "gestione-cambi-kart---dms",
+    storageBucket: "gestione-cambi-kart---dms.firebasestorage.app",
+    messagingSenderId: "919738725367",
+    appId: "1:919738725367:web:07de82c5e4ff8b10b3f4f2",
+    measurementId: "G-7HXJCLCGBZ"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Stato locale
+    let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [], pending: { dropLane: null, takeLane: null, teamIdx: null } };
+
+    // --- 2. SINCRONIZZAZIONE REALTIME ---
+    db.ref('raceState').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            state = data;
+            // Ripristina ourKartId nel campo input se è cambiato da un altro dispositivo
+            document.getElementById('ourKartId').value = state.ourKartId || "";
+            render();
+        }
+    });
+
+    function save() {
+        db.ref('raceState').set(state);
+    }
+
+    // --- 3. LOGICA APPLICATIVA (Basata su v5.2) ---
+
+    function render() {
+        const currentOurKart = document.getElementById('ourKartId').value.trim();
+        
+        ['sx', 'dx'].forEach(lane => {
+            const listEl = document.getElementById('list' + lane.charAt(0).toUpperCase() + lane.slice(1));
+            listEl.innerHTML = (state[lane] || []).map((k, i) => `
+                <div class="kart-item">
+                    <span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
+                    <button onclick="removeKart('${lane}', ${i})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
+                </div>`).join('');
+        });
+
+        let totalOurPits = 0;
+        document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => {
+            if(currentOurKart && (t.num === currentOurKart || t.name.toLowerCase() === currentOurKart.toLowerCase())) totalOurPits = t.pitCount || 0;
+            return `<tr>
+                <td><input class="db-input" value="${t.name}" onchange="updateTeam(${i}, 'name', this.value)"></td>
+                <td><input class="db-input" value="${t.num}" onchange="updateTeam(${i}, 'num', this.value)"></td>
+                <td><input class="db-input" value="${t.kart}" onchange="updateTeam(${i}, 'kart', this.value)"></td>
+                <td><select class="db-input" onchange="updateTeam(${i}, 'rating', this.value)">
+                    <option value="missile" ${t.rating==='missile'?'selected':''}>Missile</option>
+                    <option value="prestazione" ${t.rating==='prestazione'?'selected':''}>Prestazione</option>
+                    <option value="normale" ${t.rating==='normale'?'selected':''}>Normale</option>
+                    <option value="lento" ${t.rating==='lento'?'selected':''}>Lento</option>
+                    <option value="osceno" ${t.rating==='osceno'?'selected':''}>Osceno</option>
+                </select></td>
+                <td style="font-weight:bold; color:var(--success); text-align:center;">${t.pitCount || 0}</td>
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer">🗑️</button></td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('ourPitCount').innerText = totalOurPits;
+        document.getElementById('raceLog').innerHTML = (state.log || []).slice().reverse().map(l => `<div class="log-entry"><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
+    }
+
+    function localUpdateOurKart() {
+        state.ourKartId = document.getElementById('ourKartId').value.trim();
+        save();
+    }
+
+    function searchKart() {
+        const val = document.getElementById('searchKart').value.trim();
+        const res = document.getElementById('searchResult');
+        if(!val) { res.innerText = ""; return; }
+        let found = null;
+        ['sx','dx'].forEach(l => (state[l] || []).forEach((k, idx) => { if(k.num == val) found = `CORSIA ${l.toUpperCase()} (Pos: ${idx+1})`; }));
+        if(!found) { let t = (state.teams || []).find(t => t.kart == val); if(t) found = `IN PISTA (Team: ${t.name})`; }
+        res.innerText = found || "NON TROVATO";
+    }
+
+    function autoFetchTeam() {
+        const val = document.getElementById('entryInput').value.trim();
+        const info = document.getElementById('teamInfo');
+        const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
+        if(team && val !== "") {
+            info.innerText = `Rilevato: ${team.name} (#${team.kart})`;
+            state.pending.teamIdx = state.teams.indexOf(team);
+            document.getElementById('ratingEntry').value = team.rating; 
+        } else { info.innerText = ""; state.pending.teamIdx = null; }
+        checkDuplicato();
+    }
+
+    function addManual(lane) {
+        const nInput = document.getElementById('add' + lane.charAt(0).toUpperCase() + 'xN');
+        const rInput = document.getElementById('add' + lane.charAt(0).toUpperCase() + 'xR');
+        if(nInput.value) {
+            if(!state[lane]) state[lane] = [];
+            state[lane].push({ num: nInput.value, rating: rInput.value });
+            nInput.value = ""; 
+            save();
+        }
+    }
+
+    function prepPit(lane) { state.pending.dropLane = lane; updateUI(); }
+    function prepTake(lane) { state.pending.takeLane = lane; updateUI(); }
+
+    function updateUI() {
+        const p = state.pending;
+        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
+        if(p.dropLane) document.getElementById('btnDrop' + p.dropLane.charAt(0).toUpperCase() + 'x').style.background = (p.dropLane==='sx'?'var(--accent-sx)':'var(--accent-dx)');
+        if(p.takeLane) document.getElementById('btnTake' + p.takeLane.charAt(0).toUpperCase() + 'x').style.background = (p.takeLane==='sx'?'var(--accent-sx)':'var(--accent-dx)');
+        if(p.dropLane && p.takeLane) document.getElementById('confirmBtn').style.display = "block";
+        checkDuplicato();
+    }
+
+    function checkDuplicato() {
+        const p = state.pending;
+        if(!p.takeLane || !state[p.takeLane] || state[p.takeLane].length === 0) return;
+        const kartOut = state[p.takeLane][0].num;
+        const teamId = p.teamIdx !== null ? state.teams[p.teamIdx].name : document.getElementById('entryInput').value;
+        const used = (state.log || []).some(l => l.txt.includes(teamId) && l.txt.includes(`Preso #${kartOut}`));
+        document.getElementById('confirmBtn').className = used ? "btn-confirm btn-action alert-duplicate" : "btn-confirm btn-action";
+    }
+
+    function executePit() {
+        const p = state.pending;
+        const entryNum = document.getElementById('entryInput').value;
+        const entryRating = document.getElementById('ratingEntry').value;
+        if(!state[p.takeLane] || state[p.takeLane].length == 0) return;
+
+        let teamName = p.teamIdx !== null ? state.teams[p.teamIdx].name : "Team " + entryNum;
+        let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : entryNum;
+        const out = state[p.takeLane].shift();
+
+        if(p.teamIdx !== null) {
+            state.teams[p.teamIdx].kart = out.num;
+            state.teams[p.teamIdx].rating = out.rating;
+            state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
+        }
+
+        if(!state[p.dropLane]) state[p.dropLane] = [];
+        state[p.dropLane].push({ num: kartIn, rating: entryRating });
+        
+        if(!state.log) state.log = [];
+        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `${teamName}: Lasciato #${kartIn} a ${p.dropLane.toUpperCase()} -> Preso #${out.num}` });
+
+        state.pending = { dropLane: null, takeLane: null, teamIdx: null };
+        document.getElementById('confirmBtn').style.display = "none";
+        document.getElementById('entryInput').value = "";
+        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
+        save();
+    }
+
+    function exportData() {
+        let csv = "Timestamp,Evento\n";
+        (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_gara.csv'; a.click();
+    }
+
+    function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
+    function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({ name: "Nuovo Team", num: "", kart: "", rating: "normale", pitCount: 0 }); save(); }
+    function deleteTeam(i) { if(confirm("Eliminare?")) { state.teams.splice(i, 1); save(); } }
+    function removeKart(lane, i) { state[lane].splice(i, 1); save(); }
+    function resetAll() { if(confirm("Cancellare tutto dal CLOUD?")) { db.ref('raceState').set({ sx: [], dx: [], ourKartId: "", teams: [], log: [] }); } }
+</script>
+</body>
+</html>
