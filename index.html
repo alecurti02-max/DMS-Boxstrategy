@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Box Strategist Pro - v7.5 ANALYSED</title>
+    <title>DMS Box Strategist Pro - v8.0 MASTER DRAG</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
             --bg-color: #0b0e14; --card-bg: #151921; --text-color: #e9ecef;
@@ -16,16 +17,18 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2b3548; }
         .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; height: 350px; }
+        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 350px; }
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
-        .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
-        .kart-item { background: #1e2430; margin-bottom: 8px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; }
-        .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 350px; display: flex; flex-direction: column; }
+        .kart-list { flex: 1; min-height: 200px; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
+        .kart-item { background: #1e2430; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; cursor: grab; }
+        .kart-item:active { cursor: grabbing; }
+        .ghost { opacity: 0.4; background: #2c2c44; border: 1px dashed #fff; }
+        .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 430px; display: flex; flex-direction: column; }
         #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
         .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; width: 100%; }
         .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; border: none; }
-        .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
+        .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; margin-top: 20px;}
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #2b3548; }
         .db-input { background: #0b0e14; border: 1px solid #30363d; width: 100%; color: white; padding: 8px; border-radius: 4px; }
@@ -44,28 +47,28 @@
         <input type="text" id="searchKartField" placeholder="#" oninput="searchKart()" style="width:70px;">
         <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--missile)"></span>
     </div>
-    <div style="font-size: 1.5em; font-weight: bold; color: var(--success);">PIT NOSTRI: <span id="ourPitCount">0</span></div>
+    <div style="font-size: 1.2em; font-weight: bold; color: var(--success);">PIT: <span id="ourPitCount">0</span></div>
     <div>
-        <button id="btnExport" onclick="exportData()" style="background: #1d8cf8; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; margin-right:5px;">ESPORTA CSV</button>
-        <button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">RESET CLOUD</button>
+        <button onclick="exportData()" style="background: #1d8cf8; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight:bold;">ESPORTA</button>
+        <button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">RESET</button>
     </div>
 </div>
 
 <div class="grid-top">
     <div style="display: flex; gap: 15px; flex: 1;">
         <div class="lane-container lane-sx">
-            <strong>CORSIA SX</strong>
+            <strong>CORSIA SX (Drag&Drop)</strong>
             <div class="kart-list" id="listSx"></div>
             <div style="display:flex; gap:5px;"><input type="number" id="addSxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('sx')">+</button></div>
         </div>
         <div class="lane-container lane-dx">
-            <strong>CORSIA DX</strong>
+            <strong>CORSIA DX (Drag&Drop)</strong>
             <div class="kart-list" id="listDx"></div>
             <div style="display:flex; gap:5px;"><input type="number" id="addDxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('dx')">+</button></div>
         </div>
     </div>
     <div class="side-panel">
-        <strong>LOG EVENTI CLOUD</strong>
+        <strong>LOG LIVE CLOUD</strong>
         <div id="raceLog"></div>
     </div>
 </div>
@@ -75,13 +78,8 @@
         <label>TEAM IN ENTRATA</label>
         <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome...">
         <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
-        <label>VALUTAZIONE KART ENTRANTE</label>
         <select id="ratingEntry">
-            <option value="missile">🚀 Missile</option>
-            <option value="prestazione">✅ Prestazione</option>
-            <option value="normale" selected>⚪ Normale</option>
-            <option value="lento">⚠️ Lento</option>
-            <option value="osceno">❌ Osceno</option>
+            <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
         </select>
     </div>
     <div>
@@ -99,13 +97,12 @@
 <div class="database-section">
     <button onclick="addNewTeam()" style="background: #2ea44f; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">+ AGGIUNGI TEAM</button>
     <table id="dbTable">
-        <thead><tr><th>Nome Team</th><th>Numero</th><th>Kart Attuale</th><th>Rating Kart</th><th>Pit Fatti</th><th>Azioni</th></tr></thead>
+        <thead><tr><th>Nome Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Azioni</th></tr></thead>
         <tbody id="dbBody"></tbody>
     </table>
 </div>
 
 <script>
-    // --- CONFIGURAZIONE ---
     const firebaseConfig = {
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
         authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
@@ -118,18 +115,15 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [] };
     let localPending = { drop: null, take: null, teamIdx: null };
+    let isDragging = false; // Per evitare refresh mentre trascini
 
-    // --- SINCRONIZZAZIONE ---
     db.ref('raceState').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) {
+        if (data && !isDragging) {
             state = data;
-            if (document.activeElement.id !== "ourKartId") {
-                document.getElementById('ourKartId').value = state.ourKartId || "";
-            }
+            if (document.activeElement.id !== "ourKartId") document.getElementById('ourKartId').value = state.ourKartId || "";
             render();
         }
     });
@@ -137,18 +131,18 @@
     function save() { db.ref('raceState').set(state); }
 
     function render() {
-        // Corsie
         ['sx', 'dx'].forEach(l => {
             const list = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
             list.innerHTML = (state[l] || []).map((k, idx) => `
-                <div class="kart-item"><span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
-                <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button></div>`).join('');
+                <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
+                    <span>#${k.num}</span> 
+                    <span class="rating-badge r-${k.rating}">${k.rating}</span>
+                    <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
+                </div>`).join('');
         });
 
-        // Tabella Database
         let ourPits = 0;
-        const body = document.getElementById('dbBody');
-        body.innerHTML = (state.teams || []).map((t, i) => {
+        document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => {
             if(state.ourKartId && (t.num === state.ourKartId || t.name.toLowerCase() === state.ourKartId.toLowerCase())) ourPits = t.pitCount || 0;
             return `<tr>
                 <td><input class="db-input" value="${t.name}" onchange="updateTeam(${i}, 'name', this.value)"></td>
@@ -162,7 +156,7 @@
                     <option value="osceno" ${t.rating==='osceno'?'selected':''}>Osceno</option>
                 </select></td>
                 <td style="text-align:center; font-weight:bold; color:var(--success);">${t.pitCount || 0}</td>
-                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none;">🗑️</button></td></tr>`;
         }).join('');
 
         document.getElementById('ourPitCount').innerText = ourPits;
@@ -170,7 +164,34 @@
         updateButtonsUI();
     }
 
-    // --- FUNZIONI OPERATIVE ---
+    // --- INIZIALIZZAZIONE DRAG & DROP ---
+    function initSortable() {
+        ['listSx', 'listDx'].forEach(id => {
+            new Sortable(document.getElementById(id), {
+                group: 'lanes',
+                animation: 150,
+                ghostClass: 'ghost',
+                onStart: () => { isDragging = true; },
+                onEnd: (evt) => {
+                    isDragging = false;
+                    // Ricostruiamo gli array sx e dx leggendo l'ordine attuale del DOM
+                    state.sx = Array.from(document.getElementById('listSx').children).map(el => ({
+                        num: el.dataset.num,
+                        rating: el.dataset.rating
+                    }));
+                    state.dx = Array.from(document.getElementById('listDx').children).map(el => ({
+                        num: el.dataset.num,
+                        rating: el.dataset.rating
+                    }));
+                    save();
+                }
+            });
+        });
+    }
+
+    window.onload = initSortable;
+
+    // --- ALTRE FUNZIONI (CERCA, EXPORT, PIT) ---
     function searchKart() {
         const val = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult');
@@ -182,13 +203,12 @@
     }
 
     function exportData() {
-        if(!state.log || state.log.length === 0) return alert("Nessun dato da esportare");
+        if(!state.log || state.log.length === 0) return alert("Nessun dato");
         let csv = "Ora,Evento\n";
         state.log.forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.setAttribute('hidden', ''); a.setAttribute('href', url); a.setAttribute('download', 'log_gara.csv');
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'log_gara.csv'; a.click();
     }
 
     function setPending(type, lane) {
@@ -204,6 +224,24 @@
         document.getElementById('confirmBtn').style.display = (localPending.drop && localPending.take) ? "block" : "none";
     }
 
+    function executePit() {
+        const p = localPending;
+        if(!state[p.take] || state[p.take].length === 0) return alert("Vuota!");
+        let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value;
+        let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + kartIn;
+        const out = state[p.take].shift();
+        if(p.teamIdx !== null) {
+            state.teams[p.teamIdx].kart = out.num;
+            state.teams[p.teamIdx].rating = out.rating;
+            state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
+        }
+        state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
+        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}` });
+        localPending = { drop: null, take: null, teamIdx: null };
+        document.getElementById('entryInput').value = "";
+        save();
+    }
+
     function autoFetchTeam() {
         const val = document.getElementById('entryInput').value.trim();
         const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
@@ -211,49 +249,19 @@
             document.getElementById('teamInfo').innerText = `Rilevato: ${team.name}`;
             document.getElementById('ratingEntry').value = team.rating || "normale";
             localPending.teamIdx = state.teams.indexOf(team);
-        } else {
-            document.getElementById('teamInfo').innerText = "";
-            localPending.teamIdx = null;
-        }
-    }
-
-    function executePit() {
-        const p = localPending;
-        if(!state[p.take] || state[p.take].length === 0) return alert("Corsia d'uscita vuota!");
-        
-        let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value;
-        let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + kartIn;
-        const entryRating = document.getElementById('ratingEntry').value;
-        
-        const out = state[p.take].shift();
-
-        if(p.teamIdx !== null) {
-            state.teams[p.teamIdx].kart = out.num;
-            state.teams[p.teamIdx].rating = out.rating;
-            state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
-        }
-
-        if(!state[p.drop]) state[p.drop] = [];
-        state[p.drop].push({ num: kartIn, rating: entryRating });
-        
-        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}` });
-        
-        localPending = { drop: null, take: null, teamIdx: null };
-        document.getElementById('entryInput').value = "";
-        save();
+        } else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
     }
 
     function addManual(l) {
         const n = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN').value;
-        if(n) { if(!state[l]) state[l] = []; state[l].push({num: n, rating: 'normale'}); document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN').value = ""; save(); }
+        if(n) { state[l].push({num: n, rating: 'normale'}); document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN').value = ""; save(); }
     }
-
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
-    function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
+    function addNewTeam() { state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
     function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
-    function resetAll() { if(confirm("Resettare tutto il Cloud?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
+    function resetAll() { if(confirm("Resetta tutto?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
 </script>
 </body>
 </html>
