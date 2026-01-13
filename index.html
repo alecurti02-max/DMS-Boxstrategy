@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Box Strategist Pro - CLOUD LIVE</title>
+    <title>Box Strategist Pro - CLOUD FIX</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -11,22 +11,20 @@
             --bg-color: #0b0e14; --card-bg: #151921; --text-color: #e9ecef;
             --accent-sx: #1d8cf8; --accent-dx: #fd5d93; --success: #00f2c3;
             --missile: #ffdf00; --prestazione: #00f2c3; --normale: #ffffff;
-            --lento: #ff8d72; --osceno: #fd5d93; --warning: #ff4757;
+            --lento: #ff8d72; --osceno: #fd5d93;
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2b3548; }
         .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
         .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; height: 350px; }
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
         .kart-item { background: #1e2430; margin-bottom: 8px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; }
-        .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; display: flex; flex-direction: column; height: 350px; }
+        .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 350px; display: flex; flex-direction: column; }
         #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
-        .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
-        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; }
-        @keyframes blinker { 50% { background-color: #ff0000; color: white; } }
-        .alert-duplicate { animation: blinker 0.6s linear infinite; border: 2px solid white !important; }
+        .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; }
+        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #2b3548; }
@@ -41,7 +39,7 @@
 
 <div class="header">
     <div>
-        NOSTRO KART: <input type="text" id="ourKartId" style="width: 80px;" oninput="localUpdateOurKart()" placeholder="N°">
+        NOSTRO KART: <input type="text" id="ourKartId" style="width: 80px;" oninput="updateOurKartLocal()" placeholder="N°">
         <span style="margin-left:20px;">🔍 CERCA:</span> 
         <input type="text" id="searchKart" placeholder="#" oninput="searchKart()" style="width:70px;">
         <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--missile)"></span>
@@ -51,48 +49,52 @@
 </div>
 
 <div class="grid-top">
-    <div style="display: flex; gap: 15px;">
+    <div style="display: flex; gap: 15px; flex: 1;">
         <div class="lane-container lane-sx">
-            <div style="font-weight: bold; color: var(--accent-sx); margin-bottom: 10px;">CORSIA SX</div>
+            <strong>CORSIA SX</strong>
             <div class="kart-list" id="listSx"></div>
             <div style="display:flex; gap:5px;">
-                <input type="number" id="addSxN" placeholder="#" style="width:30%">
+                <input type="number" id="addSxN" placeholder="#" style="width:40%">
                 <button class="btn-plus" onclick="addManual('sx')">+</button>
             </div>
         </div>
         <div class="lane-container lane-dx">
-            <div style="font-weight: bold; color: var(--accent-dx); margin-bottom: 10px;">CORSIA DX</div>
+            <strong>CORSIA DX</strong>
             <div class="kart-list" id="listDx"></div>
             <div style="display:flex; gap:5px;">
-                <input type="number" id="addDxN" placeholder="#" style="width:30%">
+                <input type="number" id="addDxN" placeholder="#" style="width:40%">
                 <button class="btn-plus" onclick="addManual('dx')">+</button>
             </div>
         </div>
     </div>
     <div class="side-panel">
-        <strong style="color: var(--accent-sx)">LOG EVENTI CLOUD</strong>
+        <strong>LOG EVENTI CLOUD</strong>
         <div id="raceLog"></div>
     </div>
 </div>
 
 <div class="control-panel">
-    <div class="input-group" style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; flex-direction:column; gap:10px;">
         <label>TEAM IN ENTRATA</label>
         <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome...">
         <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
         <label>VALUTAZIONE KART ENTRANTE</label>
         <select id="ratingEntry">
-            <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
+            <option value="missile">🚀 Missile</option>
+            <option value="prestazione">✅ Prestazione</option>
+            <option value="normale" selected>⚪ Normale</option>
+            <option value="lento">⚠️ Lento</option>
+            <option value="osceno">❌ Osceno</option>
         </select>
     </div>
-    <div class="input-group">
+    <div>
         <label>GESTIONE PIT</label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
-            <button id="btnDropSx" class="btn-action" onclick="prepPit('sx')" style="background:#2c2c44; color:white;">1. Lascia a SX</button>
-            <button id="btnDropDx" class="btn-action" onclick="prepPit('dx')" style="background:#2c2c44; color:white;">1. Lascia a DX</button>
-            <button id="btnTakeSx" class="btn-action" onclick="prepTake('sx')" style="background:#2c2c44; color:white;">2. Prendi da SX</button>
-            <button id="btnTakeDx" class="btn-action" onclick="prepTake('dx')" style="background:#2c2c44; color:white;">2. Prendi da DX</button>
-            <button id="confirmBtn" class="btn-confirm btn-action" onclick="executePit()">CONFERMA MOVIMENTO</button>
+            <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">1. Lascia a SX</button>
+            <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
+            <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
+            <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
+            <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
         </div>
     </div>
 </div>
@@ -118,23 +120,30 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [], pending: { dropLane: null, takeLane: null, teamIdx: null } };
 
+    let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [] };
+    let localPending = { dropLane: null, takeLane: null, teamIdx: null };
+
+    // Sincronizzazione Realtime
     db.ref('raceState').on('value', (snapshot) => {
         const data = snapshot.val();
-        if (data) { state = data; render(); }
+        if (data) {
+            state = data;
+            render();
+        }
     });
 
     function save() { db.ref('raceState').set(state); }
 
     function render() {
-        document.getElementById('ourKartId').value = state.ourKartId || "";
+        // Aggiorna Corsie
         ['sx', 'dx'].forEach(lane => {
             document.getElementById('list' + lane.charAt(0).toUpperCase() + lane.slice(1)).innerHTML = (state[lane] || []).map((k, i) => `
                 <div class="kart-item"><span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
                 <button onclick="removeKart('${lane}', ${i})" style="background:none; border:none; color:gray; cursor:pointer;">x</button></div>`).join('');
         });
 
+        // Aggiorna Database Team
         let totalOurPits = 0;
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => {
             if(state.ourKartId && (t.num === state.ourKartId || t.name.toLowerCase() === state.ourKartId.toLowerCase())) totalOurPits = t.pitCount || 0;
@@ -152,41 +161,48 @@
                 <td style="font-weight:bold; color:var(--success); text-align:center;">${t.pitCount || 0}</td>
                 <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
         }).join('');
+
         document.getElementById('ourPitCount').innerText = totalOurPits;
-        document.getElementById('raceLog').innerHTML = (state.log || []).slice().reverse().map(l => `<div class="log-entry"><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
-        updateUI();
+        document.getElementById('raceLog').innerHTML = (state.log || []).slice().reverse().map(l => `<div><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
+        updateButtonsUI();
     }
 
-    function localUpdateOurKart() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
-
+    // GESTIONE INPUT E RATING
     function autoFetchTeam() {
         const val = document.getElementById('entryInput').value.trim();
         const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
         if(team && val !== "") {
             document.getElementById('teamInfo').innerText = `Rilevato: ${team.name} (#${team.kart})`;
-            document.getElementById('ratingEntry').value = team.rating; // Carica il rating dal DB
-            state.pending.teamIdx = state.teams.indexOf(team);
-        } else { document.getElementById('teamInfo').innerText = ""; state.pending.teamIdx = null; }
+            document.getElementById('ratingEntry').value = team.rating || "normale"; // Fix Rating automatico
+            localPending.teamIdx = state.teams.indexOf(team);
+        } else {
+            document.getElementById('teamInfo').innerText = "";
+            localPending.teamIdx = null;
+        }
     }
 
-    function prepPit(lane) { state.pending.dropLane = lane; updateUI(); }
-    function prepTake(lane) { state.pending.takeLane = lane; updateUI(); }
+    // GESTIONE TASTI PIT (LOCALE)
+    function setPending(type, lane) {
+        if(type === 'drop') localPending.dropLane = lane;
+        if(type === 'take') localPending.takeLane = lane;
+        updateButtonsUI();
+    }
 
-    function updateUI() {
-        const p = state.pending;
+    function updateButtonsUI() {
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
-        if(p.dropLane) document.getElementById('btnDrop' + p.dropLane.charAt(0).toUpperCase() + 'x').style.background = (p.dropLane==='sx'?'#1d8cf8':'#fd5d93');
-        if(p.takeLane) document.getElementById('btnTake' + p.takeLane.charAt(0).toUpperCase() + 'x').style.background = (p.takeLane==='sx'?'#1d8cf8':'#fd5d93');
-        document.getElementById('confirmBtn').style.display = (p.dropLane && p.takeLane) ? "block" : "none";
+        if(localPending.dropLane) document.getElementById('btnDrop' + localPending.dropLane.toUpperCase()).style.background = (localPending.dropLane==='sx'?'#1d8cf8':'#fd5d93');
+        if(localPending.takeLane) document.getElementById('btnTake' + localPending.takeLane.toUpperCase()).style.background = (localPending.takeLane==='sx'?'#1d8cf8':'#fd5d93');
+        document.getElementById('confirmBtn').style.display = (localPending.dropLane && localPending.takeLane) ? "block" : "none";
     }
 
     function executePit() {
-        const p = state.pending;
-        const entryRating = document.getElementById('ratingEntry').value;
-        if(!state[p.takeLane] || state[p.takeLane].length == 0) return;
+        const p = localPending;
+        if(!state[p.takeLane] || state[p.takeLane].length == 0) { alert("Corsia di uscita vuota!"); return; }
 
         let teamName = p.teamIdx !== null ? state.teams[p.teamIdx].name : "Team " + document.getElementById('entryInput').value;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value;
+        const entryRating = document.getElementById('ratingEntry').value;
+        
         const out = state[p.takeLane].shift();
 
         if(p.teamIdx !== null) {
@@ -197,24 +213,32 @@
 
         if(!state[p.dropLane]) state[p.dropLane] = [];
         state[p.dropLane].push({ num: kartIn, rating: entryRating });
+        
         if(!state.log) state.log = [];
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}` });
         
-        state.pending = { dropLane: null, takeLane: null, teamIdx: null };
+        localPending = { dropLane: null, takeLane: null, teamIdx: null };
         document.getElementById('entryInput').value = "";
         save();
     }
 
     function addManual(lane) {
         const n = document.getElementById('add'+lane.charAt(0).toUpperCase()+'xN').value;
-        if(n) { if(!state[lane]) state[lane] = []; state[lane].push({num: n, rating: 'normale'}); save(); }
+        if(n) { 
+            if(!state[lane]) state[lane] = []; 
+            state[lane].push({num: n, rating: 'normale'}); 
+            document.getElementById('add'+lane.charAt(0).toUpperCase()+'xN').value = "";
+            save(); 
+        }
     }
+
+    function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
     function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
     function deleteTeam(i) { if(confirm("Eliminare?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
     function resetAll() { if(confirm("Resettare tutto il CLOUD?")) { db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); } }
-    function searchKart() { /* logica ricerca precedente... */ }
+    function searchKart() { /* la tua funzione searchKart rimane invariata */ }
 </script>
 </body>
 </html>
