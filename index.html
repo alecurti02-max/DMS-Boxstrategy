@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Box Strategist Pro - v8.1 MASTER</title>
+    <title>Box Strategist Pro - v8.2 FLEX-FLOW</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -20,11 +20,9 @@
         .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 380px; }
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
-        /* Stile per il trascinamento */
         .kart-item { background: #1e2430; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; cursor: grab; }
         .kart-item:active { cursor: grabbing; }
         .sortable-ghost { opacity: 0.3; background: var(--accent-sx); }
-        
         .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 430px; display: flex; flex-direction: column; }
         #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
@@ -91,7 +89,7 @@
             <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
             <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
             <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
-            <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA PIT</button>
+            <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
         </div>
     </div>
 </div>
@@ -158,7 +156,7 @@
                     <option value="osceno" ${t.rating==='osceno'?'selected':''}>Osceno</option>
                 </select></td>
                 <td style="text-align:center; font-weight:bold; color:var(--success);">${t.pitCount || 0}</td>
-                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none;">🗑️</button></td></tr>`;
         }).join('');
 
         document.getElementById('ourPitCount').innerText = ourPits;
@@ -166,7 +164,6 @@
         updateButtonsUI();
     }
 
-    // Inizializzazione Drag & Drop
     window.onload = function() {
         ['listSx', 'listDx'].forEach(id => {
             new Sortable(document.getElementById(id), {
@@ -182,6 +179,55 @@
         });
     };
 
+    function setPending(type, lane) {
+        if(type === 'drop') localPending.drop = (localPending.drop === lane) ? null : lane;
+        if(type === 'take') localPending.take = (localPending.take === lane) ? null : lane;
+        updateButtonsUI();
+    }
+
+    function updateButtonsUI() {
+        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
+        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
+        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
+        // LOGICA FLEX: Mostra conferma se hai selezionato almeno il DROP (dove lasciare il kart)
+        document.getElementById('confirmBtn').style.display = (localPending.drop) ? "block" : "none";
+    }
+
+    function executePit() {
+        const p = localPending;
+        let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
+        let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
+        const entryRating = document.getElementById('ratingEntry').value;
+
+        if(!kartIn) return alert("Inserisci il numero del kart entrante!");
+
+        let logMsg = "";
+
+        // Se è selezionata una corsia d'uscita E non è vuota
+        if (p.take && state[p.take] && state[p.take].length > 0) {
+            const out = state[p.take].shift();
+            if(p.teamIdx !== null) {
+                state.teams[p.teamIdx].kart = out.num;
+                state.teams[p.teamIdx].rating = out.rating;
+                state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
+            }
+            logMsg = `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}`;
+        } else {
+            // Caso corsia vuota o solo DROP
+            logMsg = `${teamName}: Lasciato #${kartIn} (Nessun kart preso)`;
+        }
+
+        if(!state[p.drop]) state[p.drop] = [];
+        state[p.drop].push({ num: kartIn, rating: entryRating });
+        
+        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
+        
+        localPending = { drop: null, take: null, teamIdx: null };
+        document.getElementById('entryInput').value = "";
+        save();
+    }
+
+    // --- FUNZIONI DI SERVIZIO ---
     function searchKart() {
         const val = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult');
@@ -190,45 +236,6 @@
         ['sx','dx'].forEach(l => (state[l]||[]).forEach((k, i) => { if(k.num == val) found = `${l.toUpperCase()} Pos:${i+1}`; }));
         if(!found) (state.teams||[]).forEach(t => { if(t.kart == val) found = `PISTA (${t.name})`; });
         res.innerText = found || "NON TROVATO";
-    }
-
-    function exportData() {
-        if(!state.log || state.log.length === 0) return;
-        let csv = "Ora,Evento\n";
-        state.log.forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log.csv'; a.click();
-    }
-
-    function setPending(type, lane) {
-        if(type === 'drop') localPending.drop = lane;
-        if(type === 'take') localPending.take = lane;
-        updateButtonsUI();
-    }
-
-    function updateButtonsUI() {
-        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
-        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
-        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
-        document.getElementById('confirmBtn').style.display = (localPending.drop && localPending.take) ? "block" : "none";
-    }
-
-    function executePit() {
-        const p = localPending;
-        if(!state[p.take] || state[p.take].length === 0) return;
-        let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value;
-        let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + kartIn;
-        const out = state[p.take].shift();
-        if(p.teamIdx !== null) {
-            state.teams[p.teamIdx].kart = out.num;
-            state.teams[p.teamIdx].rating = out.rating;
-            state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
-        }
-        state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
-        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}` });
-        localPending = { drop: null, take: null, teamIdx: null };
-        document.getElementById('entryInput').value = "";
-        save();
     }
 
     function autoFetchTeam() {
@@ -250,6 +257,12 @@
     function addNewTeam() { state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
     function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
+    function exportData() {
+        let csv = "Ora,Evento\n";
+        state.log.forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log.csv'; a.click();
+    }
     function resetAll() { if(confirm("Resetta tutto?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
 </script>
 </body>
