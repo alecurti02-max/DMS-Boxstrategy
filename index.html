@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Box Strategist Pro - v8.3 FIX PLUS</title>
+    <title>Box Strategist Pro - v8.4 FULL STABLE</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -129,6 +129,12 @@
         const data = snapshot.val();
         if (data && !isDragging) {
             state = data;
+            // Assicuriamoci che i campi obbligatori esistano
+            if(!state.sx) state.sx = [];
+            if(!state.dx) state.dx = [];
+            if(!state.teams) state.teams = [];
+            if(!state.log) state.log = [];
+            
             if (document.activeElement.id !== "ourKartId") document.getElementById('ourKartId').value = state.ourKartId || "";
             render();
         }
@@ -137,10 +143,8 @@
     function save() { db.ref('raceState').set(state); }
 
     function initSortable() {
-        // Distruggi istanze precedenti se esistono per evitare duplicati
         sortables.forEach(s => s.destroy());
         sortables = [];
-
         ['listSx', 'listDx'].forEach(id => {
             const el = document.getElementById(id);
             if(el) {
@@ -185,13 +189,20 @@
                     <option value="osceno" ${t.rating==='osceno'?'selected':''}>Osceno</option>
                 </select></td>
                 <td style="text-align:center; font-weight:bold; color:var(--success);">${t.pitCount || 0}</td>
-                <td><button onclick="deleteTeam(${i})" style="border:none; background:none;">🗑️</button></td></tr>`;
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer;">🗑️</button></td></tr>`;
         }).join('');
 
         document.getElementById('ourPitCount').innerText = ourPits;
         document.getElementById('raceLog').innerHTML = (state.log || []).slice().reverse().map(l => `<div><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
         updateButtonsUI();
-        initSortable(); // Re-inizializza il drag dopo il render
+        initSortable();
+    }
+
+    // --- AGGIUNTA TEAM (CORRETTA) ---
+    function addNewTeam() {
+        if(!state.teams) state.teams = [];
+        state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0});
+        save(); // Invia a Firebase
     }
 
     function addManual(l) {
@@ -201,7 +212,7 @@
             if(!state[l]) state[l] = [];
             state[l].push({num: n, rating: 'normale'});
             input.value = "";
-            save(); // Firebase scatenerà il render
+            save();
         }
     }
 
@@ -270,7 +281,6 @@
 
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
-    function addNewTeam() { state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
     function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
     function exportData() {
