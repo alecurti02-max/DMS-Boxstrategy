@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Box Strategist Pro - v8.7 SECURE</title>
+    <title>DMS Strategy Pro - v8.9</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -14,26 +14,19 @@
             --warning-red: #ff4757; --missile: #ffdf00; --prestazione: #00f2c3; 
             --normale: #ffffff; --lento: #ff8d72; --osceno: #fd5d93;
         }
-
-        /* Schermata Password */
+        * { user-select: none; -webkit-user-select: none; }
+        input, select { user-select: text; -webkit-user-select: text; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
+        
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .login-box {
-            background: var(--card-bg); padding: 40px; border-radius: 15px;
-            border: 2px solid var(--accent-sx); text-align: center; box-shadow: 0 0 30px rgba(29, 140, 248, 0.2);
-        }
-        #pinInput {
-            font-size: 2em; letter-spacing: 10px; text-align: center; width: 200px;
-            margin: 20px 0; border: 1px solid #333; background: #000; color: var(--success);
-        }
-
-        /* Layout Principale (nascosto inizialmente) */
+        .login-box { background: var(--card-bg); padding: 40px; border-radius: 15px; border: 2px solid var(--accent-sx); text-align: center; }
+        #pinInput { font-size: 2em; letter-spacing: 10px; text-align: center; width: 220px; margin: 20px 0; border: 1px solid #333; background: #000; color: var(--success); }
+        
         #mainApp { display: none; padding: 15px; }
-
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2b3548; }
         .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
         .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 380px; }
@@ -55,15 +48,14 @@
         input, select { padding: 10px; border-radius: 5px; border: 1px solid #2b3548; background: #0b0e14; color: white; }
         .rating-badge { padding: 3px 7px; border-radius: 4px; font-size: 0.8em; color: black; font-weight: bold; text-transform: uppercase; }
         .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale); } .r-lento { background: var(--lento); } .r-osceno { background: var(--osceno); }
-        .btn-plus { background: #e9ecef; color: black; width: 45px; cursor: pointer; font-size: 1.4em; font-weight: bold; border-radius: 5px; border: none; }
+        .btn-plus { background: #e9ecef; color: black; cursor: pointer; font-size: 1.4em; font-weight: bold; border-radius: 5px; border: none; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 style="color: var(--accent-sx); margin-top:0;">DMS STRATEGY ACCESS</h2>
-        <p>Inserisci il PIN per accedere alla gestione</p>
+        <h2 style="color: var(--accent-sx); margin-top:0;">DMS STRATEGY</h2>
         <input type="password" id="pinInput" maxlength="6" autofocus onkeyup="checkPin(this.value)">
         <div id="loginError" style="color: var(--warning-red); height: 20px;"></div>
     </div>
@@ -89,12 +81,26 @@
             <div class="lane-container lane-sx">
                 <strong>CORSIA SX</strong>
                 <div class="kart-list" id="listSx"></div>
-                <div style="display:flex; gap:5px;"><input type="number" id="addSxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('sx')">+</button></div>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="addSxN" placeholder="#" style="width:30%">
+                    <select id="addSxR" style="width:50%; font-size: 0.8em;">
+                        <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option>
+                        <option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
+                    </select>
+                    <button class="btn-plus" onclick="addManual('sx')" style="width:20%">+</button>
+                </div>
             </div>
             <div class="lane-container lane-dx">
                 <strong>CORSIA DX</strong>
                 <div class="kart-list" id="listDx"></div>
-                <div style="display:flex; gap:5px;"><input type="number" id="addDxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('dx')">+</button></div>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="addDxN" placeholder="#" style="width:30%">
+                    <select id="addDxR" style="width:50%; font-size: 0.8em;">
+                        <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option>
+                        <option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
+                    </select>
+                    <button class="btn-plus" onclick="addManual('dx')" style="width:20%">+</button>
+                </div>
             </div>
         </div>
         <div class="side-panel">
@@ -109,7 +115,8 @@
             <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome...">
             <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
             <select id="ratingEntry">
-                <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
+                <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option>
+                <option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
             </select>
         </div>
         <div>
@@ -134,8 +141,11 @@
 </div>
 
 <script>
-    // --- CONFIGURAZIONE SICUREZZA ---
-    const MASTER_PIN = "123456"; // MODIFICA QUI LA TUA PASSWORD
+    document.onkeydown = function(e) {
+        if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false;
+    };
+
+    const MASTER_PIN = "123456"; // CAMBIA QUI IL TUO PIN
 
     const firebaseConfig = {
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
@@ -154,14 +164,13 @@
     let isDragging = false;
     let sortables = [];
 
-    // --- GESTIONE ACCESSO ---
     function checkPin(val) {
         if (val === MASTER_PIN) {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             startDatabaseSync();
         } else if (val.length === 6) {
-            document.getElementById('loginError').innerText = "PIN ERRATO";
+            document.getElementById('loginError').innerText = "DENIED";
             document.getElementById('pinInput').value = "";
             setTimeout(() => { document.getElementById('loginError').innerText = ""; }, 2000);
         }
@@ -238,13 +247,23 @@
         });
     }
 
+    function addManual(l) {
+        const inputNum = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
+        const inputRating = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xR');
+        if(inputNum.value) {
+            if(!state[l]) state[l] = [];
+            state[l].push({ num: inputNum.value, rating: inputRating.value });
+            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${inputNum.value} (${inputRating.value}) in ${l.toUpperCase()}` });
+            inputNum.value = ""; inputRating.value = "normale"; save();
+        }
+    }
+
     function updateButtonsUI() {
         const entryIn = document.getElementById('entryInput').value.trim();
         const btnConf = document.getElementById('confirmBtn');
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
         if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
         if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
-        
         btnConf.style.display = (localPending.drop) ? "block" : "none";
 
         let isRecycled = false;
@@ -252,16 +271,10 @@
             const nextKart = state[localPending.take][0].num;
             const teamObj = (localPending.teamIdx !== null) ? state.teams[localPending.teamIdx] : null;
             const teamName = teamObj ? teamObj.name : ("Team " + entryIn);
-            isRecycled = state.log.some(l => l.txt.includes(teamName) && l.txt.includes("Preso #" + nextKart));
+            isRecycled = (state.log || []).some(l => l.txt.includes(teamName) && l.txt.includes("Preso #" + nextKart));
         }
-
-        if (isRecycled) {
-            btnConf.classList.add('blink-error');
-            btnConf.innerText = "ATTENZIONE: KART GIÀ USATO DA QUESTO TEAM!";
-        } else {
-            btnConf.classList.remove('blink-error');
-            btnConf.innerText = "CONFERMA MOVIMENTO";
-        }
+        if (isRecycled) { btnConf.classList.add('blink-error'); btnConf.innerText = "KART GIÀ USATO DA QUESTO TEAM!"; }
+        else { btnConf.classList.remove('blink-error'); btnConf.innerText = "CONFERMA MOVIMENTO"; }
     }
 
     function executePit() {
@@ -279,10 +292,9 @@
                 state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
             }
             logMsg = `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}`;
-        } else {
-            logMsg = `${teamName}: Lasciato #${kartIn} (Solo deposito)`;
-        }
+        } else { logMsg = `${teamName}: Lasciato #${kartIn} (Solo deposito)`; }
 
+        if(!state[p.drop]) state[p.drop] = [];
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
@@ -301,14 +313,6 @@
         updateButtonsUI();
     }
 
-    function addManual(l) {
-        const input = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
-        if(input.value) {
-            state[l].push({num: input.value, rating: 'normale'});
-            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${input.value} in ${l.toUpperCase()}` });
-            input.value = ""; save();
-        }
-    }
     function setPending(type, lane) {
         if(type === 'drop') localPending.drop = (localPending.drop === lane) ? null : lane;
         if(type === 'take') localPending.take = (localPending.take === lane) ? null : lane;
@@ -316,7 +320,7 @@
     }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
-    function addNewTeam() { state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
+    function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
     function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
     function searchKart() {
@@ -331,7 +335,7 @@
     function resetAll() { if(confirm("Resetta tutto?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
     function exportData() {
         let csv = "Ora,Evento\n";
-        state.log.forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
+        (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
         const blob = new Blob([csv], { type: 'text/csv' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_gara.csv'; a.click();
     }
