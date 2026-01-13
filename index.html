@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Box Strategist Pro - v8.5 ULTIMATE</title>
+    <title>DMS Box Strategist Pro - v8.6 HISTORY SHIELD</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -21,14 +21,12 @@
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
         .kart-item { background: #1e2430; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; cursor: grab; }
-        .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 430px; display: flex; flex-direction: column; }
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; height: 380px; }
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
         .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; width: 100%; }
         
-        /* Animazione Lampeggio Errore */
         @keyframes blink-red { 0% { background: var(--success); } 50% { background: var(--warning-red); } 100% { background: var(--success); } }
-        .blink-error { animation: blink-red 0.5s infinite; color: white !important; }
+        .blink-error { animation: blink-red 0.4s infinite; color: white !important; }
 
         .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; border: none; }
         .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
@@ -135,34 +133,6 @@
 
     function save() { db.ref('raceState').set(state); }
 
-    function initSortable() {
-        sortables.forEach(s => s.destroy()); sortables = [];
-        ['listSx', 'listDx'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) {
-                sortables.push(new Sortable(el, {
-                    group: 'lanes', animation: 150,
-                    onStart: (evt) => { isDragging = true; evt.item.dataset.fromLane = id; },
-                    onEnd: (evt) => {
-                        isDragging = false;
-                        const kartNum = evt.item.dataset.num;
-                        const fromLane = evt.from.id.replace('list', '').toUpperCase();
-                        const toLane = evt.to.id.replace('list', '').toUpperCase();
-                        
-                        // Aggiorna Stato
-                        state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                        state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                        
-                        // Log del movimento
-                        let msg = (fromLane === toLane) ? `Riordinata corsia ${toLane}` : `Spostato #${kartNum} da ${fromLane} a ${toLane}`;
-                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] ${msg}` });
-                        save();
-                    }
-                }));
-            }
-        });
-    }
-
     function render() {
         ['sx', 'dx'].forEach(l => {
             document.getElementById('list' + l.charAt(0).toUpperCase() + 'x').innerHTML = (state[l] || []).map((k, idx) => `
@@ -197,23 +167,52 @@
         initSortable();
     }
 
+    function initSortable() {
+        sortables.forEach(s => s.destroy()); sortables = [];
+        ['listSx', 'listDx'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                sortables.push(new Sortable(el, {
+                    group: 'lanes', animation: 150,
+                    onStart: () => { isDragging = true; },
+                    onEnd: (evt) => {
+                        isDragging = false;
+                        const kartNum = evt.item.dataset.num;
+                        const fromL = evt.from.id.replace('list', '').toUpperCase();
+                        const toL = evt.to.id.replace('list', '').toUpperCase();
+                        state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                        state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                        if(fromL !== toL) state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Spostato #${kartNum} da ${fromL} a ${toL}` });
+                        save();
+                    }
+                }));
+            }
+        });
+    }
+
     function updateButtonsUI() {
-        const entryNum = document.getElementById('entryInput').value.trim();
+        const entryIn = document.getElementById('entryInput').value.trim();
         const btnConf = document.getElementById('confirmBtn');
-        
-        // Reset colori bottoni
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
         if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
         if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
         
-        // Mostra/Nascondi conferma
         btnConf.style.display = (localPending.drop) ? "block" : "none";
 
-        // CONTROLLO "GIÀ PRESO" (Pignolo mode)
-        const isAlreadyInLanes = (state.sx.some(k => k.num === entryNum) || state.dx.some(k => k.num === entryNum));
-        if (isAlreadyInLanes && entryNum !== "") {
+        // CONTROLLO STORICO (History Shield)
+        let isRecycled = false;
+        if(localPending.take && state[localPending.take].length > 0) {
+            const nextKart = state[localPending.take][0].num;
+            const teamObj = (localPending.teamIdx !== null) ? state.teams[localPending.teamIdx] : null;
+            const teamName = teamObj ? teamObj.name : ("Team " + entryIn);
+
+            // Scansiona il log per vedere se quel team ha già preso quel kart
+            isRecycled = state.log.some(l => l.txt.includes(teamName) && l.txt.includes("Preso #" + nextKart));
+        }
+
+        if (isRecycled) {
             btnConf.classList.add('blink-error');
-            btnConf.innerText = "ATTENZIONE: KART GIÀ NEL BOX!";
+            btnConf.innerText = "ATTENZIONE: KART GIÀ USATO DA QUESTO TEAM!";
         } else {
             btnConf.classList.remove('blink-error');
             btnConf.innerText = "CONFERMA MOVIMENTO";
@@ -224,7 +223,7 @@
         const p = localPending;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
-        if(!kartIn) return alert("Inserisci il numero del kart entrante!");
+        if(!kartIn) return alert("Inserisci il numero del kart!");
 
         let logMsg = "";
         if (p.take && state[p.take] && state[p.take].length > 0) {
@@ -241,13 +240,11 @@
 
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
-        
         localPending = { drop: null, take: null, teamIdx: null };
         document.getElementById('entryInput').value = "";
         save();
     }
 
-    // --- UTILITIES ---
     function autoFetchTeam() {
         const val = document.getElementById('entryInput').value.trim();
         const team = (state.teams || []).find(t => t.num === val || t.name.toLowerCase().includes(val.toLowerCase()));
@@ -291,7 +288,7 @@
         let csv = "Ora,Evento\n";
         state.log.forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
         const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_completo.csv'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_gara.csv'; a.click();
     }
 </script>
 </body>
