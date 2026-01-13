@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Box Strategist Pro - v8.2 FLEX-FLOW</title>
+    <title>DMS Box Strategist Pro - v8.3 FIX PLUS</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -21,7 +21,6 @@
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
         .kart-item { background: #1e2430; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; cursor: grab; }
-        .kart-item:active { cursor: grabbing; }
         .sortable-ghost { opacity: 0.3; background: var(--accent-sx); }
         .side-panel { background: #151921; border-radius: 10px; padding: 15px; border: 1px solid #2b3548; height: 430px; display: flex; flex-direction: column; }
         #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; }
@@ -59,12 +58,18 @@
         <div class="lane-container lane-sx">
             <strong>CORSIA SX</strong>
             <div class="kart-list" id="listSx"></div>
-            <div style="display:flex; gap:5px;"><input type="number" id="addSxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('sx')">+</button></div>
+            <div style="display:flex; gap:5px;">
+                <input type="number" id="addSxN" placeholder="#" style="width:40%">
+                <button class="btn-plus" onclick="addManual('sx')">+</button>
+            </div>
         </div>
         <div class="lane-container lane-dx">
             <strong>CORSIA DX</strong>
             <div class="kart-list" id="listDx"></div>
-            <div style="display:flex; gap:5px;"><input type="number" id="addDxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('dx')">+</button></div>
+            <div style="display:flex; gap:5px;">
+                <input type="number" id="addDxN" placeholder="#" style="width:40%">
+                <button class="btn-plus" onclick="addManual('dx')">+</button>
+            </div>
         </div>
     </div>
     <div class="side-panel">
@@ -118,6 +123,7 @@
     let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [] };
     let localPending = { drop: null, take: null, teamIdx: null };
     let isDragging = false;
+    let sortables = [];
 
     db.ref('raceState').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -129,6 +135,29 @@
     });
 
     function save() { db.ref('raceState').set(state); }
+
+    function initSortable() {
+        // Distruggi istanze precedenti se esistono per evitare duplicati
+        sortables.forEach(s => s.destroy());
+        sortables = [];
+
+        ['listSx', 'listDx'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                const s = new Sortable(el, {
+                    group: 'lanes', animation: 150,
+                    onStart: () => { isDragging = true; },
+                    onEnd: () => {
+                        isDragging = false;
+                        state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                        state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                        save();
+                    }
+                });
+                sortables.push(s);
+            }
+        });
+    }
 
     function render() {
         ['sx', 'dx'].forEach(l => {
@@ -162,22 +191,19 @@
         document.getElementById('ourPitCount').innerText = ourPits;
         document.getElementById('raceLog').innerHTML = (state.log || []).slice().reverse().map(l => `<div><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
         updateButtonsUI();
+        initSortable(); // Re-inizializza il drag dopo il render
     }
 
-    window.onload = function() {
-        ['listSx', 'listDx'].forEach(id => {
-            new Sortable(document.getElementById(id), {
-                group: 'lanes', animation: 150,
-                onStart: () => { isDragging = true; },
-                onEnd: () => {
-                    isDragging = false;
-                    state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                    state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                    save();
-                }
-            });
-        });
-    };
+    function addManual(l) {
+        const input = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
+        const n = input.value.trim();
+        if(n) {
+            if(!state[l]) state[l] = [];
+            state[l].push({num: n, rating: 'normale'});
+            input.value = "";
+            save(); // Firebase scatenerà il render
+        }
+    }
 
     function setPending(type, lane) {
         if(type === 'drop') localPending.drop = (localPending.drop === lane) ? null : lane;
@@ -189,7 +215,6 @@
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
         if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
         if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
-        // LOGICA FLEX: Mostra conferma se hai selezionato almeno il DROP (dove lasciare il kart)
         document.getElementById('confirmBtn').style.display = (localPending.drop) ? "block" : "none";
     }
 
@@ -202,8 +227,6 @@
         if(!kartIn) return alert("Inserisci il numero del kart entrante!");
 
         let logMsg = "";
-
-        // Se è selezionata una corsia d'uscita E non è vuota
         if (p.take && state[p.take] && state[p.take].length > 0) {
             const out = state[p.take].shift();
             if(p.teamIdx !== null) {
@@ -213,13 +236,11 @@
             }
             logMsg = `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}`;
         } else {
-            // Caso corsia vuota o solo DROP
-            logMsg = `${teamName}: Lasciato #${kartIn} (Nessun kart preso)`;
+            logMsg = `${teamName}: Lasciato #${kartIn} (Solo deposito)`;
         }
 
         if(!state[p.drop]) state[p.drop] = [];
         state[p.drop].push({ num: kartIn, rating: entryRating });
-        
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         
         localPending = { drop: null, take: null, teamIdx: null };
@@ -227,7 +248,6 @@
         save();
     }
 
-    // --- FUNZIONI DI SERVIZIO ---
     function searchKart() {
         const val = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult');
@@ -248,10 +268,6 @@
         } else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
     }
 
-    function addManual(l) {
-        const n = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN').value;
-        if(n) { state[l].push({num: n, rating: 'normale'}); document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN').value = ""; save(); }
-    }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
     function addNewTeam() { state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
