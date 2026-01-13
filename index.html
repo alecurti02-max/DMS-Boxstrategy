@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Box Strategist Pro - v8.6 HISTORY SHIELD</title>
+    <title>DMS Box Strategist Pro - v8.7 SECURE</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -14,7 +14,26 @@
             --warning-red: #ff4757; --missile: #ffdf00; --prestazione: #00f2c3; 
             --normale: #ffffff; --lento: #ff8d72; --osceno: #fd5d93;
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 15px; }
+
+        /* Schermata Password */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .login-box {
+            background: var(--card-bg); padding: 40px; border-radius: 15px;
+            border: 2px solid var(--accent-sx); text-align: center; box-shadow: 0 0 30px rgba(29, 140, 248, 0.2);
+        }
+        #pinInput {
+            font-size: 2em; letter-spacing: 10px; text-align: center; width: 200px;
+            margin: 20px 0; border: 1px solid #333; background: #000; color: var(--success);
+        }
+
+        /* Layout Principale (nascosto inizialmente) */
+        #mainApp { display: none; padding: 15px; }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #2b3548; }
         .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
         .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 380px; }
@@ -41,69 +60,83 @@
 </head>
 <body>
 
-<div class="header">
-    <div>
-        NOSTRO KART: <input type="text" id="ourKartId" style="width: 80px;" oninput="updateOurKartLocal()" placeholder="N°">
-        <span style="margin-left:20px;">🔍 CERCA:</span> 
-        <input type="text" id="searchKartField" placeholder="#" oninput="searchKart()" style="width:70px;">
-        <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--missile)"></span>
-    </div>
-    <div style="font-size: 1.5em; font-weight: bold; color: var(--success);">PIT: <span id="ourPitCount">0</span></div>
-    <div>
-        <button onclick="exportData()" style="background: #1d8cf8; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; margin-right:5px;">CSV</button>
-        <button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">RESET</button>
+<div id="loginOverlay">
+    <div class="login-box">
+        <h2 style="color: var(--accent-sx); margin-top:0;">DMS STRATEGY ACCESS</h2>
+        <p>Inserisci il PIN per accedere alla gestione</p>
+        <input type="password" id="pinInput" maxlength="4" autofocus onkeyup="checkPin(this.value)">
+        <div id="loginError" style="color: var(--warning-red); height: 20px;"></div>
     </div>
 </div>
 
-<div class="grid-top">
-    <div style="display: flex; gap: 15px; flex: 1;">
-        <div class="lane-container lane-sx">
-            <strong>CORSIA SX</strong>
-            <div class="kart-list" id="listSx"></div>
-            <div style="display:flex; gap:5px;"><input type="number" id="addSxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('sx')">+</button></div>
+<div id="mainApp">
+    <div class="header">
+        <div>
+            NOSTRO KART: <input type="text" id="ourKartId" style="width: 80px;" oninput="updateOurKartLocal()" placeholder="N°">
+            <span style="margin-left:20px;">🔍 CERCA:</span> 
+            <input type="text" id="searchKartField" placeholder="#" oninput="searchKart()" style="width:70px;">
+            <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--missile)"></span>
         </div>
-        <div class="lane-container lane-dx">
-            <strong>CORSIA DX</strong>
-            <div class="kart-list" id="listDx"></div>
-            <div style="display:flex; gap:5px;"><input type="number" id="addDxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('dx')">+</button></div>
+        <div style="font-size: 1.5em; font-weight: bold; color: var(--success);">PIT: <span id="ourPitCount">0</span></div>
+        <div>
+            <button onclick="exportData()" style="background: #1d8cf8; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; margin-right:5px;">CSV</button>
+            <button onclick="resetAll()" style="background: #e94560; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">RESET</button>
         </div>
     </div>
-    <div class="side-panel">
-        <strong>LOG LIVE</strong>
-        <div id="raceLog"></div>
-    </div>
-</div>
 
-<div class="control-panel">
-    <div style="display:flex; flex-direction:column; gap:10px;">
-        <label>TEAM IN ENTRATA</label>
-        <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome...">
-        <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
-        <select id="ratingEntry">
-            <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
-        </select>
-    </div>
-    <div>
-        <label>GESTIONE PIT</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
-            <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">1. Lascia a SX</button>
-            <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
-            <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
-            <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
-            <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
+    <div class="grid-top">
+        <div style="display: flex; gap: 15px; flex: 1;">
+            <div class="lane-container lane-sx">
+                <strong>CORSIA SX</strong>
+                <div class="kart-list" id="listSx"></div>
+                <div style="display:flex; gap:5px;"><input type="number" id="addSxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('sx')">+</button></div>
+            </div>
+            <div class="lane-container lane-dx">
+                <strong>CORSIA DX</strong>
+                <div class="kart-list" id="listDx"></div>
+                <div style="display:flex; gap:5px;"><input type="number" id="addDxN" placeholder="#" style="width:40%"><button class="btn-plus" onclick="addManual('dx')">+</button></div>
+            </div>
+        </div>
+        <div class="side-panel">
+            <strong>LOG LIVE</strong>
+            <div id="raceLog"></div>
         </div>
     </div>
-</div>
 
-<div class="database-section">
-    <button onclick="addNewTeam()" style="background: #2ea44f; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">+ AGGIUNGI TEAM</button>
-    <table id="dbTable">
-        <thead><tr><th>Nome Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Azioni</th></tr></thead>
-        <tbody id="dbBody"></tbody>
-    </table>
+    <div class="control-panel">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <label>TEAM IN ENTRATA</label>
+            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome...">
+            <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
+            <select id="ratingEntry">
+                <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
+            </select>
+        </div>
+        <div>
+            <label>GESTIONE PIT</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+                <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">1. Lascia a SX</button>
+                <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
+                <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
+                <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
+                <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="database-section">
+        <button onclick="addNewTeam()" style="background: #2ea44f; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">+ AGGIUNGI TEAM</button>
+        <table id="dbTable">
+            <thead><tr><th>Nome Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Azioni</th></tr></thead>
+            <tbody id="dbBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
+    // --- CONFIGURAZIONE SICUREZZA ---
+    const MASTER_PIN = "123456"; // MODIFICA QUI LA TUA PASSWORD
+
     const firebaseConfig = {
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
         authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
@@ -121,15 +154,30 @@
     let isDragging = false;
     let sortables = [];
 
-    db.ref('raceState').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data && !isDragging) {
-            state = data;
-            if(!state.sx) state.sx = []; if(!state.dx) state.dx = []; if(!state.teams) state.teams = []; if(!state.log) state.log = [];
-            if (document.activeElement.id !== "ourKartId") document.getElementById('ourKartId').value = state.ourKartId || "";
-            render();
+    // --- GESTIONE ACCESSO ---
+    function checkPin(val) {
+        if (val === MASTER_PIN) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            startDatabaseSync();
+        } else if (val.length === 6) {
+            document.getElementById('loginError').innerText = "PIN ERRATO";
+            document.getElementById('pinInput').value = "";
+            setTimeout(() => { document.getElementById('loginError').innerText = ""; }, 2000);
         }
-    });
+    }
+
+    function startDatabaseSync() {
+        db.ref('raceState').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && !isDragging) {
+                state = data;
+                if(!state.sx) state.sx = []; if(!state.dx) state.dx = []; if(!state.teams) state.teams = []; if(!state.log) state.log = [];
+                if (document.activeElement.id !== "ourKartId") document.getElementById('ourKartId').value = state.ourKartId || "";
+                render();
+            }
+        });
+    }
 
     function save() { db.ref('raceState').set(state); }
 
@@ -199,14 +247,11 @@
         
         btnConf.style.display = (localPending.drop) ? "block" : "none";
 
-        // CONTROLLO STORICO (History Shield)
         let isRecycled = false;
         if(localPending.take && state[localPending.take].length > 0) {
             const nextKart = state[localPending.take][0].num;
             const teamObj = (localPending.teamIdx !== null) ? state.teams[localPending.teamIdx] : null;
             const teamName = teamObj ? teamObj.name : ("Team " + entryIn);
-
-            // Scansiona il log per vedere se quel team ha già preso quel kart
             isRecycled = state.log.some(l => l.txt.includes(teamName) && l.txt.includes("Preso #" + nextKart));
         }
 
