@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v1.1</title>
+    <title>DMS Analytics Pro - v1.2</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -13,9 +13,9 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         
-        /* HEADER E CONFIG */
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #2b3548; }
-        .config-box { display: flex; align-items: center; gap: 10px; font-size: 0.9em; }
+        .header-flex { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid #2b3548; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; }
+        .config-row { display: flex; gap: 20px; align-items: center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; flex-wrap: wrap; }
 
         .dashboard { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
         
@@ -29,27 +29,34 @@
         .sidebar { display: flex; flex-direction: column; gap: 20px; }
         .panel { background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #2b3548; }
         
-        input, button, select { background: #0b0e14; border: 1px solid #3d4b64; color: white; padding: 10px; border-radius: 4px; }
+        input, button { background: #0b0e14; border: 1px solid #3d4b64; color: white; padding: 10px; border-radius: 4px; }
         button { background: var(--accent); cursor: pointer; font-weight: bold; border: none; }
-        button:hover { opacity: 0.8; }
+        .btn-connect { background: var(--success); color: black; }
         
         .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 0.7em; font-weight: 800; }
         .in-pit { background: #ff4757; color: white; }
         .on-track { background: var(--success); color: black; }
-
         .virtual-time { color: var(--success); font-family: 'Courier New', monospace; }
     </style>
 </head>
 <body>
 
 <div class="header-flex">
-    <div>
-        <h2 style="margin:0;">DMS ANALYTICS <span style="font-size:0.5em; color:var(--accent)">VIRTUAL STANDING</span></h2>
+    <div class="top-row">
+        <h2 style="margin:0;">DMS ANALYTICS <span style="font-size:0.5em; color:var(--accent)">V1.2</span></h2>
+        <div id="connectionStatus" style="color:gray;">○ DISCONNECTED</div>
     </div>
-    <div class="config-box">
-        <span>⏱️ PIT OBBLIGATORIO (SEC):</span>
-        <input type="number" id="minPitInput" value="1800" style="width:80px; text-align:center;" onchange="updateVirtualLogic()">
-        <div id="connectionStatus" style="color:var(--success); margin-left:15px;">● LIVE</div>
+    
+    <div class="config-row">
+        <div style="flex:1; display:flex; gap:10px; align-items:center;">
+            <strong>🔗 APEX URL:</strong>
+            <input type="text" id="apexUrlInput" placeholder="https://live.apex-timing.com/..." style="flex:1;">
+            <button class="btn-connect" onclick="connectToApex()">CONNECT</button>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; border-left: 1px solid #3d4b64; padding-left: 20px;">
+            <strong>⏱️ PIT OBBL. (SEC):</strong>
+            <input type="number" id="minPitInput" value="1800" style="width:80px; text-align:center;" onchange="updateVirtualLogic()">
+        </div>
     </div>
 </div>
 
@@ -88,14 +95,12 @@
             <div id="targetTeam" style="text-align:center; font-size:0.8em; color:#888;">Nessun avversario selezionato</div>
         </div>
         
-        <div class="panel" style="font-size:0.8em; color:#888;">
-            <em>La <strong>Posizione Virtuale</strong> calcola la classifica come se tutti avessero già completato il tempo di sosta obbligatorio.</em>
-        </div>
+        <button onclick="window.location.href='index.html'" style="background:#2c2c44; width:100%;">↩ TORNA AI BOX</button>
     </div>
 </div>
 
 <script>
-    // Inizializzazione Firebase
+    // Configurazione Firebase (Stessa della v9.19)
     const firebaseConfig = { 
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", 
         authDomain: "gestione-cambi-kart---dms.firebaseapp.com", 
@@ -106,13 +111,30 @@
     const db = firebase.database();
 
     let directCompetitors = JSON.parse(localStorage.getItem('directCompetitors')) || [];
-    let minPitTime = 1800; // Default 30 min in secondi
+    let minPitTime = 1800;
+    let apexInterval = null;
     const bipAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
     let lastInPit = new Set();
 
+    // Carica URL salvato
+    document.getElementById('apexUrlInput').value = localStorage.getItem('lastApexUrl') || '';
+
+    function connectToApex() {
+        const url = document.getElementById('apexUrlInput').value.trim();
+        if(!url) return alert("Inserisci un link Apex valido");
+        
+        localStorage.setItem('lastApexUrl', url);
+        document.getElementById('connectionStatus').innerText = "● LIVE CONNECTED";
+        document.getElementById('connectionStatus').style.color = "var(--success)";
+
+        if(apexInterval) clearInterval(apexInterval);
+        apexInterval = setInterval(updateTelemetry, 3000);
+        updateTelemetry();
+    }
+
     function updateVirtualLogic() {
         minPitTime = parseInt(document.getElementById('minPitInput').value);
-        updateTelemetry();
+        if(apexInterval) updateTelemetry();
     }
 
     function addDirect() {
@@ -121,7 +143,7 @@
             directCompetitors.push(val);
             localStorage.setItem('directCompetitors', JSON.stringify(directCompetitors));
             renderDirects();
-            updateTelemetry();
+            if(apexInterval) updateTelemetry();
         }
     }
 
@@ -129,7 +151,7 @@
         directCompetitors = directCompetitors.filter(d => d !== num);
         localStorage.setItem('directCompetitors', JSON.stringify(directCompetitors));
         renderDirects();
-        updateTelemetry();
+        if(apexInterval) updateTelemetry();
     }
 
     function renderDirects() {
@@ -140,28 +162,18 @@
     }
 
     async function updateTelemetry() {
-        // SIMULAZIONE DATI APEX (In produzione qui va il fetch reale)
-        // Immaginiamo che Apex ci dia: Tempo totale di gara, numero pit e tempo totale in sosta
+        // NOTA TECNICA: In gara, useremo un proxy CORS per leggere l'URL incollato
+        // Per ora manteniamo la simulazione logica per vedere i calcoli
         let rawData = [
-            { num: "1", team: "Team Leader", raceTime: 5000, pitCount: 2, pitTime: 1200, last: 45.1, status: "TRACK", rating: "normale" },
+            { num: "1", team: "Leader", raceTime: 5000, pitCount: 2, pitTime: 1200, last: 45.1, status: "TRACK", rating: "normale" },
             { num: "10", team: "DMS Racing", raceTime: 5050, pitCount: 3, pitTime: 1800, last: 45.4, status: "TRACK", rating: "prestazione" },
             { num: "5", team: "Avversario", raceTime: 4900, pitCount: 1, pitTime: 600, last: 44.9, status: "TRACK", rating: "missile" }
         ];
 
-        // LOGICA CLASSIFICA VIRTUALE
-        // Tempo Virtuale = Tempo Reale - Tempo Pit Effettuato + (Tempo Pit Mancante)
-        // Più semplicemente: Tempo Reale + (MinPitObbligatorio - TempoPitEffettuato)
-        
-        let virtualData = rawData.map(t => {
-            let missingPit = Math.max(0, minPitTime - t.pitTime);
-            return {
-                ...t,
-                virtualTotal: t.raceTime + missingPit
-            };
-        });
-
-        // Ordiniamo per tempo virtuale (chi ha il tempo più basso è primo)
-        virtualData.sort((a, b) => a.virtualTotal - b.virtualTotal);
+        let virtualData = rawData.map(t => ({
+            ...t,
+            virtualTotal: t.raceTime + Math.max(0, minPitTime - t.pitTime)
+        })).sort((a, b) => a.virtualTotal - b.virtualTotal);
 
         renderTable(virtualData);
     }
@@ -169,14 +181,12 @@
     function renderTable(data) {
         const body = document.getElementById('telemetryBody');
         body.innerHTML = "";
-        
         const leaderVirtualTime = data[0].virtualTotal;
 
         data.forEach((row, index) => {
             const isDirect = directCompetitors.includes(row.num);
             const virtualGap = (row.virtualTotal - leaderVirtualTime).toFixed(3);
             
-            // Gestione Bip Missili nel box
             if(row.rating === 'missile' && row.status === 'PIT' && !lastInPit.has(row.num)) {
                 bipAudio.play(); lastInPit.add(row.num);
             } else if(row.status === 'TRACK') { lastInPit.delete(row.num); }
@@ -186,7 +196,7 @@
             if(index === 0) tr.classList.add('row-virtual-leader');
 
             tr.innerHTML = `
-                <td style="color:#888">#${index + 1 + (index==0?' 🏆':'')}</td>
+                <td style="color:#888">#${index + 1}</td>
                 <td>${row.team} <small>(#${row.num})</small></td>
                 <td style="text-align:center">${row.pitCount}</td>
                 <td style="color:${row.pitTime >= minPitTime ? 'var(--success)' : '#ff8d72'}">
@@ -199,17 +209,14 @@
             `;
             body.appendChild(tr);
 
-            // Aggiorna Focus Sidebar se è un diretto
             if(isDirect && index > 0) {
                 document.getElementById('targetInfo').innerText = "+" + virtualGap + "s";
-                document.getElementById('targetTeam').innerText = "Gap virtuale di " + row.team + " dal leader";
+                document.getElementById('targetTeam').innerText = "Distacco virtuale: " + row.team;
             }
         });
     }
 
     renderDirects();
-    setInterval(updateTelemetry, 3000);
-    updateTelemetry();
 </script>
 
 </body>
