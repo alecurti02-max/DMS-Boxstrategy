@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS Strategy Pro - v9.20</title>
+    <title>DMS Strategy Pro - v9.21</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -36,6 +36,8 @@
 
         .grid-top { display: grid; grid-template-columns: 2.5fr 1fr; gap: 15px; margin-bottom: 15px; }
         .lanes-wrapper { display: flex; gap: 15px; flex: 1; }
+        
+        /* Altezza fissa coerente per corsie e log */
         .lane-container { flex: 1; height: 530px; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; position: relative; border: 1px solid var(--input-border); border-top: 6px solid #555; }
         .lane-sx { border-top-color: var(--accent-sx); } .lane-dx { border-top-color: var(--accent-dx); }
         
@@ -55,12 +57,23 @@
         .next-up-sx { border: 2px solid var(--accent-sx) !important; box-shadow: 0 0 15px rgba(29, 140, 248, 0.4); }
         .next-up-dx { border: 2px solid var(--accent-dx) !important; box-shadow: 0 0 15px rgba(253, 93, 147, 0.4); }
 
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; height: 470px; border: 1px solid var(--input-border); color: #888; scroll-behavior: smooth; }
+        /* LOG FISSO: Altezza bloccata per non deformare la pagina */
+        #raceLog { 
+            height: 470px; 
+            max-height: 470px; 
+            overflow-y: auto; 
+            font-size: 0.85em; 
+            background: rgba(0,0,0,0.2); 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid var(--input-border); 
+            color: #888; 
+            scroll-behavior: smooth;
+        }
         
         .control-panel { background: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         .btn-action { padding: 15px; border: none; border-radius: 5px; font-weight: bold; color: white; background: #2c2c44; cursor: pointer; }
         .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 15px; padding: 18px; border-radius: 5px; font-weight: bold; border: none; display: none; cursor: pointer; }
-        .btn-add-team { background:#2ea44f; color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer; }
 
         @media (max-width: 800px) {
             .grid-top { grid-template-columns: 1fr; }
@@ -154,7 +167,7 @@
     <div class="database-section">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
             <strong>DATABASE TEAM</strong>
-            <button onclick="addNewTeam()" class="btn-add-team">+ AGGIUNGI TEAM</button>
+            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">+ AGGIUNGI TEAM</button>
         </div>
         <table class="db-table">
             <thead><tr><th>Team</th><th># Gara</th><th>Kart attuale</th><th>Rating</th><th>Pit</th><th>Note Tecniche</th><th></th></tr></thead>
@@ -246,17 +259,10 @@
                     isDragging = false;
                     const fromL = evt.from.id.includes('Sx') ? 'sx' : 'dx';
                     const toL = evt.to.id.includes('Sx') ? 'sx' : 'dx';
-                    
                     if(fromL !== toL || evt.oldIndex !== evt.newIndex) {
                         pushHistory();
                         const kartNum = evt.item.dataset.num;
-                        let msg = "";
-                        if (fromL !== toL) {
-                            msg = `[MOVE] #${kartNum} ${fromL.toUpperCase()} -> ${toL.toUpperCase()}`;
-                        } else {
-                            msg = `[POS] #${kartNum} in ${fromL.toUpperCase()} spostato ${evt.oldIndex + 1} -> ${evt.newIndex + 1}`;
-                        }
-                        
+                        let msg = (fromL !== toL) ? `[MOVE] #${kartNum} ${fromL.toUpperCase()} -> ${toL.toUpperCase()}` : `[POS] #${kartNum} in ${fromL.toUpperCase()} spostato ${evt.oldIndex + 1} -> ${evt.newIndex + 1}`;
                         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: msg });
                         state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
