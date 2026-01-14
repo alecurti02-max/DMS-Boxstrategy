@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Strategy Pro - v9.3</title>
+    <title>DMS Strategy Pro - v9.4</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -37,9 +37,6 @@
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
         .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; width: 100%; }
         
-        @keyframes blink-red { 0% { background: var(--success); } 50% { background: var(--warning-red); } 100% { background: var(--success); } }
-        .blink-error { animation: blink-red 0.4s infinite; color: white !important; }
-
         .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; border: none; }
         .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #2b3548; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -50,7 +47,7 @@
         .btn-plus { background: #e9ecef; color: black; cursor: pointer; font-size: 1.4em; font-weight: bold; border-radius: 5px; border: none; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
 <div id="loginOverlay">
     <div class="login-box">
@@ -141,12 +138,7 @@
 </div>
 
 <script>
-    document.onkeydown = function(e) {
-        if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false;
-    };
-
     const MASTER_PIN = "123456";
-
     const firebaseConfig = {
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
         authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
@@ -169,10 +161,6 @@
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             startDatabaseSync();
-        } else if (val.length === 6) {
-            document.getElementById('loginError').innerText = "DENIED";
-            document.getElementById('pinInput').value = "";
-            setTimeout(() => { document.getElementById('loginError').innerText = ""; }, 2000);
         }
     }
 
@@ -181,8 +169,6 @@
             const data = snapshot.val();
             if (data && !isDragging) {
                 state = data;
-                if(!state.sx) state.sx = []; if(!state.dx) state.dx = []; if(!state.teams) state.teams = []; if(!state.log) state.log = [];
-                if (document.activeElement.id !== "ourKartId") document.getElementById('ourKartId').value = state.ourKartId || "";
                 render();
             }
         });
@@ -192,51 +178,54 @@
 
     function undoLastAction() {
         if (!state.log || state.log.length === 0) return alert("Nessuna azione da annullare!");
-        
         const lastLog = state.log[state.log.length - 1];
         if (!confirm("Annullare: " + lastLog.txt + "?")) return;
 
         state.log.pop();
         const text = lastLog.txt;
 
-        // 1. CASO: CAMBIO KART (es. "Team X: [SX->DX] Lasciato #10 -> Preso #5")
+        // 1. ANNULLA CAMBIO KART PIT
         if (text.includes("-> Preso #")) {
             const teamName = text.split(":")[0].trim();
-            const lanes = text.match(/\[(.*?)\]/)[1]; // Prende "SX->DX" o "SX->SX"
-            const fromLane = lanes.split("->")[0].toLowerCase(); // Dove è stato LASCIATO (#10)
-            const toLane = lanes.split("->")[1].toLowerCase();   // Da dove è stato PRESO (#5)
-            
+            const lanes = text.match(/\[(.*?)\]/)[1]; 
+            const fromLane = lanes.split("->")[0].toLowerCase(); // Dove era entrato
+            const toLane = lanes.split("->")[1].toLowerCase();   // Da dove era uscito
             const kartLasciato = text.split("Lasciato #")[1].split(" ")[0].trim();
             const kartPreso = text.split("Preso #")[1].trim();
 
-            // A. Ripristino Team
             const team = state.teams.find(t => t.name === teamName);
             if (team) {
                 team.kart = kartLasciato;
                 team.pitCount = Math.max(0, (team.pitCount || 1) - 1);
             }
 
-            // B. Pulizia Corsia di Destinazione (Rimuoviamo il kart lasciato #10 che torna al team)
+            // Togliamo il kart depositato e rimettiamo quello preso in cima
             const idxIn = state[fromLane].findIndex(k => k.num === kartLasciato);
             if (idxIn !== -1) {
-                if (team) team.rating = state[fromLane][idxIn].rating; // Recupera il rating corretto
+                if(team) team.rating = state[fromLane][idxIn].rating;
                 state[fromLane].splice(idxIn, 1);
             }
-
-            // C. Ripristino Corsia di Origine (Rimettiamo il kart preso #5 in cima)
             state[toLane].unshift({ num: kartPreso, rating: 'normale' });
         } 
-        
-        // 2. CASO: SOLO DEPOSITO (es. "Team X: [SX] Lasciato #10 (Solo deposito)")
-        else if (text.includes("Solo deposito")) {
-            const kartLasciato = text.split("Lasciato #")[1].split(" ")[0].trim();
-            const fromLane = text.match(/\[(.*?)\]/)[1].toLowerCase();
-            const idx = state[fromLane].findIndex(k => k.num === kartLasciato);
-            if (idx !== -1) state[fromLane].splice(idx, 1);
-        }
+        // 2. ANNULLA DRAG & DROP (MANUAL SPOSTATO)
+        else if (text.includes("[MANUAL] Spostato")) {
+            const num = text.split("#")[1].split(" ")[0].trim();
+            // Formato: [MANUAL] Spostato #X da SX (pos 1) a DX (pos 2)
+            const parts = text.split(" da ")[1].split(" a ");
+            const originalLane = parts[0].split(" (pos ")[0].toLowerCase();
+            const originalPos = parseInt(parts[0].split(" (pos ")[1]) - 1;
+            const currentLane = parts[1].split(" (pos ")[0].toLowerCase();
+            const currentPos = parseInt(parts[1].split(" (pos ")[1]) - 1;
 
-        // 3. CASO: AGGIUNTA MANUALE
-        else if (text.includes("[MANUAL] Aggiunto")) {
+            // Rimuoviamo dalla posizione attuale
+            const kartObj = state[currentLane].splice(currentPos, 1)[0];
+            // Reinseriamo nella posizione originale esatta
+            if(kartObj) {
+                state[originalLane].splice(originalPos, 0, kartObj);
+            }
+        }
+        // 3. SOLO DEPOSITO / AGGIUNTA
+        else if (text.includes("Solo deposito") || text.includes("Aggiunto")) {
             const num = text.split("#")[1].split(" ")[0].trim();
             ['sx', 'dx'].forEach(l => {
                 const idx = state[l].findIndex(k => k.num === num);
@@ -250,8 +239,9 @@
 
     function render() {
         ['sx', 'dx'].forEach(l => {
-            document.getElementById('list' + l.charAt(0).toUpperCase() + 'x').innerHTML = (state[l] || []).map((k, idx) => `
-                <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
+            const listEl = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
+            listEl.innerHTML = (state[l] || []).map((k, idx) => `
+                <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}" data-idx="${idx}">
                     <span>#${k.num}</span> 
                     <span class="rating-badge r-${k.rating}">${k.rating}</span>
                     <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
@@ -286,53 +276,30 @@
         sortables.forEach(s => s.destroy()); sortables = [];
         ['listSx', 'listDx'].forEach(id => {
             const el = document.getElementById(id);
-            if(el) {
-                sortables.push(new Sortable(el, {
-                    group: 'lanes', animation: 150,
-                    onStart: () => { isDragging = true; },
-                    onEnd: (evt) => {
-                        isDragging = false;
-                        const kartNum = evt.item.dataset.num;
-                        const fromL = evt.from.id.replace('list', '').toUpperCase();
-                        const toL = evt.to.id.replace('list', '').toUpperCase();
+            sortables.push(new Sortable(el, {
+                group: 'lanes', animation: 150,
+                onStart: () => { isDragging = true; },
+                onEnd: (evt) => {
+                    isDragging = false;
+                    const kartNum = evt.item.dataset.num;
+                    const fromL = evt.from.id.replace('list', '').toUpperCase();
+                    const toL = evt.to.id.replace('list', '').toUpperCase();
+                    const oldIdx = evt.oldIndex + 1;
+                    const newIdx = evt.newIndex + 1;
+
+                    // Se è cambiato qualcosa, logghiamo la posizione precisa
+                    if (fromL !== toL || oldIdx !== newIdx) {
+                        state.log.push({ 
+                            ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), 
+                            txt: `[MANUAL] Spostato #${kartNum} da ${fromL} (pos ${oldIdx}) a ${toL} (pos ${newIdx})` 
+                        });
                         state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                        if(fromL !== toL) state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Spostato #${kartNum} da ${fromL} a ${toL}` });
                         save();
                     }
-                }));
-            }
+                }
+            }));
         });
-    }
-
-    function addManual(l) {
-        const inputNum = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
-        const inputRating = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xR');
-        if(inputNum.value) {
-            if(!state[l]) state[l] = [];
-            state[l].push({ num: inputNum.value, rating: inputRating.value });
-            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${inputNum.value} (${inputRating.value}) in ${l.toUpperCase()}` });
-            inputNum.value = ""; inputRating.value = "normale"; save();
-        }
-    }
-
-    function updateButtonsUI() {
-        const entryIn = document.getElementById('entryInput').value.trim();
-        const btnConf = document.getElementById('confirmBtn');
-        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
-        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
-        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
-        btnConf.style.display = (localPending.drop) ? "block" : "none";
-
-        let isRecycled = false;
-        if(localPending.take && state[localPending.take].length > 0) {
-            const nextKart = state[localPending.take][0].num;
-            const teamObj = (localPending.teamIdx !== null) ? state.teams[localPending.teamIdx] : null;
-            const teamName = teamObj ? teamObj.name : ("Team " + entryIn);
-            isRecycled = (state.log || []).some(l => l.txt.includes(teamName) && l.txt.includes("Preso #" + nextKart));
-        }
-        if (isRecycled) { btnConf.classList.add('blink-error'); btnConf.innerText = "KART GIÀ USATO DA QUESTO TEAM!"; }
-        else { btnConf.classList.remove('blink-error'); btnConf.innerText = "CONFERMA MOVIMENTO"; }
     }
 
     function executePit() {
@@ -343,7 +310,6 @@
 
         let logMsg = "";
         const dropL = p.drop.toUpperCase();
-        
         if (p.take && state[p.take] && state[p.take].length > 0) {
             const takeL = p.take.toUpperCase();
             const out = state[p.take].shift();
@@ -357,12 +323,29 @@
             logMsg = `${teamName}: [${dropL}] Lasciato #${kartIn} (Solo deposito)`; 
         }
 
-        if(!state[p.drop]) state[p.drop] = [];
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
         document.getElementById('entryInput').value = "";
         save();
+    }
+
+    function addManual(l) {
+        const inputNum = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
+        const inputRating = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xR');
+        if(inputNum.value) {
+            state[l].push({ num: inputNum.value, rating: inputRating.value });
+            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${inputNum.value} (${inputRating.value}) in ${l.toUpperCase()}` });
+            inputNum.value = ""; save();
+        }
+    }
+
+    function updateButtonsUI() {
+        const btnConf = document.getElementById('confirmBtn');
+        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
+        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
+        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
+        btnConf.style.display = (localPending.drop) ? "block" : "none";
     }
 
     function autoFetchTeam() {
