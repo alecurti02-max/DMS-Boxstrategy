@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS Strategy Pro - v9.12</title>
+    <title>DMS Strategy Pro - v9.13</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -28,8 +28,12 @@
             --cell-border: #d1d8e0;
         }
 
-        * { user-select: none; -webkit-user-select: none; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; overflow-x: hidden; }
+        * { 
+            user-select: none; -webkit-user-select: none; box-sizing: border-box; 
+            transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+        }
+        
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
         
         #mainApp { display: none; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--input-border); }
@@ -171,13 +175,19 @@
         });
     }
 
-    function saveWithHistory() {
+    // NUOVO SISTEMA DI SALVATAGGIO: Salva la storia PRIMA dell'azione
+    function pushHistory() {
         if(!state.history) state.history = [];
-        // Salviamo lo stato attuale PRIMA di modificarlo
-        state.history.push(JSON.stringify({sx: state.sx, dx: state.dx, teams: state.teams, log: state.log}));
+        state.history.push(JSON.stringify({
+            sx: [...state.sx], 
+            dx: [...state.dx], 
+            teams: JSON.parse(JSON.stringify(state.teams)), 
+            log: [...state.log]
+        }));
         if(state.history.length > 40) state.history.shift();
-        db.ref('raceState').set(state);
     }
+
+    function save() { db.ref('raceState').set(state); }
 
     function render() {
         ['sx', 'dx'].forEach(l => {
@@ -196,10 +206,10 @@
 
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => `
             <tr>
-                <td class="db-cell"><input class="db-input" value="${t.name || ''}" onchange="updateTeam(${i},'name',this.value)"></td>
-                <td class="db-cell"><input class="db-input" value="${t.num || ''}" onchange="updateTeam(${i},'num',this.value)"></td>
-                <td class="db-cell"><input class="db-input" value="${t.kart || ''}" onchange="updateTeam(${i},'kart',this.value)"></td>
-                <td class="db-cell"><select class="db-input" onchange="updateTeam(${i},'rating',this.value)">
+                <td class="db-cell"><input class="db-input" value="${t.name || ''}" onchange="pushHistory(); state.teams[${i}].name=this.value; save();"></td>
+                <td class="db-cell"><input class="db-input" value="${t.num || ''}" onchange="pushHistory(); state.teams[${i}].num=this.value; save();"></td>
+                <td class="db-cell"><input class="db-input" value="${t.kart || ''}" onchange="pushHistory(); state.teams[${i}].kart=this.value; save();"></td>
+                <td class="db-cell"><select class="db-input" onchange="pushHistory(); state.teams[${i}].rating=this.value; save();">
                     <option value="missile" ${t.rating==='missile'?'selected':''}>🚀 Missile</option>
                     <option value="prestazione" ${t.rating==='prestazione'?'selected':''}>✅ Prestazione</option>
                     <option value="normale" ${t.rating==='normale'?'selected':''}>⚪ Normale</option>
@@ -207,7 +217,7 @@
                     <option value="osceno" ${t.rating==='osceno'?'selected':''}>❌ Osceno</option>
                 </select></td>
                 <td class="db-cell" style="text-align:center; font-weight:bold; color:var(--success)">${t.pitCount||0}</td>
-                <td class="db-cell"><input class="db-input" value="${t.notes || ''}" onchange="updateTeam(${i},'notes',this.value)"></td>
+                <td class="db-cell"><input class="db-input" value="${t.notes || ''}" onchange="pushHistory(); state.teams[${i}].notes=this.value; save();"></td>
                 <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
             </tr>`).join('');
 
@@ -236,16 +246,17 @@
                     
                     let actionTxt = "";
                     if(fromL !== toL) {
-                        actionTxt = `[MOVE] Kart #${kartNum} da ${fromL.toUpperCase()} a ${toL.toUpperCase()}`;
+                        actionTxt = `[MOVE] Kart #${kartNum} da ${fromL.toUpperCase()} (Pos ${evt.oldIndex+1}) a ${toL.toUpperCase()} (Pos ${evt.newIndex+1})`;
                     } else if (evt.oldIndex !== evt.newIndex) {
                         actionTxt = `[POS] Kart #${kartNum} in ${fromL.toUpperCase()} spostato Pos ${evt.oldIndex+1} -> ${evt.newIndex+1}`;
                     }
 
                     if(actionTxt) {
+                        pushHistory(); // Salva lo stato prima dello spostamento
                         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: actionTxt });
                         state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
-                        saveWithHistory();
+                        save();
                     }
                 }
             }));
@@ -257,6 +268,8 @@
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
         if(!kartIn) return alert("Inserire numero kart!");
+
+        pushHistory(); // Salva prima del pit
 
         let logMsg = "";
         if (p.take && state[p.take] && state[p.take].length > 0) {
@@ -273,7 +286,7 @@
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
         document.getElementById('entryInput').value = "";
-        saveWithHistory();
+        save();
     }
 
     function undoLastAction() {
@@ -281,8 +294,7 @@
         if(confirm("Annullare l'ultima modifica?")) {
             const last = JSON.parse(state.history.pop());
             state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log;
-            // Qui usiamo db.ref().set() diretto per non creare un nuovo salvataggio di storia
-            db.ref('raceState').set(state);
+            db.ref('raceState').set(state); // Salva lo stato ripristinato senza generare nuova storia
         }
     }
 
@@ -290,28 +302,30 @@
         const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN');
         const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR');
         if(n && n.value) {
+            pushHistory();
             state[l].push({ num: n.value, rating: r.value });
             state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[+] Manuale: #${n.value} in ${l.toUpperCase()}` });
             n.value = ""; 
-            saveWithHistory();
+            save();
         }
     }
 
     function addNewTeam() {
+        pushHistory();
         if(!state.teams) state.teams = [];
         state.teams.push({name:"", num:"", kart:"", rating:"normale", pitCount:0, notes:""});
-        saveWithHistory();
+        save();
     }
 
     function removeKart(l, i) {
         if(confirm("Rimuovere kart #" + state[l][i].num + "?")) {
+            pushHistory();
             state[l].splice(i,1);
-            saveWithHistory();
+            save();
         }
     }
 
-    function updateTeam(i, f, v) { state.teams[i][f] = v; saveWithHistory(); }
-    function deleteTeam(i) { if(confirm("Eliminare?")) { state.teams.splice(i,1); saveWithHistory(); } }
+    function deleteTeam(i) { if(confirm("Eliminare?")) { pushHistory(); state.teams.splice(i,1); save(); } }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); db.ref('raceState/ourKartId').set(state.ourKartId); }
 
     function setPending(type, lane) {
