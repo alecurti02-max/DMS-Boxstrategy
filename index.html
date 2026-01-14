@@ -2,11 +2,15 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Strategy Pro - v9.6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>DMS Strategy Pro - v9.7</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
     <style>
         :root {
             --accent-sx: #1d8cf8; --accent-dx: #fd5d93; --success: #00f2c3;
@@ -14,161 +18,138 @@
             --lento: #ff8d72; --osceno: #fd5d93;
         }
 
-        /* TEMA SCURO */
         body.dark-theme {
             --bg-color: #0b0e14; --card-bg: #151921; --text-color: #e9ecef;
             --input-bg: #0b0e14; --input-border: #2b3548; --normale-bg: #34495e;
-            --row-border: #2b3548; --log-text: #aaa; --badge-text: #000;
+            --row-border: #2b3548; --log-text: #aaa;
         }
 
-        /* TEMA CHIARO */
         body.light-theme {
             --bg-color: #f4f7f6; --card-bg: #ffffff; --text-color: #2d3436;
             --input-bg: #ffffff; --input-border: #dfe6e9; --normale-bg: #bdc3c7;
-            --row-border: #dfe6e9; --log-text: #636e72; --badge-text: #000;
+            --row-border: #dfe6e9; --log-text: #636e72;
         }
 
         * { user-select: none; -webkit-user-select: none; box-sizing: border-box; }
         input, select { user-select: text; -webkit-user-select: text; padding: 10px; border-radius: 5px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: background 0.3s, color 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: background 0.3s; overflow-x: hidden; }
         
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0e14; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .login-box { background: #151921; padding: 40px; border-radius: 15px; border: 2px solid var(--accent-sx); text-align: center; }
-        #pinInput { font-size: 2em; letter-spacing: 10px; text-align: center; width: 220px; margin: 20px 0; border: 1px solid #333; background: #000; color: var(--success); }
-        
-        #mainApp { display: none; padding: 15px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--input-border); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .theme-switch { background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-color); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.8em; }
+        #mainApp { display: none; padding: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--input-border); }
 
-        .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 380px; }
+        /* DASHBOARD STATS */
+        .stats-bar { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .stat-item { background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--input-border); white-space: nowrap; font-size: 0.8em; font-weight: bold; }
+
+        .grid-top { display: grid; grid-template-columns: 2.5fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 400px; }
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
-        .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.05); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
-        .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; }
         
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; color: var(--log-text); height: 320px; }
-        .btn-undo { width: 100%; margin-top: 10px; padding: 12px; background: #2c2c44; color: #eee; border: 1px solid #444; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        /* ALERT PROSSIMO KART */
+        .kart-list .kart-item:first-child { border: 2px solid var(--success) !important; animation: pulse-border 1.5s infinite; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0px rgba(0, 242, 195, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 242, 195, 0); } 100% { box-shadow: 0 0 0 0px rgba(0, 242, 195, 0); } }
 
-        .control-panel { background: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
-        .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; background: #2c2c44; width: 100%; }
+        .kart-item { background: var(--card-bg); margin-bottom: 6px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; }
+        .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; color: #000; }
+        .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale-bg); color: #fff; }
         
-        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; display: none; padding: 15px; border-radius: 5px; font-weight: bold; text-align: center; border: none; cursor: pointer; }
-        .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--input-border); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--row-border); }
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.8em; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; height: 350px; }
+        .control-panel { background: var(--card-bg); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; }
         
-        /* FIX BADGES: Testo nero per i colori chiari, bianco per Normale nel dark */
-        .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #000; }
-        .r-missile { background: var(--missile); } 
-        .r-prestazione { background: var(--prestazione); } 
-        .r-lento { background: var(--lento); } 
-        .r-osceno { background: var(--osceno); }
-        .r-normale { background: var(--normale-bg); color: #fff; } /* Testo sempre bianco su sfondo neutro */
-        
-        .btn-plus { background: #e9ecef; color: black; cursor: pointer; font-size: 1.4em; border-radius: 5px; border: none; }
+        .database-section { background: var(--card-bg); padding: 15px; border-radius: 10px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--row-border); }
+        .note-input { width: 100%; border: none; background: transparent; color: var(--text-color); font-style: italic; font-size: 0.85em; }
+
+        #loginOverlay { position: fixed; inset: 0; background: #0b0e14; z-index: 9999; display: flex; justify-content: center; align-items: center; }
     </style>
 </head>
 <body class="dark-theme">
 
 <div id="loginOverlay">
-    <div class="login-box">
-        <h2 style="color: var(--accent-sx); margin-top:0;">DMS STRATEGY</h2>
-        <input type="password" id="pinInput" maxlength="6" autofocus onkeyup="checkPin(this.value)">
+    <div style="text-align:center; background:#151921; padding:40px; border-radius:15px; border:2px solid var(--accent-sx);">
+        <h2 style="color:var(--accent-sx)">DMS STRATEGY PRO</h2>
+        <input type="password" id="pinInput" maxlength="6" style="font-size:2em; text-align:center; width:200px;" onkeyup="if(this.value==='123456'){document.getElementById('loginOverlay').style.display='none';document.getElementById('mainApp').style.display='block';startDatabaseSync();}">
     </div>
 </div>
 
 <div id="mainApp">
+    <div class="stats-bar" id="statsBar"></div>
+
     <div class="header">
         <div>
-            NOSTRO KART: <input type="text" id="ourKartId" style="width: 70px;" oninput="updateOurKartLocal()">
-            <span style="margin-left:15px;">🔍 CERCA:</span> 
-            <input type="text" id="searchKartField" placeholder="#" oninput="searchKart()" style="width:60px;">
-            <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--accent-sx)"></span>
+            KART: <input type="text" id="ourKartId" style="width: 60px;" oninput="updateOurKartLocal()">
+            <input type="text" id="searchKartField" placeholder="Cerca #" oninput="searchKart()" style="width:80px; margin-left:10px;">
+            <span id="searchResult" style="margin-left:5px; font-weight:bold; color:var(--success)"></span>
         </div>
-        <div style="font-size: 1.4em; font-weight: bold; color: var(--success);">PIT: <span id="ourPitCount">0</span></div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button class="theme-switch" onclick="toggleTheme()" id="themeBtn">☀️ LIGHT MODE</button>
-            <button onclick="exportData()" style="background: var(--accent-sx); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight:bold;">CSV</button>
-            <button onclick="resetAll()" style="background: var(--warning-red); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">RESET</button>
+        <div style="font-weight:bold;">PIT: <span id="ourPitCount" style="color:var(--success); font-size:1.2em;">0</span></div>
+        <div style="display:flex; gap:5px;">
+            <button onclick="toggleTheme()" id="themeBtn" style="padding:8px; border-radius:5px; border:1px solid var(--input-border); background:var(--card-bg); color:var(--text-color); cursor:pointer;">☀️</button>
+            <button onclick="exportData()" style="background:var(--accent-sx); color:white; border:none; padding:8px 12px; border-radius:5px; font-weight:bold;">CSV</button>
+            <button onclick="resetAll()" style="background:var(--warning-red); color:white; border:none; padding:8px 12px; border-radius:5px;">RESET</button>
         </div>
     </div>
 
     <div class="grid-top">
-        <div style="display: flex; gap: 15px; flex: 1;">
+        <div style="display: flex; gap: 10px;">
             <div class="lane-container lane-sx">
                 <strong>CORSIA SX</strong>
                 <div class="kart-list" id="listSx"></div>
-                <div style="display:flex; gap:5px;">
-                    <input type="number" id="addSxN" placeholder="#" style="width:30%">
-                    <select id="addSxR" style="width:50%;">
-                        <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option>
-                        <option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
-                    </select>
-                    <button class="btn-plus" onclick="addManual('sx')" style="width:20%">+</button>
+                <div style="display:flex; gap:3px;">
+                    <input type="number" id="addSxN" placeholder="#" style="width:35%">
+                    <select id="addSxR" style="width:45%; font-size:0.7em;"><option value="missile">🚀</option><option value="prestazione">✅</option><option value="normale" selected>⚪</option><option value="lento">⚠️</option><option value="osceno">❌</option></select>
+                    <button onclick="addManual('sx')" style="width:20%; background:#e9ecef; border:none; border-radius:5px; font-weight:bold;">+</button>
                 </div>
             </div>
             <div class="lane-container lane-dx">
                 <strong>CORSIA DX</strong>
                 <div class="kart-list" id="listDx"></div>
-                <div style="display:flex; gap:5px;">
-                    <input type="number" id="addDxN" placeholder="#" style="width:30%">
-                    <select id="addDxR" style="width:50%;">
-                        <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option>
-                        <option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
-                    </select>
-                    <button class="btn-plus" onclick="addManual('dx')" style="width:20%">+</button>
+                <div style="display:flex; gap:3px;">
+                    <input type="number" id="addDxN" placeholder="#" style="width:35%">
+                    <select id="addDxR" style="width:45%; font-size:0.7em;"><option value="missile">🚀</option><option value="prestazione">✅</option><option value="normale" selected>⚪</option><option value="lento">⚠️</option><option value="osceno">❌</option></select>
+                    <button onclick="addManual('dx')" style="width:20%; background:#e9ecef; border:none; border-radius:5px; font-weight:bold;">+</button>
                 </div>
             </div>
         </div>
-        <div class="side-panel" style="display: flex; flex-direction: column;">
-            <strong>LOG LIVE</strong>
+        <div style="display:flex; flex-direction:column;">
+            <strong>LOG</strong>
             <div id="raceLog"></div>
-            <button class="btn-undo" onclick="undoLastAction()">↩ ANNULLA ULTIMA AZIONE</button>
+            <button onclick="undoLastAction()" style="width:100%; margin-top:5px; padding:10px; background:#2c2c44; color:white; border:none; border-radius:5px; font-size:0.8em; cursor:pointer;">↩ ANNULLA</button>
         </div>
     </div>
 
     <div class="control-panel">
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <label>TEAM IN ENTRATA</label>
-            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Nome o Numero...">
-            <div id="teamInfo" style="color: var(--success); font-weight: bold; min-height: 20px;"></div>
-            <select id="ratingEntry">
-                <option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option>
-                <option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option>
-            </select>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:0.8em; font-weight:bold;">TEAM ENTRANTE</label>
+            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Nome o #">
+            <div id="teamInfo" style="color:var(--success); font-size:0.8em; font-weight:bold; min-height:15px;"></div>
+            <select id="ratingEntry"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
         </div>
         <div>
-            <label>GESTIONE PIT</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
-                <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">1. Lascia a SX</button>
-                <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
-                <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
-                <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
-                <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">Drop SX</button>
+                <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">Drop DX</button>
+                <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">Take SX</button>
+                <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">Take DX</button>
+                <button id="confirmBtn" style="grid-column:span 2; background:var(--success); color:black; font-weight:bold; padding:15px; border-radius:5px; border:none; display:none; cursor:pointer;" onclick="executePit()">CONFERMA MOVIMENTO</button>
             </div>
         </div>
     </div>
 
     <div class="database-section">
-        <button onclick="addNewTeam()" style="background: #2ea44f; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">+ AGGIUNGI TEAM</button>
-        <table id="dbTable">
-            <thead><tr><th>Nome Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Azioni</th></tr></thead>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong>DATABASE TEAM</strong>
+            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:0.8em;">+ AGGIUNGI</button>
+        </div>
+        <table>
+            <thead><tr><th>Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Note Teciche</th><th></th></tr></thead>
             <tbody id="dbBody"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
-        authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
-        databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "gestione-cambi-kart---dms",
-        storageBucket: "gestione-cambi-kart---dms.firebasestorage.app",
-        messagingSenderId: "919738725367",
-        appId: "1:919738725367:web:07de82c5e4ff8b10b3f4f2"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", authDomain: "gestione-cambi-kart---dms.firebaseapp.com", databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app", projectId: "gestione-cambi-kart---dms", storageBucket: "gestione-cambi-kart---dms.firebasestorage.app", messagingSenderId: "919738725367", appId: "1:919738725367:web:07de82c5e4ff8b10b3f4f2" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [] };
@@ -178,109 +159,52 @@
 
     function toggleTheme() {
         const body = document.body;
-        const btn = document.getElementById('themeBtn');
-        if (body.classList.contains('dark-theme')) {
-            body.classList.replace('dark-theme', 'light-theme');
-            btn.innerText = "🌙 DARK MODE";
-            localStorage.setItem('theme', 'light-theme');
-        } else {
-            body.classList.replace('light-theme', 'dark-theme');
-            btn.innerText = "☀️ LIGHT MODE";
-            localStorage.setItem('theme', 'dark-theme');
-        }
+        const isDark = body.classList.contains('dark-theme');
+        body.classList.toggle('dark-theme', !isDark);
+        body.classList.toggle('light-theme', isDark);
+        localStorage.setItem('theme', isDark ? 'light-theme' : 'dark-theme');
     }
-
-    if(localStorage.getItem('theme') === 'light-theme') {
-        document.body.classList.replace('dark-theme', 'light-theme');
-        document.getElementById('themeBtn').innerText = "🌙 DARK MODE";
-    }
-
-    function checkPin(val) {
-        if (val === "123456") {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            startDatabaseSync();
-        }
-    }
+    if(localStorage.getItem('theme') === 'light-theme') { document.body.classList.replace('dark-theme', 'light-theme'); }
 
     function startDatabaseSync() {
-        db.ref('raceState').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && !isDragging) {
-                state = data;
-                render();
-            }
-        });
+        db.ref('raceState').on('value', (snap) => { if(snap.val() && !isDragging) { state = snap.val(); render(); } });
     }
 
     function save() { db.ref('raceState').set(state); }
 
-    function undoLastAction() {
-        if (!state.log || state.log.length === 0) return alert("Nessuna azione da annullare!");
-        const lastLog = state.log[state.log.length - 1];
-        if (!confirm("Annullare: " + lastLog.txt + "?")) return;
-        state.log.pop();
-        const text = lastLog.txt;
-
-        if (text.includes("-> Preso #")) {
-            const teamName = text.split(":")[0].trim();
-            const lanes = text.match(/\[(.*?)\]/)[1]; 
-            const fromLane = lanes.split("->")[0].toLowerCase();
-            const toLane = lanes.split("->")[1].toLowerCase();
-            const kartLasciato = text.split("Lasciato #")[1].split(" ")[0].trim();
-            const kartPreso = text.split("Preso #")[1].trim();
-            const team = state.teams.find(t => t.name === teamName);
-            if (team) { team.kart = kartLasciato; team.pitCount = Math.max(0, (team.pitCount || 1) - 1); }
-            const idxIn = state[fromLane].findIndex(k => k.num === kartLasciato);
-            if (idxIn !== -1) { if(team) team.rating = state[fromLane][idxIn].rating; state[fromLane].splice(idxIn, 1); }
-            state[toLane].unshift({ num: kartPreso, rating: 'normale' });
-        } 
-        else if (text.includes("[MANUAL] Spostato")) {
-            const parts = text.split(" da ")[1].split(" a ");
-            const originalLane = parts[0].split(" (pos ")[0].toLowerCase();
-            const originalPos = parseInt(parts[0].split(" (pos ")[1]) - 1;
-            const currentLane = parts[1].split(" (pos ")[0].toLowerCase();
-            const currentPos = parseInt(parts[1].split(" (pos ")[1]) - 1;
-            const kartObj = state[currentLane].splice(currentPos, 1)[0];
-            if(kartObj) state[originalLane].splice(originalPos, 0, kartObj);
-        }
-        else if (text.includes("Solo deposito") || text.includes("Aggiunto")) {
-            const num = text.split("#")[1].split(" ")[0].trim();
-            ['sx', 'dx'].forEach(l => {
-                const idx = state[l].findIndex(k => k.num === num);
-                if (idx !== -1) state[l].splice(idx, 1);
-            });
-        }
-        save(); render();
-    }
-
     function render() {
         ['sx', 'dx'].forEach(l => {
-            const listEl = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
-            listEl.innerHTML = (state[l] || []).map((k, idx) => `
-                <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}" data-idx="${idx}">
-                    <span>#${k.num}</span> 
-                    <span class="rating-badge r-${k.rating}">${k.rating}</span>
+            document.getElementById('list' + l.charAt(0).toUpperCase() + 'x').innerHTML = (state[l] || []).map((k, idx) => `
+                <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
+                    <span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
                     <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
                 </div>`).join('');
         });
+
+        // STATS DASHBOARD
+        const allKarts = [...(state.sx||[]), ...(state.dx||[])];
+        const counts = { missile:0, prestazione:0, normale:0, lento:0, osceno:0 };
+        allKarts.forEach(k => counts[k.rating]++);
+        document.getElementById('statsBar').innerHTML = `
+            <div class="stat-item" style="border-left:4px solid var(--missile)">🚀 MISSILE: ${counts.missile}</div>
+            <div class="stat-item" style="border-left:4px solid var(--success)">✅ PREST: ${counts.prestazione}</div>
+            <div class="stat-item" style="border-left:4px solid var(--lento)">⚠️ LENTO: ${counts.lento}</div>
+            <div class="stat-item" style="border-left:4px solid var(--osceno)">❌ OSCENO: ${counts.osceno}</div>
+        `;
 
         let ourPits = 0;
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => {
             if(state.ourKartId && (t.num === state.ourKartId || t.name.toLowerCase() === state.ourKartId.toLowerCase())) ourPits = t.pitCount || 0;
             return `<tr>
-                <td><input class="db-input" value="${t.name}" onchange="updateTeam(${i}, 'name', this.value)"></td>
-                <td><input class="db-input" value="${t.num}" onchange="updateTeam(${i}, 'num', this.value)"></td>
-                <td><input class="db-input" value="${t.kart}" onchange="updateTeam(${i}, 'kart', this.value)"></td>
-                <td><select class="db-input" onchange="updateTeam(${i}, 'rating', this.value)">
-                    <option value="missile" ${t.rating==='missile'?'selected':''}>Missile</option>
-                    <option value="prestazione" ${t.rating==='prestazione'?'selected':''}>Prestazione</option>
-                    <option value="normale" ${t.rating==='normale'?'selected':''}>Normale</option>
-                    <option value="lento" ${t.rating==='lento'?'selected':''}>Lento</option>
-                    <option value="osceno" ${t.rating==='osceno'?'selected':''}>Osceno</option>
+                <td><input class="note-input" style="font-weight:bold" value="${t.name}" onchange="updateTeam(${i},'name',this.value)"></td>
+                <td><input class="note-input" style="width:40px" value="${t.num}" onchange="updateTeam(${i},'num',this.value)"></td>
+                <td><input class="note-input" style="width:40px" value="${t.kart}" onchange="updateTeam(${i},'kart',this.value)"></td>
+                <td><select style="font-size:0.75em" onchange="updateTeam(${i},'rating',this.value)">
+                    <option value="missile" ${t.rating==='missile'?'selected':''}>🚀</option><option value="prestazione" ${t.rating==='prestazione'?'selected':''}>✅</option><option value="normale" ${t.rating==='normale'?'selected':''}>⚪</option><option value="lento" ${t.rating==='lento'?'selected':''}>⚠️</option><option value="osceno" ${t.rating==='osceno'?'selected':''}>❌</option>
                 </select></td>
-                <td style="text-align:center; font-weight:bold; color:var(--success);">${t.pitCount || 0}</td>
-                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer;">🗑️</button></td></tr>`;
+                <td style="font-weight:bold; color:var(--success)">${t.pitCount||0}</td>
+                <td><input class="note-input" placeholder="Aggiungi nota..." value="${t.notes||''}" onchange="updateTeam(${i},'notes',this.value)"></td>
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none;">🗑️</button></td></tr>`;
         }).join('');
 
         document.getElementById('ourPitCount').innerText = ourPits;
@@ -293,22 +217,18 @@
         sortables.forEach(s => s.destroy()); sortables = [];
         ['listSx', 'listDx'].forEach(id => {
             const el = document.getElementById(id);
-            sortables.push(new Sortable(el, {
-                group: 'lanes', animation: 150,
-                onStart: () => { isDragging = true; },
-                onEnd: (evt) => {
-                    isDragging = false;
-                    const kartNum = evt.item.dataset.num;
-                    const fromL = evt.from.id.replace('list', '').toUpperCase();
-                    const toL = evt.to.id.replace('list', '').toUpperCase();
-                    if (fromL !== toL || evt.oldIndex !== evt.newIndex) {
-                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Spostato #${kartNum} da ${fromL} (pos ${evt.oldIndex+1}) a ${toL} (pos ${evt.newIndex+1})` });
-                        state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                        state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                        save();
-                    }
+            sortables.push(new Sortable(el, { group: 'lanes', animation: 150, onStart: () => { isDragging = true; }, onEnd: (evt) => {
+                isDragging = false;
+                const kartNum = evt.item.dataset.num;
+                const fromL = evt.from.id.replace('list', '').toUpperCase();
+                const toL = evt.to.id.replace('list', '').toUpperCase();
+                if (fromL !== toL || evt.oldIndex !== evt.newIndex) {
+                    state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Spostato #${kartNum} da ${fromL} a ${toL}` });
+                    state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                    state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                    save();
                 }
-            }));
+            }}));
         });
     }
 
@@ -316,15 +236,13 @@
         const p = localPending;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
-        if(!kartIn) return alert("Inserisci il numero del kart!");
+        if(!kartIn) return alert("Manca il numero kart!");
         let logMsg = "";
-        const dropL = p.drop.toUpperCase();
-        if (p.take && state[p.take] && state[p.take].length > 0) {
-            const takeL = p.take.toUpperCase();
+        if (p.take && state[p.take].length > 0) {
             const out = state[p.take].shift();
             if(p.teamIdx !== null) { state.teams[p.teamIdx].kart = out.num; state.teams[p.teamIdx].rating = out.rating; state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1; }
-            logMsg = `${teamName}: [${dropL}->${takeL}] Lasciato #${kartIn} -> Preso #${out.num}`;
-        } else { logMsg = `${teamName}: [${dropL}] Lasciato #${kartIn} (Solo deposito)`; }
+            logMsg = `${teamName}: [${p.drop.toUpperCase()}->${p.take.toUpperCase()}] Lasciato #${kartIn} -> Preso #${out.num}`;
+        } else { logMsg = `${teamName}: [${p.drop.toUpperCase()}] Lasciato #${kartIn} (Deposito)`; }
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
@@ -332,14 +250,15 @@
         save();
     }
 
-    function addManual(l) {
-        const inputNum = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xN');
-        const inputRating = document.getElementById('add' + l.charAt(0).toUpperCase() + 'xR');
-        if(inputNum.value) {
-            state[l].push({ num: inputNum.value, rating: inputRating.value });
-            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${inputNum.value} (${inputRating.value}) in ${l.toUpperCase()}` });
-            inputNum.value = ""; save();
+    function undoLastAction() {
+        if (!state.log || state.log.length === 0) return;
+        if (!confirm("Annullare ultima azione?")) return;
+        const last = state.log.pop();
+        if (last.txt.includes("-> Preso #")) {
+            const team = state.teams.find(t => last.txt.startsWith(t.name));
+            if(team) team.pitCount = Math.max(0, team.pitCount - 1);
         }
+        save(); render();
     }
 
     function updateButtonsUI() {
@@ -361,31 +280,24 @@
         updateButtonsUI();
     }
 
-    function setPending(type, lane) {
-        if(type === 'drop') localPending.drop = (localPending.drop === lane) ? null : lane;
-        if(type === 'take') localPending.take = (localPending.take === lane) ? null : lane;
-        updateButtonsUI();
-    }
+    function setPending(type, lane) { if(type==='drop') localPending.drop = (localPending.drop===lane)?null:lane; if(type==='take') localPending.take = (localPending.take===lane)?null:lane; updateButtonsUI(); }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
-    function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0}); save(); }
+    function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0, notes:""}); save(); }
     function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
+    function addManual(l) { const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN'); const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR'); if(n.value){ state[l].push({num:n.value, rating:r.value}); n.value=""; save(); } }
     function searchKart() {
-        const val = document.getElementById('searchKartField').value.trim();
-        const res = document.getElementById('searchResult');
-        if(!val) { res.innerText = ""; return; }
-        let found = null;
-        ['sx','dx'].forEach(l => (state[l]||[]).forEach((k, i) => { if(k.num == val) found = `${l.toUpperCase()} Pos:${i+1}`; }));
-        if(!found) (state.teams||[]).forEach(t => { if(t.kart == val) found = `PISTA (${t.name})`; });
-        res.innerText = found || "NON TROVATO";
+        const v = document.getElementById('searchKartField').value.trim();
+        const res = document.getElementById('searchResult'); if(!v){res.innerText=""; return;}
+        let f = null; ['sx','dx'].forEach(l => (state[l]||[]).forEach((k,i) => {if(k.num==v) f=`${l.toUpperCase()} Pos:${i+1}`;}));
+        if(!f) (state.teams||[]).forEach(t => {if(t.kart==v) f=`PISTA (${t.name})`;});
+        res.innerText = f || "??";
     }
     function resetAll() { if(confirm("Resetta tutto?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[]}); }
     function exportData() {
-        let csv = "Ora,Evento\n";
-        (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'log_gara.csv'; a.click();
+        let csv = "Ora,Evento\n"; (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
+        const b = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'log_gara.csv'; a.click();
     }
 </script>
 </body>
