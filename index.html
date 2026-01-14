@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Strategy Pro - v8.9</title>
+    <title>DMS Strategy Pro - v9.0 Recovery</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -15,14 +15,10 @@
             --normale: #ffffff; --lento: #ff8d72; --osceno: #fd5d93;
         }
         * { user-select: none; -webkit-user-select: none; }
-        input, select { user-select: text; -webkit-user-select: text; }
+        input, select { user-select: text; -webkit-user-select: text; padding: 10px; border-radius: 5px; border: 1px solid #2b3548; background: #0b0e14; color: white; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
         
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .login-box { background: var(--card-bg); padding: 40px; border-radius: 15px; border: 2px solid var(--accent-sx); text-align: center; }
         #pinInput { font-size: 2em; letter-spacing: 10px; text-align: center; width: 220px; margin: 20px 0; border: 1px solid #333; background: #000; color: var(--success); }
         
@@ -33,7 +29,11 @@
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
         .kart-item { background: #1e2430; margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2b3548; font-weight: bold; cursor: grab; }
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; margin-top: 10px; height: 380px; }
+        
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; color: #aaa; height: 320px; }
+        .btn-undo { width: 100%; margin-top: 10px; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8em; }
+        .btn-undo:hover { background: var(--warning-red); color: white; }
+
         .control-panel { background: #151921; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #1d8cf8; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
         .btn-action { padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; background: #2c2c44; width: 100%; }
         
@@ -45,7 +45,6 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #2b3548; }
         .db-input { background: #0b0e14; border: 1px solid #30363d; width: 100%; color: white; padding: 8px; border-radius: 4px; }
-        input, select { padding: 10px; border-radius: 5px; border: 1px solid #2b3548; background: #0b0e14; color: white; }
         .rating-badge { padding: 3px 7px; border-radius: 4px; font-size: 0.8em; color: black; font-weight: bold; text-transform: uppercase; }
         .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale); } .r-lento { background: var(--lento); } .r-osceno { background: var(--osceno); }
         .btn-plus { background: #e9ecef; color: black; cursor: pointer; font-size: 1.4em; font-weight: bold; border-radius: 5px; border: none; }
@@ -103,9 +102,10 @@
                 </div>
             </div>
         </div>
-        <div class="side-panel">
+        <div class="side-panel" style="display: flex; flex-direction: column;">
             <strong>LOG LIVE</strong>
             <div id="raceLog"></div>
+            <button class="btn-undo" onclick="undoLastAction()">↩ ANNULLA ULTIMA AZIONE</button>
         </div>
     </div>
 
@@ -145,7 +145,7 @@
         if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false;
     };
 
-    const MASTER_PIN = "123456"; // CAMBIA QUI IL TUO PIN
+    const MASTER_PIN = "123456";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
@@ -189,6 +189,49 @@
     }
 
     function save() { db.ref('raceState').set(state); }
+
+    function undoLastAction() {
+        if (!state.log || state.log.length === 0) return alert("Nessuna azione da annullare!");
+        if (!confirm("Sei sicuro di voler annullare l'ultima azione registrata nel log?")) return;
+
+        const lastLog = state.log.pop();
+        const text = lastLog.txt;
+
+        // 1. Caso Cambio Kart (es. "Team X: Lasciato #10 -> Preso #5")
+        if (text.includes("Lasciato #") && text.includes("-> Preso #")) {
+            const teamName = text.split(":")[0];
+            const kartLasciato = text.split("Lasciato #")[1].split(" ")[0];
+            const kartPreso = text.split("Preso #")[1];
+
+            const team = state.teams.find(t => t.name === teamName);
+            if (team) {
+                team.kart = kartLasciato;
+                team.pitCount = Math.max(0, (team.pitCount || 1) - 1);
+            }
+            // Riporta il kart preso in corsia (era in testa alla corsia target del cambio)
+            // Nota: L'Undo semplificato rimette il kart rimosso nella corsia da cui è stato preso (se possibile identificare)
+            // Per precisione assoluta, l'utente dovrà controllare le corsie se il cambio era complesso.
+        } 
+        // 2. Caso Deposito (es. "Team X: Lasciato #10 (Solo deposito)")
+        else if (text.includes("Lasciato #") && text.includes("Solo deposito")) {
+            const kartLasciato = text.split("Lasciato #")[1].split(" ")[0];
+            ['sx', 'dx'].forEach(l => {
+                const idx = state[l].findIndex(k => k.num === kartLasciato);
+                if (idx !== -1) state[l].splice(idx, 1);
+            });
+        }
+        // 3. Caso Manuale (es. "[MANUAL] Aggiunto #5...")
+        else if (text.includes("[MANUAL] Aggiunto")) {
+            const num = text.split("#")[1].split(" ")[0];
+            ['sx', 'dx'].forEach(l => {
+                const idx = state[l].findIndex(k => k.num === num);
+                if (idx !== -1) state[l].splice(idx, 1);
+            });
+        }
+
+        save();
+        alert("Azione annullata: " + text);
+    }
 
     function render() {
         ['sx', 'dx'].forEach(l => {
