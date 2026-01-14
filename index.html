@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Strategy Pro - v9.2</title>
+    <title>DMS Strategy Pro - v9.3</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -199,44 +199,40 @@
         state.log.pop();
         const text = lastLog.txt;
 
-        // 1. CASO: CAMBIO KART (es. "Team X: Lasciato #10 -> Preso #5")
+        // 1. CASO: CAMBIO KART (es. "Team X: [SX->DX] Lasciato #10 -> Preso #5")
         if (text.includes("-> Preso #")) {
             const teamName = text.split(":")[0].trim();
+            const lanes = text.match(/\[(.*?)\]/)[1]; // Prende "SX->DX" o "SX->SX"
+            const fromLane = lanes.split("->")[0].toLowerCase(); // Dove è stato LASCIATO (#10)
+            const toLane = lanes.split("->")[1].toLowerCase();   // Da dove è stato PRESO (#5)
+            
             const kartLasciato = text.split("Lasciato #")[1].split(" ")[0].trim();
             const kartPreso = text.split("Preso #")[1].trim();
 
+            // A. Ripristino Team
             const team = state.teams.find(t => t.name === teamName);
-            
-            // Trova dove è stato depositato il kart sbagliato (#10)
-            let laneSbagliata = state.sx.some(k => k.num === kartLasciato) ? 'sx' : 'dx';
-            const idxIn = state[laneSbagliata].findIndex(k => k.num === kartLasciato);
-            
-            let oldRating = 'normale';
-            if (idxIn !== -1) {
-                oldRating = state[laneSbagliata][idxIn].rating;
-                // Rimuovi il kart lasciato (perché torna al team)
-                state[laneSbagliata].splice(idxIn, 1);
-            }
-
-            // Ripristina il team
             if (team) {
-                team.kart = kartLasciato; // Torna il vecchio kart
+                team.kart = kartLasciato;
                 team.pitCount = Math.max(0, (team.pitCount || 1) - 1);
-                // Il rating del team torna a quello del kart che aveva lasciato
-                team.rating = oldRating; 
             }
 
-            // RIMETTI IL KART PRESO (#5) IN CORSIA (in cima)
-            state[laneSbagliata].unshift({ num: kartPreso, rating: 'normale' });
+            // B. Pulizia Corsia di Destinazione (Rimuoviamo il kart lasciato #10 che torna al team)
+            const idxIn = state[fromLane].findIndex(k => k.num === kartLasciato);
+            if (idxIn !== -1) {
+                if (team) team.rating = state[fromLane][idxIn].rating; // Recupera il rating corretto
+                state[fromLane].splice(idxIn, 1);
+            }
+
+            // C. Ripristino Corsia di Origine (Rimettiamo il kart preso #5 in cima)
+            state[toLane].unshift({ num: kartPreso, rating: 'normale' });
         } 
         
-        // 2. CASO: SOLO DEPOSITO (es. "Team X: Lasciato #10 (Solo deposito)")
+        // 2. CASO: SOLO DEPOSITO (es. "Team X: [SX] Lasciato #10 (Solo deposito)")
         else if (text.includes("Solo deposito")) {
             const kartLasciato = text.split("Lasciato #")[1].split(" ")[0].trim();
-            ['sx', 'dx'].forEach(l => {
-                const idx = state[l].findIndex(k => k.num === kartLasciato);
-                if (idx !== -1) state[l].splice(idx, 1);
-            });
+            const fromLane = text.match(/\[(.*?)\]/)[1].toLowerCase();
+            const idx = state[fromLane].findIndex(k => k.num === kartLasciato);
+            if (idx !== -1) state[fromLane].splice(idx, 1);
         }
 
         // 3. CASO: AGGIUNTA MANUALE
@@ -346,15 +342,20 @@
         if(!kartIn) return alert("Inserisci il numero del kart!");
 
         let logMsg = "";
+        const dropL = p.drop.toUpperCase();
+        
         if (p.take && state[p.take] && state[p.take].length > 0) {
+            const takeL = p.take.toUpperCase();
             const out = state[p.take].shift();
             if(p.teamIdx !== null) {
                 state.teams[p.teamIdx].kart = out.num;
                 state.teams[p.teamIdx].rating = out.rating;
                 state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1;
             }
-            logMsg = `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}`;
-        } else { logMsg = `${teamName}: Lasciato #${kartIn} (Solo deposito)`; }
+            logMsg = `${teamName}: [${dropL}->${takeL}] Lasciato #${kartIn} -> Preso #${out.num}`;
+        } else { 
+            logMsg = `${teamName}: [${dropL}] Lasciato #${kartIn} (Solo deposito)`; 
+        }
 
         if(!state[p.drop]) state[p.drop] = [];
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
