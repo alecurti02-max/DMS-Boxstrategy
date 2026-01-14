@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS Strategy Pro - v9.11</title>
+    <title>DMS Strategy Pro - v9.12</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -29,7 +29,7 @@
         }
 
         * { user-select: none; -webkit-user-select: none; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; overflow-x: hidden; }
         
         #mainApp { display: none; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--input-border); }
@@ -39,7 +39,7 @@
 
         .grid-top { display: grid; grid-template-columns: 2.5fr 1fr; gap: 15px; margin-bottom: 15px; }
         .lanes-wrapper { display: flex; gap: 15px; flex: 1; }
-        .lane-container { flex: 1; height: 520px; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; position: relative; border: 1px solid var(--input-border); border-top: 6px solid #555; }
+        .lane-container { flex: 1; height: 530px; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; position: relative; border: 1px solid var(--input-border); border-top: 6px solid #555; }
         .lane-sx { border-top-color: var(--accent-sx); } .lane-dx { border-top-color: var(--accent-dx); }
         
         .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.1); border-radius: 5px; padding: 5px; margin-bottom: 60px; min-height: 100px; }
@@ -50,13 +50,12 @@
         .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; color: #000; }
         .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale-bg); color: #fff; }
         
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; height: 460px; border: 1px solid var(--input-border); color: #888; }
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; height: 470px; border: 1px solid var(--input-border); color: #888; }
         
         .control-panel { background: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         .btn-action { padding: 15px; border: none; border-radius: 5px; font-weight: bold; color: white; background: #2c2c44; text-transform: uppercase; }
         .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 15px; padding: 18px; border-radius: 5px; font-weight: bold; border: none; display: none; }
 
-        /* DATABASE */
         .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--input-border); }
         .db-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
         .db-cell { background: var(--input-bg); border: 1px solid var(--cell-border); border-radius: 4px; }
@@ -142,7 +141,7 @@
     <div class="database-section">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
             <strong>DATABASE TEAM</strong>
-            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">+ AGGIUNGI TEAM</button>
+            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold;">+ AGGIUNGI TEAM</button>
         </div>
         <table class="db-table">
             <thead><tr><th>Team</th><th># Gara</th><th>Kart attuale</th><th>Rating</th><th>Pit</th><th>Note Tecniche</th><th></th></tr></thead>
@@ -161,16 +160,6 @@
     let isDragging = false;
     let sortables = [];
 
-    function toggleTheme() {
-        const body = document.body;
-        const isDark = body.classList.contains('dark-theme');
-        body.classList.toggle('dark-theme', !isDark);
-        body.classList.toggle('light-theme', isDark);
-        document.getElementById('themeBtn').innerText = isDark ? "🌙" : "☀️";
-        localStorage.setItem('theme', isDark ? 'light-theme' : 'dark-theme');
-    }
-    if(localStorage.getItem('theme') === 'light-theme') { document.body.classList.replace('dark-theme', 'light-theme'); document.getElementById('themeBtn').innerText = "🌙"; }
-
     function startDatabaseSync() {
         db.ref('raceState').on('value', (snap) => {
             const data = snap.val();
@@ -182,12 +171,11 @@
         });
     }
 
-    function save(trackHistory = true) {
-        if(trackHistory) {
-            if(!state.history) state.history = [];
-            state.history.push(JSON.stringify({sx: state.sx, dx: state.dx, teams: state.teams, log: state.log}));
-            if(state.history.length > 30) state.history.shift();
-        }
+    function saveWithHistory() {
+        if(!state.history) state.history = [];
+        // Salviamo lo stato attuale PRIMA di modificarlo
+        state.history.push(JSON.stringify({sx: state.sx, dx: state.dx, teams: state.teams, log: state.log}));
+        if(state.history.length > 40) state.history.shift();
         db.ref('raceState').set(state);
     }
 
@@ -244,32 +232,24 @@
                     isDragging = false;
                     const fromL = evt.from.id.includes('Sx') ? 'sx' : 'dx';
                     const toL = evt.to.id.includes('Sx') ? 'sx' : 'dx';
+                    const kartNum = evt.item.dataset.num;
+                    
+                    let actionTxt = "";
                     if(fromL !== toL) {
-                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MOVE] Kart #${evt.item.dataset.num} da ${fromL.toUpperCase()} a ${toL.toUpperCase()}` });
+                        actionTxt = `[MOVE] Kart #${kartNum} da ${fromL.toUpperCase()} a ${toL.toUpperCase()}`;
+                    } else if (evt.oldIndex !== evt.newIndex) {
+                        actionTxt = `[POS] Kart #${kartNum} in ${fromL.toUpperCase()} spostato Pos ${evt.oldIndex+1} -> ${evt.newIndex+1}`;
                     }
-                    state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
-                    state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
-                    save();
+
+                    if(actionTxt) {
+                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: actionTxt });
+                        state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
+                        state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
+                        saveWithHistory();
+                    }
                 }
             }));
         });
-    }
-
-    function addManual(l) {
-        const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN');
-        const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR');
-        if(n && n.value) {
-            if(!state[l]) state[l] = [];
-            state[l].push({ num: n.value, rating: r.value });
-            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[+] Manuale: #${n.value} in ${l.toUpperCase()}` });
-            n.value = ""; save();
-        }
-    }
-
-    function addNewTeam() {
-        if(!state.teams) state.teams = [];
-        state.teams.push({name:"", num:"", kart:"", rating:"normale", pitCount:0, notes:""});
-        save();
     }
 
     function executePit() {
@@ -293,7 +273,7 @@
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
         document.getElementById('entryInput').value = "";
-        save();
+        saveWithHistory();
     }
 
     function undoLastAction() {
@@ -301,25 +281,55 @@
         if(confirm("Annullare l'ultima modifica?")) {
             const last = JSON.parse(state.history.pop());
             state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log;
-            save(false);
+            // Qui usiamo db.ref().set() diretto per non creare un nuovo salvataggio di storia
+            db.ref('raceState').set(state);
         }
     }
+
+    function addManual(l) {
+        const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN');
+        const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR');
+        if(n && n.value) {
+            state[l].push({ num: n.value, rating: r.value });
+            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[+] Manuale: #${n.value} in ${l.toUpperCase()}` });
+            n.value = ""; 
+            saveWithHistory();
+        }
+    }
+
+    function addNewTeam() {
+        if(!state.teams) state.teams = [];
+        state.teams.push({name:"", num:"", kart:"", rating:"normale", pitCount:0, notes:""});
+        saveWithHistory();
+    }
+
+    function removeKart(l, i) {
+        if(confirm("Rimuovere kart #" + state[l][i].num + "?")) {
+            state[l].splice(i,1);
+            saveWithHistory();
+        }
+    }
+
+    function updateTeam(i, f, v) { state.teams[i][f] = v; saveWithHistory(); }
+    function deleteTeam(i) { if(confirm("Eliminare?")) { state.teams.splice(i,1); saveWithHistory(); } }
+    function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); db.ref('raceState/ourKartId').set(state.ourKartId); }
 
     function setPending(type, lane) {
         if(type==='drop') localPending.drop = (localPending.drop===lane)?null:lane;
         if(type==='take') localPending.take = (localPending.take===lane)?null:lane;
         updateButtonsUI();
     }
+
     function updateButtonsUI() {
         const btnConf = document.getElementById('confirmBtn');
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => {
-            const b = document.getElementById(id);
-            if(b) b.style.background = '#2c2c44';
+            const b = document.getElementById(id); if(b) b.style.background = '#2c2c44';
         });
         if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'var(--accent-sx)':'var(--accent-dx)');
         if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'var(--accent-sx)':'var(--accent-dx)');
         btnConf.style.display = (localPending.drop) ? "block" : "none";
     }
+
     function autoFetchTeam() {
         const val = document.getElementById('entryInput').value.trim();
         const team = (state.teams || []).find(t => t.num === val || (t.name && t.name.toLowerCase().includes(val.toLowerCase())));
@@ -330,10 +340,17 @@
         } else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
         updateButtonsUI();
     }
-    function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
-    function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
-    function deleteTeam(i) { if(confirm("Eliminare?")) { state.teams.splice(i,1); save(); } }
-    function removeKart(l, i) { state[l].splice(i,1); save(); }
+
+    function toggleTheme() {
+        const body = document.body;
+        const isDark = body.classList.contains('dark-theme');
+        body.classList.toggle('dark-theme', !isDark);
+        body.classList.toggle('light-theme', isDark);
+        document.getElementById('themeBtn').innerText = isDark ? "🌙" : "☀️";
+        localStorage.setItem('theme', isDark ? 'light-theme' : 'dark-theme');
+    }
+    if(localStorage.getItem('theme') === 'light-theme') { document.body.classList.replace('dark-theme', 'light-theme'); document.getElementById('themeBtn').innerText = "🌙"; }
+
     function searchKart() {
         const v = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult'); if(!v){res.innerText=""; return;}
@@ -341,6 +358,7 @@
         if(!f) (state.teams||[]).forEach(t => {if(t.kart==v) f=`PISTA (${t.name})`;});
         res.innerText = f || "??";
     }
+
     function resetAll() { if(confirm("Reset Totale?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[], history:[]}); }
     function exportData() {
         let csv = "Ora,Azione\n"; (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
