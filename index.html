@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>DMS Strategy Pro - v9.7</title>
+    <title>DMS Strategy Pro - v9.8</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -31,36 +30,46 @@
         }
 
         * { user-select: none; -webkit-user-select: none; box-sizing: border-box; }
-        input, select { user-select: text; -webkit-user-select: text; padding: 10px; border-radius: 5px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: background 0.3s; overflow-x: hidden; }
+        input, select, button { cursor: pointer; }
+        input[type="text"], input[type="number"], input[type="password"] { cursor: text; user-select: text; -webkit-user-select: text; padding: 10px; border-radius: 5px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); }
+        
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: background 0.3s; }
         
         #mainApp { display: none; padding: 10px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--input-border); }
 
-        /* DASHBOARD STATS */
-        .stats-bar { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .stat-item { background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--input-border); white-space: nowrap; font-size: 0.8em; font-weight: bold; }
+        .stats-bar { display: flex; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; }
+        .stat-item { background: var(--card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--input-border); font-size: 0.8em; font-weight: bold; }
 
         .grid-top { display: grid; grid-template-columns: 2.5fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 400px; }
-        .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         
-        /* ALERT PROSSIMO KART */
-        .kart-list .kart-item:first-child { border: 2px solid var(--success) !important; animation: pulse-border 1.5s infinite; }
-        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0px rgba(0, 242, 195, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 242, 195, 0); } 100% { box-shadow: 0 0 0 0px rgba(0, 242, 195, 0); } }
+        /* BOX CORSIE FISSI */
+        .lane-container { 
+            height: 450px; background: var(--card-bg); border-radius: 10px; padding: 12px; 
+            display: flex; flex-direction: column; border-top: 5px solid #555; position: relative;
+        }
+        .lane-sx { border-color: var(--accent-sx); } 
+        .lane-dx { border-color: var(--accent-dx); }
+        
+        .kart-list { flex: 1; overflow-y: auto; margin-bottom: 50px; padding: 5px; background: rgba(0,0,0,0.05); border-radius: 5px; }
+        
+        /* SELETTORE AL FONDO */
+        .lane-adder { 
+            position: absolute; bottom: 12px; left: 12px; right: 12px;
+            display: flex; gap: 5px; background: var(--card-bg); padding-top: 5px;
+        }
 
-        .kart-item { background: var(--card-bg); margin-bottom: 6px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; }
+        .kart-item { background: var(--card-bg); margin-bottom: 6px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; }
         .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; color: #000; }
-        .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale-bg); color: #fff; }
-        
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.8em; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; height: 350px; }
-        .control-panel { background: var(--card-bg); padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 1.5fr; gap: 15px; }
-        
-        .database-section { background: var(--card-bg); padding: 15px; border-radius: 10px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-        th, td { padding: 10px; border-bottom: 1px solid var(--row-border); }
-        .note-input { width: 100%; border: none; background: transparent; color: var(--text-color); font-style: italic; font-size: 0.85em; }
+        .r-normale { background: var(--normale-bg); color: #fff !important; }
 
+        /* TASTI PIT - RIPRISTINO GRAFICA V1 */
+        .control-panel { background: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
+        .btn-action { padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; background: #2c2c44; width: 100%; text-transform: uppercase; }
+        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 10px; padding: 18px; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; display: none; }
+
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.8em; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px; height: 380px; }
+        
         #loginOverlay { position: fixed; inset: 0; background: #0b0e14; z-index: 9999; display: flex; justify-content: center; align-items: center; }
     </style>
 </head>
@@ -68,8 +77,8 @@
 
 <div id="loginOverlay">
     <div style="text-align:center; background:#151921; padding:40px; border-radius:15px; border:2px solid var(--accent-sx);">
-        <h2 style="color:var(--accent-sx)">DMS STRATEGY PRO</h2>
-        <input type="password" id="pinInput" maxlength="6" style="font-size:2em; text-align:center; width:200px;" onkeyup="if(this.value==='123456'){document.getElementById('loginOverlay').style.display='none';document.getElementById('mainApp').style.display='block';startDatabaseSync();}">
+        <h2 style="color:var(--accent-sx)">DMS STRATEGY</h2>
+        <input type="password" id="pinInput" maxlength="6" style="font-size:2em; text-align:center; width:200px;" onkeyup="checkPin(this.value)">
     </div>
 </div>
 
@@ -79,14 +88,14 @@
     <div class="header">
         <div>
             KART: <input type="text" id="ourKartId" style="width: 60px;" oninput="updateOurKartLocal()">
-            <input type="text" id="searchKartField" placeholder="Cerca #" oninput="searchKart()" style="width:80px; margin-left:10px;">
-            <span id="searchResult" style="margin-left:5px; font-weight:bold; color:var(--success)"></span>
+            <input type="text" id="searchKartField" placeholder="Cerca #" oninput="searchKart()" style="width:80px; margin-left:15px;">
+            <span id="searchResult" style="margin-left:5px; font-weight:bold; color:var(--accent-sx)"></span>
         </div>
-        <div style="font-weight:bold;">PIT: <span id="ourPitCount" style="color:var(--success); font-size:1.2em;">0</span></div>
-        <div style="display:flex; gap:5px;">
-            <button onclick="toggleTheme()" id="themeBtn" style="padding:8px; border-radius:5px; border:1px solid var(--input-border); background:var(--card-bg); color:var(--text-color); cursor:pointer;">☀️</button>
-            <button onclick="exportData()" style="background:var(--accent-sx); color:white; border:none; padding:8px 12px; border-radius:5px; font-weight:bold;">CSV</button>
-            <button onclick="resetAll()" style="background:var(--warning-red); color:white; border:none; padding:8px 12px; border-radius:5px;">RESET</button>
+        <div style="font-weight:bold; font-size: 1.3em;">PIT: <span id="ourPitCount" style="color:var(--success)">0</span></div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="toggleTheme()" id="themeBtn" style="padding:8px 12px; border-radius:5px; border:1px solid var(--input-border); background:var(--card-bg); font-size:1.2em;">☀️</button>
+            <button onclick="exportData()" style="background:var(--accent-sx); color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">CSV</button>
+            <button onclick="resetAll()" style="background:var(--warning-red); color:white; border:none; padding:8px 15px; border-radius:5px;">RESET</button>
         </div>
     </div>
 
@@ -95,54 +104,52 @@
             <div class="lane-container lane-sx">
                 <strong>CORSIA SX</strong>
                 <div class="kart-list" id="listSx"></div>
-                <div style="display:flex; gap:3px;">
-                    <input type="number" id="addSxN" placeholder="#" style="width:35%">
-                    <select id="addSxR" style="width:45%; font-size:0.7em;"><option value="missile">🚀</option><option value="prestazione">✅</option><option value="normale" selected>⚪</option><option value="lento">⚠️</option><option value="osceno">❌</option></select>
-                    <button onclick="addManual('sx')" style="width:20%; background:#e9ecef; border:none; border-radius:5px; font-weight:bold;">+</button>
+                <div class="lane-adder">
+                    <input type="number" id="addSxN" placeholder="#" style="width:30%">
+                    <select id="addSxR" style="width:50%;"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
+                    <button onclick="addManual('sx')" style="width:20%; background:#e9ecef; border:none; border-radius:5px; font-weight:bold; color:black;">+</button>
                 </div>
             </div>
             <div class="lane-container lane-dx">
                 <strong>CORSIA DX</strong>
                 <div class="kart-list" id="listDx"></div>
-                <div style="display:flex; gap:3px;">
-                    <input type="number" id="addDxN" placeholder="#" style="width:35%">
-                    <select id="addDxR" style="width:45%; font-size:0.7em;"><option value="missile">🚀</option><option value="prestazione">✅</option><option value="normale" selected>⚪</option><option value="lento">⚠️</option><option value="osceno">❌</option></select>
-                    <button onclick="addManual('dx')" style="width:20%; background:#e9ecef; border:none; border-radius:5px; font-weight:bold;">+</button>
+                <div class="lane-adder">
+                    <input type="number" id="addDxN" placeholder="#" style="width:30%">
+                    <select id="addDxR" style="width:50%;"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
+                    <button onclick="addManual('dx')" style="width:20%; background:#e9ecef; border:none; border-radius:5px; font-weight:bold; color:black;">+</button>
                 </div>
             </div>
         </div>
         <div style="display:flex; flex-direction:column;">
-            <strong>LOG</strong>
+            <strong>LOG LIVE</strong>
             <div id="raceLog"></div>
-            <button onclick="undoLastAction()" style="width:100%; margin-top:5px; padding:10px; background:#2c2c44; color:white; border:none; border-radius:5px; font-size:0.8em; cursor:pointer;">↩ ANNULLA</button>
+            <button onclick="undoLastAction()" style="width:100%; margin-top:8px; padding:12px; background:#2c2c44; color:white; border:none; border-radius:5px; font-weight:bold;">↩ ANNULLA ULTIMA AZIONE</button>
         </div>
     </div>
 
     <div class="control-panel">
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.8em; font-weight:bold;">TEAM ENTRANTE</label>
-            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Nome o #">
-            <div id="teamInfo" style="color:var(--success); font-size:0.8em; font-weight:bold; min-height:15px;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <label style="font-weight:bold;">TEAM IN ENTRATA</label>
+            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Nome o Numero...">
+            <div id="teamInfo" style="color:var(--success); font-weight:bold; min-height:20px;"></div>
             <select id="ratingEntry"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
         </div>
         <div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">Drop SX</button>
-                <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">Drop DX</button>
-                <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">Take SX</button>
-                <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">Take DX</button>
-                <button id="confirmBtn" style="grid-column:span 2; background:var(--success); color:black; font-weight:bold; padding:15px; border-radius:5px; border:none; display:none; cursor:pointer;" onclick="executePit()">CONFERMA MOVIMENTO</button>
+            <label style="font-weight:bold;">GESTIONE PIT</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+                <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">1. Lascia a SX</button>
+                <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">1. Lascia a DX</button>
+                <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">2. Prendi da SX</button>
+                <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">2. Prendi da DX</button>
+                <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
             </div>
         </div>
     </div>
 
-    <div class="database-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <strong>DATABASE TEAM</strong>
-            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:0.8em;">+ AGGIUNGI</button>
-        </div>
-        <table>
-            <thead><tr><th>Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Note Teciche</th><th></th></tr></thead>
+    <div class="database-section" style="background:var(--card-bg); padding:15px; border-radius:10px;">
+        <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold;">+ AGGIUNGI TEAM</button>
+        <table style="width:100%; margin-top:15px; border-collapse:collapse;">
+            <thead><tr style="text-align:left; border-bottom:1px solid var(--input-border);"><th>Team</th><th>#</th><th>Kart</th><th>Rating</th><th>Pit</th><th>Note</th><th></th></tr></thead>
             <tbody id="dbBody"></tbody>
         </table>
     </div>
@@ -157,14 +164,22 @@
     let isDragging = false;
     let sortables = [];
 
+    function checkPin(val) { if(val === "123456") { document.getElementById('loginOverlay').style.display='none'; document.getElementById('mainApp').style.display='block'; startDatabaseSync(); } }
+
     function toggleTheme() {
         const body = document.body;
-        const isDark = body.classList.contains('dark-theme');
-        body.classList.toggle('dark-theme', !isDark);
-        body.classList.toggle('light-theme', isDark);
-        localStorage.setItem('theme', isDark ? 'light-theme' : 'dark-theme');
+        const btn = document.getElementById('themeBtn');
+        if(body.classList.contains('dark-theme')) {
+            body.classList.replace('dark-theme', 'light-theme');
+            btn.innerText = "🌙";
+            localStorage.setItem('theme', 'light-theme');
+        } else {
+            body.classList.replace('light-theme', 'dark-theme');
+            btn.innerText = "☀️";
+            localStorage.setItem('theme', 'dark-theme');
+        }
     }
-    if(localStorage.getItem('theme') === 'light-theme') { document.body.classList.replace('dark-theme', 'light-theme'); }
+    if(localStorage.getItem('theme') === 'light-theme') { document.body.classList.replace('dark-theme', 'light-theme'); document.getElementById('themeBtn').innerText = "🌙"; }
 
     function startDatabaseSync() {
         db.ref('raceState').on('value', (snap) => { if(snap.val() && !isDragging) { state = snap.val(); render(); } });
@@ -177,14 +192,12 @@
             document.getElementById('list' + l.charAt(0).toUpperCase() + 'x').innerHTML = (state[l] || []).map((k, idx) => `
                 <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
                     <span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
-                    <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
+                    <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray;">x</button>
                 </div>`).join('');
         });
 
-        // STATS DASHBOARD
-        const allKarts = [...(state.sx||[]), ...(state.dx||[])];
         const counts = { missile:0, prestazione:0, normale:0, lento:0, osceno:0 };
-        allKarts.forEach(k => counts[k.rating]++);
+        [...(state.sx||[]), ...(state.dx||[])].forEach(k => counts[k.rating]++);
         document.getElementById('statsBar').innerHTML = `
             <div class="stat-item" style="border-left:4px solid var(--missile)">🚀 MISSILE: ${counts.missile}</div>
             <div class="stat-item" style="border-left:4px solid var(--success)">✅ PREST: ${counts.prestazione}</div>
@@ -195,15 +208,15 @@
         let ourPits = 0;
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => {
             if(state.ourKartId && (t.num === state.ourKartId || t.name.toLowerCase() === state.ourKartId.toLowerCase())) ourPits = t.pitCount || 0;
-            return `<tr>
-                <td><input class="note-input" style="font-weight:bold" value="${t.name}" onchange="updateTeam(${i},'name',this.value)"></td>
-                <td><input class="note-input" style="width:40px" value="${t.num}" onchange="updateTeam(${i},'num',this.value)"></td>
-                <td><input class="note-input" style="width:40px" value="${t.kart}" onchange="updateTeam(${i},'kart',this.value)"></td>
-                <td><select style="font-size:0.75em" onchange="updateTeam(${i},'rating',this.value)">
+            return `<tr style="border-bottom:1px solid var(--row-border);">
+                <td><input style="border:none; background:transparent; color:var(--text-color); font-weight:bold;" value="${t.name}" onchange="updateTeam(${i},'name',this.value)"></td>
+                <td><input style="width:40px; border:none; background:transparent; color:var(--text-color);" value="${t.num}" onchange="updateTeam(${i},'num',this.value)"></td>
+                <td><input style="width:40px; border:none; background:transparent; color:var(--text-color);" value="${t.kart}" onchange="updateTeam(${i},'kart',this.value)"></td>
+                <td><select onchange="updateTeam(${i},'rating',this.value)">
                     <option value="missile" ${t.rating==='missile'?'selected':''}>🚀</option><option value="prestazione" ${t.rating==='prestazione'?'selected':''}>✅</option><option value="normale" ${t.rating==='normale'?'selected':''}>⚪</option><option value="lento" ${t.rating==='lento'?'selected':''}>⚠️</option><option value="osceno" ${t.rating==='osceno'?'selected':''}>❌</option>
                 </select></td>
                 <td style="font-weight:bold; color:var(--success)">${t.pitCount||0}</td>
-                <td><input class="note-input" placeholder="Aggiungi nota..." value="${t.notes||''}" onchange="updateTeam(${i},'notes',this.value)"></td>
+                <td><input style="border:none; background:transparent; color:var(--text-color); font-style:italic;" placeholder="..." value="${t.notes||''}" onchange="updateTeam(${i},'notes',this.value)"></td>
                 <td><button onclick="deleteTeam(${i})" style="border:none; background:none;">🗑️</button></td></tr>`;
         }).join('');
 
@@ -217,19 +230,27 @@
         sortables.forEach(s => s.destroy()); sortables = [];
         ['listSx', 'listDx'].forEach(id => {
             const el = document.getElementById(id);
-            sortables.push(new Sortable(el, { group: 'lanes', animation: 150, onStart: () => { isDragging = true; }, onEnd: (evt) => {
+            sortables.push(new Sortable(el, { group: 'lanes', animation: 150, onStart: () => { isDragging = true; }, onEnd: () => {
                 isDragging = false;
-                const kartNum = evt.item.dataset.num;
-                const fromL = evt.from.id.replace('list', '').toUpperCase();
-                const toL = evt.to.id.replace('list', '').toUpperCase();
-                if (fromL !== toL || evt.oldIndex !== evt.newIndex) {
-                    state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Spostato #${kartNum} da ${fromL} a ${toL}` });
-                    state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                    state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
-                    save();
-                }
+                state.sx = Array.from(document.getElementById('listSx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                state.dx = Array.from(document.getElementById('listDx').children).map(el => ({ num: el.dataset.num, rating: el.dataset.rating }));
+                save();
             }}));
         });
+    }
+
+    function setPending(type, lane) {
+        if(type==='drop') localPending.drop = (localPending.drop===lane)?null:lane;
+        if(type==='take') localPending.take = (localPending.take===lane)?null:lane;
+        updateButtonsUI();
+    }
+
+    function updateButtonsUI() {
+        const btnConf = document.getElementById('confirmBtn');
+        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
+        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'var(--accent-sx)':'var(--accent-dx)');
+        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'var(--accent-sx)':'var(--accent-dx)');
+        btnConf.style.display = (localPending.drop) ? "block" : "none";
     }
 
     function executePit() {
@@ -237,12 +258,15 @@
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
         if(!kartIn) return alert("Manca il numero kart!");
+        
         let logMsg = "";
-        if (p.take && state[p.take].length > 0) {
+        if (p.take && state[p.take] && state[p.take].length > 0) {
             const out = state[p.take].shift();
             if(p.teamIdx !== null) { state.teams[p.teamIdx].kart = out.num; state.teams[p.teamIdx].rating = out.rating; state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1; }
             logMsg = `${teamName}: [${p.drop.toUpperCase()}->${p.take.toUpperCase()}] Lasciato #${kartIn} -> Preso #${out.num}`;
         } else { logMsg = `${teamName}: [${p.drop.toUpperCase()}] Lasciato #${kartIn} (Deposito)`; }
+        
+        if(!state[p.drop]) state[p.drop] = [];
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
@@ -250,23 +274,21 @@
         save();
     }
 
+    function addManual(l) {
+        const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN');
+        const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR');
+        if(n.value) {
+            if(!state[l]) state[l] = [];
+            state[l].push({ num: n.value, rating: r.value });
+            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[MANUAL] Aggiunto #${n.value} (${r.value}) in ${l.toUpperCase()}` });
+            n.value = ""; save();
+        }
+    }
+
     function undoLastAction() {
         if (!state.log || state.log.length === 0) return;
         if (!confirm("Annullare ultima azione?")) return;
-        const last = state.log.pop();
-        if (last.txt.includes("-> Preso #")) {
-            const team = state.teams.find(t => last.txt.startsWith(t.name));
-            if(team) team.pitCount = Math.max(0, team.pitCount - 1);
-        }
-        save(); render();
-    }
-
-    function updateButtonsUI() {
-        const btnConf = document.getElementById('confirmBtn');
-        ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => document.getElementById(id).style.background = '#2c2c44');
-        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'#1d8cf8':'#fd5d93');
-        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'#1d8cf8':'#fd5d93');
-        btnConf.style.display = (localPending.drop) ? "block" : "none";
+        state.log.pop(); save();
     }
 
     function autoFetchTeam() {
@@ -280,13 +302,11 @@
         updateButtonsUI();
     }
 
-    function setPending(type, lane) { if(type==='drop') localPending.drop = (localPending.drop===lane)?null:lane; if(type==='take') localPending.take = (localPending.take===lane)?null:lane; updateButtonsUI(); }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); save(); }
     function updateTeam(i, f, v) { state.teams[i][f] = v; save(); }
     function addNewTeam() { if(!state.teams) state.teams = []; state.teams.push({name:"Nuovo", num:"", kart:"", rating:"normale", pitCount:0, notes:""}); save(); }
     function deleteTeam(i) { if(confirm("Elimina?")) { state.teams.splice(i,1); save(); } }
     function removeKart(l, i) { state[l].splice(i,1); save(); }
-    function addManual(l) { const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN'); const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR'); if(n.value){ state[l].push({num:n.value, rating:r.value}); n.value=""; save(); } }
     function searchKart() {
         const v = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult'); if(!v){res.innerText=""; return;}
