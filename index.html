@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Strategy Pro - v9.1 Full Recovery</title>
+    <title>DMS Strategy Pro - v9.2</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -206,27 +206,28 @@
             const kartPreso = text.split("Preso #")[1].trim();
 
             const team = state.teams.find(t => t.name === teamName);
-            let ratingPreso = 'normale';
-
-            // Individua in quale corsia è finito il kart lasciato per errore
-            let laneToClean = state.sx.some(k => k.num === kartLasciato) ? 'sx' : 'dx';
-
-            // Rimuovi il kart lasciato (quello entrato per errore)
-            const idxIn = state[laneToClean].findIndex(k => k.num === kartLasciato);
+            
+            // Trova dove è stato depositato il kart sbagliato (#10)
+            let laneSbagliata = state.sx.some(k => k.num === kartLasciato) ? 'sx' : 'dx';
+            const idxIn = state[laneSbagliata].findIndex(k => k.num === kartLasciato);
+            
+            let oldRating = 'normale';
             if (idxIn !== -1) {
-                ratingPreso = state[laneToClean][idxIn].rating; // Mantiene il rating assegnato al kart sbagliato
-                state[laneToClean].splice(idxIn, 1);
+                oldRating = state[laneSbagliata][idxIn].rating;
+                // Rimuovi il kart lasciato (perché torna al team)
+                state[laneSbagliata].splice(idxIn, 1);
             }
 
             // Ripristina il team
             if (team) {
-                team.kart = kartLasciato;
+                team.kart = kartLasciato; // Torna il vecchio kart
                 team.pitCount = Math.max(0, (team.pitCount || 1) - 1);
+                // Il rating del team torna a quello del kart che aveva lasciato
+                team.rating = oldRating; 
             }
 
-            // RIMETTI IL KART PRESO IN CORSIA (in cima)
-            // Usiamo la corsia 'laneToClean' per semplicità o inverti se sai la corsia di take
-            state[laneToClean].unshift({ num: kartPreso, rating: ratingPreso });
+            // RIMETTI IL KART PRESO (#5) IN CORSIA (in cima)
+            state[laneSbagliata].unshift({ num: kartPreso, rating: 'normale' });
         } 
         
         // 2. CASO: SOLO DEPOSITO (es. "Team X: Lasciato #10 (Solo deposito)")
