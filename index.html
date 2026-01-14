@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS Strategy Pro - v9.13</title>
+    <title>DMS Strategy Pro - v9.14</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -28,12 +28,13 @@
             --cell-border: #d1d8e0;
         }
 
+        /* Transizioni fluide */
         * { 
-            user-select: none; -webkit-user-select: none; box-sizing: border-box; 
-            transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+            box-sizing: border-box; 
+            transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
         }
         
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; user-select: none; -webkit-user-select: none; }
         
         #mainApp { display: none; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--input-border); }
@@ -44,13 +45,29 @@
         .grid-top { display: grid; grid-template-columns: 2.5fr 1fr; gap: 15px; margin-bottom: 15px; }
         .lanes-wrapper { display: flex; gap: 15px; flex: 1; }
         .lane-container { flex: 1; height: 530px; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; position: relative; border: 1px solid var(--input-border); border-top: 6px solid #555; }
-        .lane-sx { border-top-color: var(--accent-sx); } .lane-dx { border-top-color: var(--accent-dx); }
+        .lane-sx { border-top-color: var(--accent-sx); } 
+        .lane-dx { border-top-color: var(--accent-dx); }
         
         .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.1); border-radius: 5px; padding: 5px; margin-bottom: 60px; min-height: 100px; }
         
         .lane-adder { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; gap: 5px; background: var(--card-bg); padding-top: 10px; border-top: 1px solid var(--input-border); }
 
-        .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; }
+        .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; position: relative; }
+        
+        /* EVIDENZIAZIONE PROSSIMO KART */
+        .next-up-sx { 
+            border: 2px solid var(--accent-sx) !important; 
+            box-shadow: 0 0 15px rgba(29, 140, 248, 0.4);
+            animation: pulse-sx 2s infinite;
+        }
+        .next-up-dx { 
+            border: 2px solid var(--accent-dx) !important; 
+            box-shadow: 0 0 15px rgba(253, 93, 147, 0.4);
+            animation: pulse-dx 2s infinite;
+        }
+        @keyframes pulse-sx { 0% { border-color: var(--accent-sx); } 50% { border-color: #fff; } 100% { border-color: var(--accent-sx); } }
+        @keyframes pulse-dx { 0% { border-color: var(--accent-dx); } 50% { border-color: #fff; } 100% { border-color: var(--accent-dx); } }
+
         .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; color: #000; }
         .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale-bg); color: #fff; }
         
@@ -98,7 +115,7 @@
     <div class="grid-top">
         <div class="lanes-wrapper">
             <div class="lane-container lane-sx">
-                <strong>CORSIA SX</strong>
+                <strong>CORSIA SX (PROSSIMO IN ALTO)</strong>
                 <div class="kart-list" id="listSx"></div>
                 <div class="lane-adder">
                     <input type="number" id="addSxN" placeholder="#" style="width:30%;">
@@ -107,7 +124,7 @@
                 </div>
             </div>
             <div class="lane-container lane-dx">
-                <strong>CORSIA DX</strong>
+                <strong>CORSIA DX (PROSSIMO IN ALTO)</strong>
                 <div class="kart-list" id="listDx"></div>
                 <div class="lane-adder">
                     <input type="number" id="addDxN" placeholder="#" style="width:30%;">
@@ -175,7 +192,6 @@
         });
     }
 
-    // NUOVO SISTEMA DI SALVATAGGIO: Salva la storia PRIMA dell'azione
     function pushHistory() {
         if(!state.history) state.history = [];
         state.history.push(JSON.stringify({
@@ -184,7 +200,7 @@
             teams: JSON.parse(JSON.stringify(state.teams)), 
             log: [...state.log]
         }));
-        if(state.history.length > 40) state.history.shift();
+        if(state.history.length > 50) state.history.shift();
     }
 
     function save() { db.ref('raceState').set(state); }
@@ -192,11 +208,16 @@
     function render() {
         ['sx', 'dx'].forEach(l => {
             const list = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
-            list.innerHTML = (state[l] || []).map((k, idx) => `
-                <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
-                    <span>#${k.num}</span> <span class="rating-badge r-${k.rating}">${k.rating}</span>
+            list.innerHTML = (state[l] || []).map((k, idx) => {
+                // Evidenzia solo il primo (index 0)
+                const highlightClass = (idx === 0) ? `next-up-${l}` : '';
+                return `
+                <div class="kart-item ${highlightClass}" data-num="${k.num}" data-rating="${k.rating}">
+                    <span>${idx === 0 ? '➡ ' : ''}#${k.num}</span> 
+                    <span class="rating-badge r-${k.rating}">${k.rating}</span>
                     <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         });
 
         const counts = { missile:0, prestazione:0, normale:0, lento:0, osceno:0 };
@@ -252,7 +273,7 @@
                     }
 
                     if(actionTxt) {
-                        pushHistory(); // Salva lo stato prima dello spostamento
+                        pushHistory();
                         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: actionTxt });
                         state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
@@ -269,7 +290,7 @@
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
         if(!kartIn) return alert("Inserire numero kart!");
 
-        pushHistory(); // Salva prima del pit
+        pushHistory();
 
         let logMsg = "";
         if (p.take && state[p.take] && state[p.take].length > 0) {
@@ -294,7 +315,7 @@
         if(confirm("Annullare l'ultima modifica?")) {
             const last = JSON.parse(state.history.pop());
             state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log;
-            db.ref('raceState').set(state); // Salva lo stato ripristinato senza generare nuova storia
+            db.ref('raceState').set(state);
         }
     }
 
@@ -305,8 +326,7 @@
             pushHistory();
             state[l].push({ num: n.value, rating: r.value });
             state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[+] Manuale: #${n.value} in ${l.toUpperCase()}` });
-            n.value = ""; 
-            save();
+            n.value = ""; save();
         }
     }
 
@@ -320,8 +340,7 @@
     function removeKart(l, i) {
         if(confirm("Rimuovere kart #" + state[l][i].num + "?")) {
             pushHistory();
-            state[l].splice(i,1);
-            save();
+            state[l].splice(i,1); save();
         }
     }
 
