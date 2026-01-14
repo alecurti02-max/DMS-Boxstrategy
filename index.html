@@ -3,47 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Strategy Pro - v9.5</title>
+    <title>DMS Strategy Pro - v9.6</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        /* DEFINIZIONE TEMI */
         :root {
             --accent-sx: #1d8cf8; --accent-dx: #fd5d93; --success: #00f2c3;
             --warning-red: #ff4757; --missile: #ffdf00; --prestazione: #00f2c3; 
             --lento: #ff8d72; --osceno: #fd5d93;
         }
 
+        /* TEMA SCURO */
         body.dark-theme {
             --bg-color: #0b0e14; --card-bg: #151921; --text-color: #e9ecef;
-            --input-bg: #0b0e14; --input-border: #2b3548; --normale: #ffffff;
-            --row-border: #2b3548; --log-text: #aaa;
+            --input-bg: #0b0e14; --input-border: #2b3548; --normale-bg: #34495e;
+            --row-border: #2b3548; --log-text: #aaa; --badge-text: #000;
         }
 
+        /* TEMA CHIARO */
         body.light-theme {
             --bg-color: #f4f7f6; --card-bg: #ffffff; --text-color: #2d3436;
-            --input-bg: #ffffff; --input-border: #dfe6e9; --normale: #2d3436;
-            --row-border: #dfe6e9; --log-text: #636e72;
+            --input-bg: #ffffff; --input-border: #dfe6e9; --normale-bg: #bdc3c7;
+            --row-border: #dfe6e9; --log-text: #636e72; --badge-text: #000;
         }
 
         * { user-select: none; -webkit-user-select: none; box-sizing: border-box; }
         input, select { user-select: text; -webkit-user-select: text; padding: 10px; border-radius: 5px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: background 0.3s, color 0.3s; }
         
-        /* LOGIN */
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0e14; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .login-box { background: #151921; padding: 40px; border-radius: 15px; border: 2px solid var(--accent-sx); text-align: center; }
         #pinInput { font-size: 2em; letter-spacing: 10px; text-align: center; width: 220px; margin: 20px 0; border: 1px solid #333; background: #000; color: var(--success); }
         
         #mainApp { display: none; padding: 15px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--input-border); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        /* TEMA TOGGLE */
         .theme-switch { background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-color); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.8em; }
 
         .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 380px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .lane-container { flex: 1; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; border-top: 5px solid #555; min-height: 380px; }
         .lane-sx { border-color: var(--accent-sx); } .lane-dx { border-color: var(--accent-dx); }
         .kart-list { flex: 1; min-height: 250px; background: rgba(0,0,0,0.05); border-radius: 5px; padding: 10px; margin-bottom: 10px; }
         .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; }
@@ -59,8 +57,14 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--row-border); }
         
-        .rating-badge { padding: 3px 7px; border-radius: 4px; font-size: 0.8em; color: black; font-weight: bold; text-transform: uppercase; }
-        .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale); border: 1px solid #ccc; } .r-lento { background: var(--lento); } .r-osceno { background: var(--osceno); }
+        /* FIX BADGES: Testo nero per i colori chiari, bianco per Normale nel dark */
+        .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #000; }
+        .r-missile { background: var(--missile); } 
+        .r-prestazione { background: var(--prestazione); } 
+        .r-lento { background: var(--lento); } 
+        .r-osceno { background: var(--osceno); }
+        .r-normale { background: var(--normale-bg); color: #fff; } /* Testo sempre bianco su sfondo neutro */
+        
         .btn-plus { background: #e9ecef; color: black; cursor: pointer; font-size: 1.4em; border-radius: 5px; border: none; }
     </style>
 </head>
@@ -172,7 +176,6 @@
     let isDragging = false;
     let sortables = [];
 
-    // TEMA
     function toggleTheme() {
         const body = document.body;
         const btn = document.getElementById('themeBtn');
@@ -187,7 +190,6 @@
         }
     }
 
-    // Carica tema salvato
     if(localStorage.getItem('theme') === 'light-theme') {
         document.body.classList.replace('dark-theme', 'light-theme');
         document.getElementById('themeBtn').innerText = "🌙 DARK MODE";
