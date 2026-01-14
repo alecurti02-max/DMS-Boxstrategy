@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS Strategy Pro - v9.15 Mobile Opt</title>
+    <title>DMS Strategy Pro - v9.14</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -28,166 +28,150 @@
             --cell-border: #d1d8e0;
         }
 
+        /* Transizioni fluide */
         * { 
             box-sizing: border-box; 
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
         }
         
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; user-select: none; -webkit-user-select: none; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; user-select: none; -webkit-user-select: none; }
         
-        #mainApp { display: none; padding: 8px; }
+        #mainApp { display: none; padding: 15px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--input-border); }
+        
+        input, select, button { cursor: pointer; }
+        input[type="text"], input[type="number"], input[type="password"] { cursor: text; user-select: text; -webkit-user-select: text; }
 
-        /* HEADER & STATS COMPATTI */
-        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 10px; }
-        .stat-box { font-size: 0.65em; padding: 6px 2px; text-align: center; border-radius: 4px; font-weight: bold; background: var(--card-bg); border-bottom: 3px solid #555; }
-
-        .header-mobile { display: flex; flex-wrap: wrap; gap: 8px; background: var(--card-bg); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--input-border); font-size: 0.9em; }
-        
-        /* GRIGLIA PRINCIPALE MOBILE: SX e DX AFFIANCATE */
-        .grid-top { display: flex; flex-direction: column; gap: 10px; }
-        .lanes-wrapper { display: flex; gap: 8px; width: 100%; }
-        
-        .lane-container { 
-            flex: 1; 
-            min-width: 0; /* evita overflow */
-            height: 400px; 
-            background: var(--card-bg); 
-            border-radius: 10px; 
-            padding: 8px; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
-            border: 1px solid var(--input-border); 
-            border-top: 5px solid #555; 
-        }
+        .grid-top { display: grid; grid-template-columns: 2.5fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .lanes-wrapper { display: flex; gap: 15px; flex: 1; }
+        .lane-container { flex: 1; height: 530px; background: var(--card-bg); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; position: relative; border: 1px solid var(--input-border); border-top: 6px solid #555; }
         .lane-sx { border-top-color: var(--accent-sx); } 
         .lane-dx { border-top-color: var(--accent-dx); }
         
-        .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.1); border-radius: 5px; padding: 4px; margin-bottom: 45px; }
+        .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.1); border-radius: 5px; padding: 5px; margin-bottom: 60px; min-height: 100px; }
         
-        .lane-adder { position: absolute; bottom: 8px; left: 4px; right: 4px; display: flex; gap: 3px; }
-        .lane-adder input { width: 35px; }
+        .lane-adder { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; gap: 5px; background: var(--card-bg); padding-top: 10px; border-top: 1px solid var(--input-border); }
 
-        .kart-item { 
-            background: var(--card-bg); margin-bottom: 5px; padding: 8px 4px; 
-            border-radius: 6px; display: flex; flex-direction: column; align-items: center; 
-            border: 1px solid var(--input-border); font-weight: bold; font-size: 0.8em;
-            text-align: center;
-        }
-        .kart-item span { margin-bottom: 4px; }
-
-        .next-up-sx { border: 2px solid var(--accent-sx) !important; box-shadow: 0 0 10px rgba(29,140,248,0.3); }
-        .next-up-dx { border: 2px solid var(--accent-dx) !important; box-shadow: 0 0 10px rgba(253,93,147,0.3); }
-
-        /* LOG E PULSANTI AZIONE */
-        .log-container { height: 150px; display: flex; flex-direction: column; }
-        #raceLog { flex: 1; overflow-y: auto; font-size: 0.75em; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; border: 1px solid var(--input-border); color: #888; }
+        .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; position: relative; }
         
-        .control-panel { 
-            background: var(--card-bg); padding: 12px; border-radius: 10px; 
-            margin: 10px 0; border: 1px solid var(--accent-sx);
+        /* EVIDENZIAZIONE PROSSIMO KART */
+        .next-up-sx { 
+            border: 2px solid var(--accent-sx) !important; 
+            box-shadow: 0 0 15px rgba(29, 140, 248, 0.4);
+            animation: pulse-sx 2s infinite;
         }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-action { padding: 12px 5px; border: none; border-radius: 5px; font-weight: bold; color: white; background: #2c2c44; font-size: 0.8em; }
+        .next-up-dx { 
+            border: 2px solid var(--accent-dx) !important; 
+            box-shadow: 0 0 15px rgba(253, 93, 147, 0.4);
+            animation: pulse-dx 2s infinite;
+        }
+        @keyframes pulse-sx { 0% { border-color: var(--accent-sx); } 50% { border-color: #fff; } 100% { border-color: var(--accent-sx); } }
+        @keyframes pulse-dx { 0% { border-color: var(--accent-dx); } 50% { border-color: #fff; } 100% { border-color: var(--accent-dx); } }
 
-        /* DATABASE TABLE MOBILE */
-        .db-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .db-table { width: 100%; min-width: 600px; border-spacing: 2px; }
+        .rating-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75em; color: #000; }
+        .r-missile { background: var(--missile); } .r-prestazione { background: var(--prestazione); } .r-normale { background: var(--normale-bg); color: #fff; }
+        
+        #raceLog { flex: 1; overflow-y: auto; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; height: 470px; border: 1px solid var(--input-border); color: #888; }
+        
+        .control-panel { background: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--accent-sx); display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .btn-action { padding: 15px; border: none; border-radius: 5px; font-weight: bold; color: white; background: #2c2c44; text-transform: uppercase; }
+        .btn-confirm { background: var(--success); color: black; grid-column: span 2; font-size: 1.2em; margin-top: 15px; padding: 18px; border-radius: 5px; font-weight: bold; border: none; display: none; }
+
+        .database-section { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--input-border); }
+        .db-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
+        .db-cell { background: var(--input-bg); border: 1px solid var(--cell-border); border-radius: 4px; }
+        .db-input { background: transparent; border: none; color: var(--text-color); width: 100%; padding: 10px; font-size: 0.9em; outline: none; }
         
         #loginOverlay { position: fixed; inset: 0; background: #0b0e14; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        
-        /* Utility per nascondere testi lunghi su mobile */
-        @media (max-width: 600px) {
-            .hide-mobile { display: none; }
-            .stat-box { font-size: 0.6em; }
-        }
     </style>
 </head>
 <body class="dark-theme">
 
 <div id="loginOverlay">
-    <div style="text-align:center; background:#151921; padding:30px; border-radius:15px; border:2px solid var(--accent-sx);">
-        <h2 style="color:var(--accent-sx); font-size:1.2em;">DMS STRATEGY PRO</h2>
-        <input type="password" id="pinInput" maxlength="6" style="font-size:1.5em; text-align:center; width:150px;" onkeyup="if(this.value==='123456'){document.getElementById('loginOverlay').style.display='none';document.getElementById('mainApp').style.display='block';startDatabaseSync();}">
+    <div style="text-align:center; background:#151921; padding:40px; border-radius:15px; border:2px solid var(--accent-sx);">
+        <h2 style="color:var(--accent-sx)">DMS STRATEGY PRO</h2>
+        <input type="password" id="pinInput" maxlength="6" style="font-size:2em; text-align:center; width:200px;" onkeyup="if(this.value==='123456'){document.getElementById('loginOverlay').style.display='none';document.getElementById('mainApp').style.display='block';startDatabaseSync();}">
     </div>
 </div>
 
 <div id="mainApp">
-    <div id="statsBar" class="stats-grid"></div>
+    <div id="statsBar" style="display:flex; gap:10px; margin-bottom:15px;"></div>
 
-    <div class="header-mobile">
-        <div style="display:flex; align-items:center; gap:5px; flex:1;">
-            KART: <input type="text" id="ourKartId" style="width: 45px; padding:5px;" oninput="updateOurKartLocal()">
-            PIT: <span id="ourPitCount" style="color:var(--success); font-weight:bold;">0</span>
+    <div class="header">
+        <div>
+            NOSTRO KART: <input type="text" id="ourKartId" style="width: 70px; padding:8px;" oninput="updateOurKartLocal()">
+            <span style="margin-left:20px;">🔍 CERCA #</span>
+            <input type="text" id="searchKartField" placeholder="..." oninput="searchKart()" style="width:80px; padding:8px;">
+            <span id="searchResult" style="margin-left:10px; font-weight:bold; color:var(--success)"></span>
         </div>
-        <div style="display:flex; gap:5px;">
-            <button onclick="toggleTheme()" id="themeBtn" style="padding:5px 10px;">☀️</button>
-            <button onclick="undoLastAction()" style="background:var(--warning-red); border:none; color:white; padding:5px; border-radius:4px;">↩</button>
-            <button onclick="resetAll()" style="background:#444; border:none; color:white; padding:5px; border-radius:4px;">R</button>
-        </div>
-        <div style="width:100%; margin-top:5px;">
-            🔍 <input type="text" id="searchKartField" placeholder="Cerca #" oninput="searchKart()" style="width:70px; padding:5px;">
-            <span id="searchResult" style="font-weight:bold; color:var(--success); font-size:0.8em;"></span>
+        <div style="font-weight:bold; font-size:1.4em;">PIT FATTI: <span id="ourPitCount" style="color:var(--success)">0</span></div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="toggleTheme()" id="themeBtn" style="padding:10px; border-radius:5px; border:1px solid var(--input-border); background:var(--card-bg);">☀️</button>
+            <button onclick="exportData()" style="background:var(--accent-sx); color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold;">CSV</button>
+            <button onclick="resetAll()" style="background:var(--warning-red); color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold;">RESET</button>
         </div>
     </div>
 
     <div class="grid-top">
         <div class="lanes-wrapper">
             <div class="lane-container lane-sx">
-                <span style="font-size:0.7em; font-weight:bold; text-align:center;">CORSIA SX</span>
+                <strong>CORSIA SX (PROSSIMO IN ALTO)</strong>
                 <div class="kart-list" id="listSx"></div>
                 <div class="lane-adder">
-                    <input type="number" id="addSxN" placeholder="#">
-                    <button onclick="addManual('sx')" style="flex:1; background:var(--success); border:none; border-radius:4px;">+</button>
+                    <input type="number" id="addSxN" placeholder="#" style="width:30%;">
+                    <select id="addSxR" style="width:45%;"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
+                    <button onclick="addManual('sx')" style="width:25%; background:var(--success); border:none; border-radius:5px; font-weight:bold; color:black;">+</button>
                 </div>
             </div>
             <div class="lane-container lane-dx">
-                <span style="font-size:0.7em; font-weight:bold; text-align:center;">CORSIA DX</span>
+                <strong>CORSIA DX (PROSSIMO IN ALTO)</strong>
                 <div class="kart-list" id="listDx"></div>
                 <div class="lane-adder">
-                    <input type="number" id="addDxN" placeholder="#">
-                    <button onclick="addManual('dx')" style="flex:1; background:var(--success); border:none; border-radius:4px;">+</button>
+                    <input type="number" id="addDxN" placeholder="#" style="width:30%;">
+                    <select id="addDxR" style="width:45%;"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
+                    <button onclick="addManual('dx')" style="width:25%; background:var(--success); border:none; border-radius:5px; font-weight:bold; color:black;">+</button>
                 </div>
             </div>
         </div>
-
-        <div class="log-container">
+        <div style="display:flex; flex-direction:column;">
+            <strong>LOG LIVE</strong>
             <div id="raceLog"></div>
+            <button onclick="undoLastAction()" style="width:100%; margin-top:10px; padding:15px; background:var(--warning-red); color:white; border:none; border-radius:5px; font-weight:bold;">↩ ANNULLA ULTIMA AZIONE</button>
         </div>
     </div>
 
     <div class="control-panel">
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
-            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Team o Kart..." style="flex:1; padding:8px;">
-            <select id="ratingEntry" style="width:80px;"><option value="missile">🚀</option><option value="prestazione">✅</option><option value="normale" selected>⚪</option><option value="lento">⚠️</option><option value="osceno">❌</option></select>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <label style="font-weight:bold;">TEAM ENTRANTE</label>
+            <input type="text" id="entryInput" oninput="autoFetchTeam()" placeholder="Numero o Nome..." style="padding:10px;">
+            <div id="teamInfo" style="color:var(--success); font-weight:bold; min-height:20px;"></div>
+            <select id="ratingEntry" style="padding:10px;"><option value="missile">🚀 Missile</option><option value="prestazione">✅ Prestazione</option><option value="normale" selected>⚪ Normale</option><option value="lento">⚠️ Lento</option><option value="osceno">❌ Osceno</option></select>
         </div>
-        <div id="teamInfo" style="color:var(--success); font-weight:bold; font-size:0.8em; margin-bottom:8px; text-align:center;"></div>
-        
-        <div class="action-grid">
-            <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">LASCIA SX</button>
-            <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">LASCIA DX</button>
-            <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">PRENDI SX</button>
-            <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">PRENDI DX</button>
-            <button id="confirmBtn" class="btn-confirm" onclick="executePit()" style="grid-column: span 2; margin-top:5px; background:var(--success); color:black; border:none; padding:15px; font-weight:bold; border-radius:5px; display:none;">CONFERMA PIT</button>
+        <div>
+            <label style="font-weight:bold;">MOVIMENTI PIT</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+                <button id="btnDropSx" class="btn-action" onclick="setPending('drop', 'sx')">Lascia a SX</button>
+                <button id="btnDropDx" class="btn-action" onclick="setPending('drop', 'dx')">Lascia a DX</button>
+                <button id="btnTakeSx" class="btn-action" onclick="setPending('take', 'sx')">Prendi da SX</button>
+                <button id="btnTakeDx" class="btn-action" onclick="setPending('take', 'dx')">Prendi da DX</button>
+                <button id="confirmBtn" class="btn-confirm" onclick="executePit()">CONFERMA MOVIMENTO</button>
+            </div>
         </div>
     </div>
 
     <div class="database-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <strong>DATABASE</strong>
-            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:0.8em;">+ TEAM</button>
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <strong>DATABASE TEAM</strong>
+            <button onclick="addNewTeam()" style="background:#2ea44f; color:white; border:none; padding:10px 15px; border-radius:5px; font-weight:bold;">+ AGGIUNGI TEAM</button>
         </div>
-        <div class="db-wrapper">
-            <table class="db-table">
-                <thead><tr><th>Team</th><th>#</th><th>Kart</th><th>Rat.</th><th>Pit</th><th>Note</th><th></th></tr></thead>
-                <tbody id="dbBody"></tbody>
-            </table>
-        </div>
+        <table class="db-table">
+            <thead><tr><th>Team</th><th># Gara</th><th>Kart attuale</th><th>Rating</th><th>Pit</th><th>Note Tecniche</th><th></th></tr></thead>
+            <tbody id="dbBody"></tbody>
+        </table>
     </div>
 </div>
 
 <script>
-    // LOGICA FIREBASE E FUNZIONI (Identica alla 9.14 ma adattata al rendering mobile)
     const firebaseConfig = { apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", authDomain: "gestione-cambi-kart---dms.firebaseapp.com", databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app", projectId: "gestione-cambi-kart---dms", storageBucket: "gestione-cambi-kart---dms.firebasestorage.app", messagingSenderId: "919738725367", appId: "1:919738725367:web:07de82c5e4ff8b10b3f4f2" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -210,7 +194,12 @@
 
     function pushHistory() {
         if(!state.history) state.history = [];
-        state.history.push(JSON.stringify({ sx: [...state.sx], dx: [...state.dx], teams: JSON.parse(JSON.stringify(state.teams)), log: [...state.log] }));
+        state.history.push(JSON.stringify({
+            sx: [...state.sx], 
+            dx: [...state.dx], 
+            teams: JSON.parse(JSON.stringify(state.teams)), 
+            log: [...state.log]
+        }));
         if(state.history.length > 50) state.history.shift();
     }
 
@@ -219,34 +208,45 @@
     function render() {
         ['sx', 'dx'].forEach(l => {
             const list = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
-            list.innerHTML = (state[l] || []).map((k, idx) => `
-                <div class="kart-item ${idx === 0 ? 'next-up-'+l : ''}" data-num="${k.num}" data-rating="${k.rating}">
+            list.innerHTML = (state[l] || []).map((k, idx) => {
+                // Evidenzia solo il primo (index 0)
+                const highlightClass = (idx === 0) ? `next-up-${l}` : '';
+                return `
+                <div class="kart-item ${highlightClass}" data-num="${k.num}" data-rating="${k.rating}">
                     <span>${idx === 0 ? '➡ ' : ''}#${k.num}</span> 
-                    <span class="rating-badge r-${k.rating}" style="font-size:0.6em;">${k.rating}</span>
-                    <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; position:absolute; right:2px; top:2px; font-size:0.8em;">x</button>
-                </div>`).join('');
+                    <span class="rating-badge r-${k.rating}">${k.rating}</span>
+                    <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
+                </div>`;
+            }).join('');
         });
 
         const counts = { missile:0, prestazione:0, normale:0, lento:0, osceno:0 };
         [...(state.sx||[]), ...(state.dx||[])].forEach(k => counts[k.rating]++);
         document.getElementById('statsBar').innerHTML = Object.entries(counts).map(([k,v]) => 
-            `<div class="stat-box" style="border-color:var(--${k})">${v}</div>`).join('');
+            `<div style="flex:1; background:var(--card-bg); padding:10px; border-radius:8px; border-bottom:3px solid var(--${k}); text-align:center; font-size:0.8em; font-weight:bold;">${k.toUpperCase()}: ${v}</div>`).join('');
 
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => `
             <tr>
                 <td class="db-cell"><input class="db-input" value="${t.name || ''}" onchange="pushHistory(); state.teams[${i}].name=this.value; save();"></td>
-                <td class="db-cell"><input class="db-input" value="${t.num || ''}" style="width:30px" onchange="pushHistory(); state.teams[${i}].num=this.value; save();"></td>
-                <td class="db-cell"><input class="db-input" value="${t.kart || ''}" style="width:35px" onchange="pushHistory(); state.teams[${i}].kart=this.value; save();"></td>
-                <td class="db-cell"><select class="db-input" style="width:40px" onchange="pushHistory(); state.teams[${i}].rating=this.value; save();">
-                    <option value="missile" ${t.rating==='missile'?'selected':''}>🚀</option><option value="prestazione" ${t.rating==='prestazione'?'selected':''}>✅</option><option value="normale" ${t.rating==='normale'?'selected':''}>⚪</option><option value="lento" ${t.rating==='lento'?'selected':''}>⚠️</option><option value="osceno" ${t.rating==='osceno'?'selected':''}>❌</option>
+                <td class="db-cell"><input class="db-input" value="${t.num || ''}" onchange="pushHistory(); state.teams[${i}].num=this.value; save();"></td>
+                <td class="db-cell"><input class="db-input" value="${t.kart || ''}" onchange="pushHistory(); state.teams[${i}].kart=this.value; save();"></td>
+                <td class="db-cell"><select class="db-input" onchange="pushHistory(); state.teams[${i}].rating=this.value; save();">
+                    <option value="missile" ${t.rating==='missile'?'selected':''}>🚀 Missile</option>
+                    <option value="prestazione" ${t.rating==='prestazione'?'selected':''}>✅ Prestazione</option>
+                    <option value="normale" ${t.rating==='normale'?'selected':''}>⚪ Normale</option>
+                    <option value="lento" ${t.rating==='lento'?'selected':''}>⚠️ Lento</option>
+                    <option value="osceno" ${t.rating==='osceno'?'selected':''}>❌ Osceno</option>
                 </select></td>
-                <td class="db-cell" style="text-align:center; color:var(--success)">${t.pitCount||0}</td>
+                <td class="db-cell" style="text-align:center; font-weight:bold; color:var(--success)">${t.pitCount||0}</td>
                 <td class="db-cell"><input class="db-input" value="${t.notes || ''}" onchange="pushHistory(); state.teams[${i}].notes=this.value; save();"></td>
-                <td><button onclick="deleteTeam(${i})" style="border:none; background:none;">🗑️</button></td>
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
             </tr>`).join('');
 
-        const our = (state.teams || []).find(t => t.num === state.ourKartId || t.name === state.ourKartId);
-        document.getElementById('ourPitCount').innerText = our ? (our.pitCount || 0) : 0;
+        if(state.ourKartId) {
+            const our = (state.teams || []).find(t => t.num === state.ourKartId || t.name === state.ourKartId);
+            document.getElementById('ourPitCount').innerText = our ? (our.pitCount || 0) : 0;
+        }
+
         document.getElementById('raceLog').innerHTML = (state.log || []).slice().reverse().map(l => `<div><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
         updateButtonsUI();
         initSortable();
@@ -257,17 +257,24 @@
         ['listSx', 'listDx'].forEach(id => {
             const el = document.getElementById(id);
             sortables.push(new Sortable(el, { 
-                group: 'lanes', animation: 150, delay: 100, /* Delay per evitare drag accidentali su mobile */
+                group: 'lanes', animation: 150, 
                 onStart: () => { isDragging = true; }, 
                 onEnd: (evt) => {
                     isDragging = false;
                     const fromL = evt.from.id.includes('Sx') ? 'sx' : 'dx';
                     const toL = evt.to.id.includes('Sx') ? 'sx' : 'dx';
                     const kartNum = evt.item.dataset.num;
-                    if(fromL !== toL || evt.oldIndex !== evt.newIndex) {
+                    
+                    let actionTxt = "";
+                    if(fromL !== toL) {
+                        actionTxt = `[MOVE] Kart #${kartNum} da ${fromL.toUpperCase()} (Pos ${evt.oldIndex+1}) a ${toL.toUpperCase()} (Pos ${evt.newIndex+1})`;
+                    } else if (evt.oldIndex !== evt.newIndex) {
+                        actionTxt = `[POS] Kart #${kartNum} in ${fromL.toUpperCase()} spostato Pos ${evt.oldIndex+1} -> ${evt.newIndex+1}`;
+                    }
+
+                    if(actionTxt) {
                         pushHistory();
-                        let txt = fromL !== toL ? `[MOVE] #${kartNum} ${fromL.toUpperCase()}(Pos${evt.oldIndex+1})->${toL.toUpperCase()}(Pos${evt.newIndex+1})` : `[POS] #${kartNum} ${fromL.toUpperCase()} ${evt.oldIndex+1}->${evt.newIndex+1}`;
-                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt });
+                        state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: actionTxt });
                         state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
                         save();
@@ -280,15 +287,22 @@
     function executePit() {
         const p = localPending;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
-        let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "T-" + (kartIn || "?");
-        if(!kartIn) return;
+        let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team " + (kartIn || "?");
+        if(!kartIn) return alert("Inserire numero kart!");
+
         pushHistory();
+
         let logMsg = "";
-        if (p.take && state[p.take].length > 0) {
+        if (p.take && state[p.take] && state[p.take].length > 0) {
             const out = state[p.take].shift();
-            if(p.teamIdx !== null) { state.teams[p.teamIdx].kart = out.num; state.teams[p.teamIdx].rating = out.rating; state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1; }
-            logMsg = `${teamName}: #${kartIn} -> #${out.num}`;
-        } else { logMsg = `${teamName}: Lasciato #${kartIn}`; }
+            if(p.teamIdx !== null) { 
+                state.teams[p.teamIdx].kart = out.num; 
+                state.teams[p.teamIdx].rating = out.rating; 
+                state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1; 
+            }
+            logMsg = `${teamName}: Lasciato #${kartIn} -> Preso #${out.num}`;
+        } else { logMsg = `${teamName}: Lasciato #${kartIn} (Deposito)`; }
+        
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
         localPending = { drop: null, take: null, teamIdx: null };
@@ -297,19 +311,42 @@
     }
 
     function undoLastAction() {
-        if(!state.history || state.history.length === 0) return;
-        if(confirm("Annulla?")) { const last = JSON.parse(state.history.pop()); state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log; db.ref('raceState').set(state); }
+        if(!state.history || state.history.length === 0) return alert("Nessuna azione da annullare");
+        if(confirm("Annullare l'ultima modifica?")) {
+            const last = JSON.parse(state.history.pop());
+            state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log;
+            db.ref('raceState').set(state);
+        }
     }
 
     function addManual(l) {
         const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN');
-        if(n.value) { pushHistory(); state[l].push({ num: n.value, rating: 'normale' }); state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[+] #${n.value} in ${l.toUpperCase()}` }); n.value = ""; save(); }
+        const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR');
+        if(n && n.value) {
+            pushHistory();
+            state[l].push({ num: n.value, rating: r.value });
+            state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: `[+] Manuale: #${n.value} in ${l.toUpperCase()}` });
+            n.value = ""; save();
+        }
     }
 
-    function addNewTeam() { pushHistory(); if(!state.teams) state.teams = []; state.teams.push({name:"", num:"", kart:"", rating:"normale", pitCount:0, notes:""}); save(); }
-    function removeKart(l, i) { if(confirm("Rimuovere #"+state[l][i].num+"?")) { pushHistory(); state[l].splice(i,1); save(); } }
+    function addNewTeam() {
+        pushHistory();
+        if(!state.teams) state.teams = [];
+        state.teams.push({name:"", num:"", kart:"", rating:"normale", pitCount:0, notes:""});
+        save();
+    }
+
+    function removeKart(l, i) {
+        if(confirm("Rimuovere kart #" + state[l][i].num + "?")) {
+            pushHistory();
+            state[l].splice(i,1); save();
+        }
+    }
+
     function deleteTeam(i) { if(confirm("Eliminare?")) { pushHistory(); state.teams.splice(i,1); save(); } }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); db.ref('raceState/ourKartId').set(state.ourKartId); }
+
     function setPending(type, lane) {
         if(type==='drop') localPending.drop = (localPending.drop===lane)?null:lane;
         if(type==='take') localPending.take = (localPending.take===lane)?null:lane;
@@ -319,25 +356,29 @@
     function updateButtonsUI() {
         const btnConf = document.getElementById('confirmBtn');
         ['btnDropSx','btnDropDx','btnTakeSx','btnTakeDx'].forEach(id => {
-            const b = document.getElementById(id); if(b) b.style.background = '#2c2c44'; b.style.color = 'white';
+            const b = document.getElementById(id); if(b) b.style.background = '#2c2c44';
         });
-        if(localPending.drop) { let b = document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x'); b.style.background = (localPending.drop==='sx'?'var(--accent-sx)':'var(--accent-dx)'); }
-        if(localPending.take) { let b = document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x'); b.style.background = (localPending.take==='sx'?'var(--accent-sx)':'var(--accent-dx)'); }
+        if(localPending.drop) document.getElementById('btnDrop' + localPending.drop.charAt(0).toUpperCase() + 'x').style.background = (localPending.drop==='sx'?'var(--accent-sx)':'var(--accent-dx)');
+        if(localPending.take) document.getElementById('btnTake' + localPending.take.charAt(0).toUpperCase() + 'x').style.background = (localPending.take==='sx'?'var(--accent-sx)':'var(--accent-dx)');
         btnConf.style.display = (localPending.drop) ? "block" : "none";
     }
 
     function autoFetchTeam() {
         const val = document.getElementById('entryInput').value.trim();
         const team = (state.teams || []).find(t => t.num === val || (t.name && t.name.toLowerCase().includes(val.toLowerCase())));
-        if(team && val !== "") { document.getElementById('teamInfo').innerText = `TEAM: ${team.name}`; document.getElementById('ratingEntry').value = team.rating || "normale"; localPending.teamIdx = state.teams.indexOf(team); }
-        else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
+        if(team && val !== "") {
+            document.getElementById('teamInfo').innerText = `Rilevato: ${team.name || 'N/A'}`;
+            document.getElementById('ratingEntry').value = team.rating || "normale";
+            localPending.teamIdx = state.teams.indexOf(team);
+        } else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
         updateButtonsUI();
     }
 
     function toggleTheme() {
         const body = document.body;
         const isDark = body.classList.contains('dark-theme');
-        body.classList.toggle('dark-theme', !isDark); body.classList.toggle('light-theme', isDark);
+        body.classList.toggle('dark-theme', !isDark);
+        body.classList.toggle('light-theme', isDark);
         document.getElementById('themeBtn').innerText = isDark ? "🌙" : "☀️";
         localStorage.setItem('theme', isDark ? 'light-theme' : 'dark-theme');
     }
@@ -351,8 +392,11 @@
         res.innerText = f || "??";
     }
 
-    function resetAll() { if(confirm("RESET TOTALE?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[], history:[]}); }
-    function exportData() { let csv = "Ora,Azione\n"; (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`); const b = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'log.csv'; a.click(); }
+    function resetAll() { if(confirm("Reset Totale?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[], history:[]}); }
+    function exportData() {
+        let csv = "Ora,Azione\n"; (state.log || []).forEach(l => csv += `"${l.ts}","${l.txt}"\n`);
+        const b = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'log.csv'; a.click();
+    }
 </script>
 </body>
 </html>
