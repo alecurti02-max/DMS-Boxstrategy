@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS Strategy Pro - v9.23 GOLD</title>
+    <title>DMS Strategy Pro - v9.25 GOLD ULTIMATE</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -14,6 +14,7 @@
             --accent-sx: #1d8cf8; --accent-dx: #fd5d93; --success: #00f2c3;
             --warning-red: #ff4757; --missile: #ffdf00; --prestazione: #00f2c3; 
             --lento: #ff8d72; --osceno: #fd5d93; --normale: #34495e;
+            --already-used: #ff4757;
         }
 
         body.dark-theme {
@@ -55,7 +56,6 @@
         .lane-sx { border-top-color: var(--accent-sx); } 
         .lane-dx { border-top-color: var(--accent-dx); }
         
-        /* Flash di salvataggio */
         .lane-saved { background: rgba(0, 242, 195, 0.1) !important; box-shadow: inset 0 0 20px rgba(0, 242, 195, 0.2); }
 
         .kart-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.1); border-radius: 5px; padding: 5px; margin-bottom: 65px; }
@@ -64,10 +64,31 @@
         .lane-adder input, .lane-adder select { height: 45px !important; font-size: 1.1em !important; padding: 5px 10px !important; }
         .lane-adder button { height: 45px !important; cursor: pointer; font-size: 1.5em !important; background: var(--success); border: none; border-radius: 5px; font-weight: bold; }
 
-        /* Items */
-        .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; }
+        /* Kart Item Styles */
+        .kart-item { background: var(--card-bg); margin-bottom: 8px; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border); font-weight: bold; cursor: grab; position: relative; }
         .sortable-ghost { opacity: 0.3; background: var(--success) !important; }
         
+        /* DIAVOLERIA: Kart già usato dal nostro team */
+        @keyframes blink-red {
+            0% { border-color: var(--warning-red); box-shadow: 0 0 5px var(--warning-red); }
+            50% { border-color: transparent; box-shadow: none; }
+            100% { border-color: var(--warning-red); box-shadow: 0 0 5px var(--warning-red); }
+        }
+        .already-used-blink {
+            border: 2px solid var(--warning-red) !important;
+            animation: blink-red 1s infinite;
+        }
+        .already-used-badge {
+            font-size: 0.6em;
+            color: var(--warning-red);
+            position: absolute;
+            top: -8px;
+            right: 10px;
+            background: var(--card-bg);
+            padding: 0 5px;
+            font-weight: 900;
+        }
+
         .rating-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.75em; color: #000; font-weight: 800; text-transform: uppercase; }
         .r-missile { background-color: var(--missile); }
         .r-prestazione { background-color: var(--prestazione); }
@@ -200,18 +221,15 @@
 </div>
 
 <script>
-    // Configurazione Firebase
     const firebaseConfig = { apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", authDomain: "gestione-cambi-kart---dms.firebaseapp.com", databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app", projectId: "gestione-cambi-kart---dms", storageBucket: "gestione-cambi-kart---dms.firebasestorage.app", messagingSenderId: "919738725367", appId: "1:919738725367:web:07de82c5e4ff8b10b3f4f2" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // Stato globale
     let state = { sx: [], dx: [], ourKartId: "", teams: [], log: [], history: [] };
     let localPending = { drop: null, take: null, teamIdx: null };
     let isDragging = false;
     let sortables = [];
 
-    // Sincronizzazione Real-time
     function startDatabaseSync() {
         db.ref('raceState').on('value', (snap) => {
             const data = snap.val();
@@ -237,26 +255,35 @@
 
     function save() { db.ref('raceState').set(state); }
 
-    // Rendering principale
+    // Funzione per capire se abbiamo già usato un kart
+    function checkIfUsedByUs(kartNum) {
+        if(!state.ourKartId) return false;
+        return (state.log || []).some(l => 
+            (l.txt.includes(state.ourKartId) || l.txt.includes("Team #" + state.ourKartId)) 
+            && l.txt.includes("Esce con #" + kartNum)
+        );
+    }
+
     function render() {
-        // Render Corsie
         ['sx', 'dx'].forEach(l => {
             const list = document.getElementById('list' + l.charAt(0).toUpperCase() + 'x');
-            list.innerHTML = (state[l] || []).map((k, idx) => `
-                <div class="kart-item ${idx === 0 ? 'next-up-'+l : ''}" data-num="${k.num}" data-rating="${k.rating}">
+            list.innerHTML = (state[l] || []).map((k, idx) => {
+                const isAlreadyUsed = checkIfUsedByUs(k.num);
+                return `
+                <div class="kart-item ${idx === 0 ? 'next-up-'+l : ''} ${isAlreadyUsed ? 'already-used-blink' : ''}" data-num="${k.num}" data-rating="${k.rating}">
+                    ${isAlreadyUsed ? '<span class="already-used-badge">GIÀ USATO DA NOI</span>' : ''}
                     <span>${idx === 0 ? '➡ ' : ''}#${k.num}</span> 
                     <span class="rating-badge r-${k.rating}">${k.rating}</span>
                     <button onclick="removeKart('${l}', ${idx})" style="background:none; border:none; color:gray; cursor:pointer;">x</button>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         });
 
-        // Stats Bar
         const counts = { missile:0, prestazione:0, normale:0, lento:0, osceno:0 };
         [...(state.sx||[]), ...(state.dx||[])].forEach(k => counts[k.rating]++);
         document.getElementById('statsBar').innerHTML = Object.entries(counts).map(([k,v]) => 
             `<div class="stat-item" style="border-bottom:3px solid var(--${k})">${k.toUpperCase()}: ${v}</div>`).join('');
 
-        // Database Team
         document.getElementById('dbBody').innerHTML = (state.teams || []).map((t, i) => `
             <tr>
                 <td class="db-cell"><input class="db-input" value="${t.name || ''}" onchange="pushHistory(); state.teams[${i}].name=this.value; save();"></td>
@@ -267,21 +294,17 @@
                 </select></td>
                 <td class="db-cell" style="text-align:center; font-weight:bold; color:var(--success)">${t.pitCount||0}</td>
                 <td class="db-cell"><input class="db-input" value="${t.notes || ''}" onchange="pushHistory(); state.teams[${i}].notes=this.value; save();"></td>
-                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer; font-size:1.2em;">🗑️</button></td>
+                <td><button onclick="deleteTeam(${i})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
             </tr>`).join('');
 
-        // Pit Count Nostro
         const our = (state.teams || []).find(t => t.num === state.ourKartId || t.name === state.ourKartId);
         document.getElementById('ourPitCount').innerText = our ? (our.pitCount || 0) : 0;
-        
-        // Log
         document.getElementById('raceLog').innerHTML = (state.log || []).map(l => `<div><b>[${l.ts}]</b> ${l.txt}</div>`).join('');
         
         updateButtonsUI();
         initSortable();
     }
 
-    // Drag & Drop con Logica di Salvataggio Posizione Rafforzata
     function initSortable() {
         sortables.forEach(s => s.destroy()); sortables = [];
         ['listSx', 'listDx'].forEach(id => {
@@ -293,25 +316,15 @@
                     isDragging = false;
                     const fromL = evt.from.id.includes('Sx') ? 'sx' : 'dx';
                     const toL = evt.to.id.includes('Sx') ? 'sx' : 'dx';
-                    
                     if(fromL !== toL || evt.oldIndex !== evt.newIndex) {
                         pushHistory();
                         const kartNum = evt.item.dataset.num;
-                        
-                        // Flash visivo sulla corsia di destinazione
                         const contId = toL === 'sx' ? 'contSx' : 'contDx';
                         document.getElementById(contId).classList.add('lane-saved');
                         setTimeout(() => document.getElementById(contId).classList.remove('lane-saved'), 500);
-
-                        // RILEVAMENTO ORDINE REALE DAL DOM (Cruciale per non perdere posizioni)
                         state.sx = Array.from(document.getElementById('listSx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
                         state.dx = Array.from(document.getElementById('listDx').children).map(e => ({ num: e.dataset.num, rating: e.dataset.rating }));
-                        
-                        // Creazione stringa log
-                        let msg = (fromL !== toL) ? 
-                            `[MOVE] #${kartNum} da ${fromL.toUpperCase()} (Pos:${evt.oldIndex+1}) a ${toL.toUpperCase()} (Pos:${evt.newIndex+1})` : 
-                            `[POS] #${kartNum} in ${fromL.toUpperCase()} spostato ${evt.oldIndex+1} -> ${evt.newIndex+1}`;
-                        
+                        let msg = (fromL !== toL) ? `[MOVE] #${kartNum} ${fromL.toUpperCase()} (Pos:${evt.oldIndex+1}) -> ${toL.toUpperCase()} (Pos:${evt.newIndex+1})` : `[POS] #${kartNum} in ${fromL.toUpperCase()} ${evt.oldIndex+1} -> ${evt.newIndex+1}`;
                         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: msg });
                         save();
                     }
@@ -320,32 +333,20 @@
         });
     }
 
-    // Funzioni Core
     function executePit() {
         const p = localPending;
         let kartIn = (p.teamIdx !== null) ? state.teams[p.teamIdx].kart : document.getElementById('entryInput').value.trim();
         let teamName = (p.teamIdx !== null) ? state.teams[p.teamIdx].name : "Team #" + (kartIn || "?");
         if(!kartIn) return;
-
         pushHistory();
         let logMsg = "";
-        
         if (p.take && state[p.take].length > 0) {
             const out = state[p.take].shift();
-            if(p.teamIdx !== null) { 
-                state.teams[p.teamIdx].kart = out.num; 
-                state.teams[p.teamIdx].rating = out.rating; 
-                state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1; 
-            }
+            if(p.teamIdx !== null) { state.teams[p.teamIdx].kart = out.num; state.teams[p.teamIdx].rating = out.rating; state.teams[p.teamIdx].pitCount = (state.teams[p.teamIdx].pitCount || 0) + 1; }
             logMsg = `${teamName}: Entra #${kartIn} -> Esce con #${out.num} (${out.rating})`;
-        } else { 
-            logMsg = `${teamName}: Lasciato #${kartIn} in corsia (Deposito)`; 
-        }
-
+        } else { logMsg = `${teamName}: Lasciato #${kartIn} (Deposito)`; }
         state[p.drop].push({ num: kartIn, rating: document.getElementById('ratingEntry').value });
         state.log.push({ ts: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}), txt: logMsg });
-        
-        // Reset e salvataggio
         localPending = { drop: null, take: null, teamIdx: null };
         document.getElementById('entryInput').value = "";
         save();
@@ -353,27 +354,18 @@
 
     function undoLastAction() {
         if(!state.history || state.history.length === 0) return;
-        if(confirm("Annullare l'ultima modifica?")) {
-            const last = JSON.parse(state.history.pop());
-            state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log;
-            db.ref('raceState').set(state);
-        }
+        if(confirm("Annullare?")) { const last = JSON.parse(state.history.pop()); state.sx = last.sx; state.dx = last.dx; state.teams = last.teams; state.log = last.log; db.ref('raceState').set(state); }
     }
 
     function addManual(l) {
         const n = document.getElementById('add'+l.charAt(0).toUpperCase()+'xN');
         const r = document.getElementById('add'+l.charAt(0).toUpperCase()+'xR');
-        if(n.value) {
-            pushHistory();
-            state[l].push({ num: n.value, rating: r.value });
-            n.value = "";
-            save();
-        }
+        if(n.value) { pushHistory(); state[l].push({ num: n.value, rating: r.value }); n.value = ""; save(); }
     }
 
     function addNewTeam() { pushHistory(); if(!state.teams) state.teams = []; state.teams.push({name:"", num:"", kart:"", rating:"normale", pitCount:0, notes:""}); save(); }
-    function removeKart(l, i) { if(confirm("Rimuovere kart?")) { pushHistory(); state[l].splice(i,1); save(); } }
-    function deleteTeam(i) { if(confirm("Eliminare definitivamente il team dal database?")) { pushHistory(); state.teams.splice(i,1); save(); } }
+    function removeKart(l, i) { if(confirm("Rimuovere?")) { pushHistory(); state[l].splice(i,1); save(); } }
+    function deleteTeam(i) { if(confirm("Eliminare?")) { pushHistory(); state.teams.splice(i,1); save(); } }
     function updateOurKartLocal() { state.ourKartId = document.getElementById('ourKartId').value.trim(); db.ref('raceState/ourKartId').set(state.ourKartId); }
     
     function setPending(type, lane) {
@@ -395,40 +387,29 @@
     function autoFetchTeam() {
         const val = document.getElementById('entryInput').value.trim();
         const team = (state.teams || []).find(t => t.num === val || (t.name && t.name.toLowerCase().includes(val.toLowerCase())));
-        if(team && val !== "") {
-            document.getElementById('teamInfo').innerText = `Rilevato: ${team.name}`;
-            document.getElementById('ratingEntry').value = team.rating || "normale";
-            localPending.teamIdx = state.teams.indexOf(team);
-        } else {
-            document.getElementById('teamInfo').innerText = "";
-            localPending.teamIdx = null;
-        }
+        if(team && val !== "") { document.getElementById('teamInfo').innerText = `Rilevato: ${team.name}`; document.getElementById('ratingEntry').value = team.rating || "normale"; localPending.teamIdx = state.teams.indexOf(team); }
+        else { document.getElementById('teamInfo').innerText = ""; localPending.teamIdx = null; }
         updateButtonsUI();
     }
 
     function toggleTheme() {
         const body = document.body;
         const isDark = body.classList.contains('dark-theme');
-        body.classList.toggle('dark-theme', !isDark);
-        body.classList.toggle('light-theme', isDark);
+        body.classList.toggle('dark-theme', !isDark); body.classList.toggle('light-theme', isDark);
         document.getElementById('themeBtn').innerText = isDark ? "🌙" : "☀️";
         localStorage.setItem('theme', isDark ? 'light-theme' : 'dark-theme');
     }
-    if(localStorage.getItem('theme') === 'light-theme') { 
-        document.body.classList.replace('dark-theme', 'light-theme'); 
-        document.getElementById('themeBtn').innerText = "🌙"; 
-    }
+    if(localStorage.getItem('theme') === 'light-theme') { document.body.classList.replace('dark-theme', 'light-theme'); document.getElementById('themeBtn').innerText = "🌙"; }
 
     function searchKart() {
         const v = document.getElementById('searchKartField').value.trim();
         const res = document.getElementById('searchResult'); if(!v){res.innerText=""; return;}
-        let f = null;
-        ['sx','dx'].forEach(l => (state[l]||[]).forEach((k,idx) => {if(k.num==v) f=`${l.toUpperCase()} Pos:${idx+1}`;}));
-        if(!f) (state.teams||[]).forEach(t => {if(t.kart==v) f=`IN PISTA (${t.name})`;});
-        res.innerText = f || "?? NON TROVATO";
+        let f = null; ['sx','dx'].forEach(l => (state[l]||[]).forEach((k,idx) => {if(k.num==v) f=`${l.toUpperCase()} Pos:${idx+1}`;}));
+        if(!f) (state.teams||[]).forEach(t => {if(t.kart==v) f=`PISTA (${t.name})`;});
+        res.innerText = f || "??";
     }
 
-    function resetAll() { if(confirm("ATTENZIONE: Questo cancellerà l'intera gara. Confermi?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[], history:[]}); }
+    function resetAll() { if(confirm("RESET TOTALE?")) db.ref('raceState').set({sx:[], dx:[], ourKartId:"", teams:[], log:[], history:[]}); }
     
     function exportData() {
         let csv = "--- DMS STRATEGY PRO REPORT ---\n\n--- LOG EVENTI ---\nOra,Evento,Rating\n";
