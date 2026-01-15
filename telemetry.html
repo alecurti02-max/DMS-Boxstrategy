@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v3.1 LEGACY RESTORE</title>
+    <title>DMS Analytics Pro - v3.2 PRODUCTION</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +29,7 @@
         /* Layout Principale */
         .app-wrapper { 
             display: grid; 
-            grid-template-rows: 80px 1fr; 
+            grid-template-rows: 85px 1fr; 
             height: 100vh; 
             padding: 8px; 
             gap: 8px; 
@@ -38,7 +38,7 @@
         /* Header con controlli */
         .main-header {
             display: grid; 
-            grid-template-columns: 220px 1fr 450px;
+            grid-template-columns: 220px 1fr 480px;
             background: var(--bg-header); 
             border: 1px solid var(--border);
             border-radius: 10px; 
@@ -142,7 +142,7 @@
         }
 
         tbody td { 
-            padding: 8px; 
+            padding: 10px 8px; 
             border-bottom: 1px solid rgba(255,255,255,0.02); 
             white-space: nowrap; 
             vertical-align: middle;
@@ -189,7 +189,7 @@
 
         /* Buttons */
         .btn-action { 
-            padding: 8px 16px; 
+            padding: 10px 18px; 
             border-radius: 6px; 
             font-weight: 800; 
             border: none; 
@@ -217,12 +217,12 @@
         .direct-tag {
             background: var(--bg-header);
             border: 1px solid var(--border);
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
         }
         .remove-tag { color: var(--danger); cursor: pointer; font-weight: bold; }
     </style>
@@ -232,30 +232,30 @@
 <div class="app-wrapper">
     <header class="main-header">
         <div class="brand">
-            <h1>DMS STRATEGIC <span>v3.1</span></h1>
-            <div id="statusLive" class="status-pill">WAITING FOR DATA...</div>
+            <h1>DMS STRATEGIC <span>v3.2</span></h1>
+            <div id="statusLive" class="status-pill">SISTEMA PRONTO</div>
         </div>
         
         <div style="display: flex; gap: 20px; align-items: center; justify-content: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.6rem; font-weight: 900; color: var(--dim);">APEX:</span>
-                <input type="text" id="apexFeed" class="input-dark" style="width: 180px;" placeholder="URL FEED...">
+                <span style="font-size: 0.6rem; font-weight: 900; color: var(--dim);">APEX URL:</span>
+                <input type="text" id="apexFeed" class="input-dark" style="width: 200px;" placeholder="URL FEED LIVE...">
             </div>
             
-            <button class="btn-action btn-success" onclick="Engine.toggleSync()" id="syncBtn">AVVIA SESSIONE</button>
+            <button class="btn-action btn-success" onclick="Engine.toggleSync()" id="syncBtn">AVVIA LIVE MONITOR</button>
             
-            <div style="width: 1px; height: 30px; background: var(--border);"></div>
+            <div style="width: 1px; height: 35px; background: var(--border);"></div>
             
             <div style="display: flex; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.55rem; font-weight: 900; color: var(--warning); margin-bottom: 2px;">SEC. TARGET PIT</span>
+                <span style="font-size: 0.55rem; font-weight: 900; color: var(--warning); margin-bottom: 2px;">SEC. TARGET PIT (DATABASE)</span>
                 <input type="number" id="pitTarget" class="input-dark input-target" value="2280" oninput="Engine.recompute()">
             </div>
         </div>
 
-        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button class="btn-action btn-outline" onclick="Engine.openBoxPage()">PAGINA BOX</button>
-            <button class="btn-action btn-outline" onclick="Engine.exportCSV()">EXPORT CSV</button>
-            <button class="btn-action btn-danger" onclick="Engine.reset()">RESET ALL</button>
+            <button class="btn-action btn-outline" onclick="Engine.exportCSV()">REPORT CSV</button>
+            <button class="btn-action btn-danger" onclick="Engine.reset()">RESET SESSION</button>
         </div>
     </header>
 
@@ -263,40 +263,39 @@
         <section class="panel telemetry-panel">
             <div class="panel-header">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <span>LIVE RANKING & STRATEGY</span>
-                    <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="height: 25px; padding: 0 10px; font-size: 0.6rem;">
-                        <option value="ALL">TUTTE LE CATEGORIE</option>
-                        <option value="EK1">CATEGORIA EK1</option>
-                        <option value="EK2">CATEGORIA EK2</option>
-                        <option value="EK3">CATEGORIA EK3</option>
+                    <span>VIRTUAL RACE CLASSIFICATION</span>
+                    <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="height: 28px; padding: 0 10px; font-size: 0.65rem;">
+                        <option value="ALL">ALL CATEGORIES</option>
+                        <option value="EK1">EK1 PRO</option>
+                        <option value="EK2">EK2 CLUB</option>
+                        <option value="EK3">EK3 GENTLEMAN</option>
                     </select>
                 </div>
-                <div id="lastUpdate" style="font-family: 'JetBrains Mono'; font-size: 0.6rem;">LAST UPDATE: --:--:--</div>
+                <div id="lastUpdate" style="font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--accent);">REFRESH: --:--:--</div>
             </div>
             <div class="scroll-area">
                 <table id="mainTable">
                     <thead>
                         <tr>
-                            <th style="width: 40px;">POS</th>
-                            <th style="width: 55px;">CAT</th>
-                            <th style="width: 50px;">KART</th>
+                            <th style="width: 40px;">P.</th>
+                            <th style="width: 60px;">CAT.</th>
+                            <th style="width: 50px;">#</th>
                             <th style="width: 180px;">TEAM NAME</th>
-                            <th style="width: 90px; color:var(--accent)">APEX DIST.</th>
+                            <th style="width: 95px; color:var(--accent)">DIST. APEX</th>
                             <th style="width: 45px;">PIT</th>
                             <th style="width: 85px;">BOX SEC.</th>
-                            <th style="width: 110px; color: var(--warning);">PIT REMAINING</th>
-                            <th style="width: 85px;">LAST LAP</th>
+                            <th style="width: 115px; color: var(--warning);">PIT REMAINING</th>
+                            <th style="width: 90px;">LAST LAP</th>
                             <th style="width: 100px; color: var(--success);">VIRTUAL GAP</th>
                         </tr>
                     </thead>
-                    <tbody id="rowsBody">
-                        </tbody>
+                    <tbody id="rowsBody"></tbody>
                 </table>
             </div>
         </section>
 
         <section class="panel">
-            <div class="panel-header">STRATEGY TREND (GAP RELATIVO A DMS)</div>
+            <div class="panel-header">RELATIVE STRATEGY EVOLUTION (GAP VS DMS)</div>
             <div style="flex:1; padding: 15px; position: relative;">
                 <canvas id="strategyChart"></canvas>
             </div>
@@ -304,20 +303,19 @@
 
         <section style="display: grid; grid-template-rows: 110px 1fr; gap: 8px;">
             <div class="panel">
-                <div class="panel-header">TRACKING AVVERSARI DIRETTI</div>
+                <div class="panel-header">DIRECT OPPONENTS TRACKING</div>
                 <div style="padding: 12px;">
                     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                        <input type="text" id="addInput" class="input-dark" style="flex:1" placeholder="Inserisci # Kart...">
-                        <button class="btn-action btn-success" onclick="Engine.addDirect()">AGGIUNGI</button>
+                        <input type="text" id="addInput" class="input-dark" style="flex:1" placeholder="Inserisci # Kart per grafico...">
+                        <button class="btn-action btn-success" onclick="Engine.addDirect()">MONITORA</button>
                     </div>
                     <div id="directsBox" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
                 </div>
             </div>
             
             <div class="panel">
-                <div class="panel-header">DIREZIONE GARA & NEWS</div>
-                <div class="scroll-area" id="logBox" style="background: rgba(0,0,0,0.2);">
-                    </div>
+                <div class="panel-header">RACE DIRECTION & SYSTEM LOGS</div>
+                <div class="scroll-area" id="logBox" style="background: rgba(0,0,0,0.15);"></div>
             </div>
         </section>
     </main>
@@ -325,24 +323,21 @@
 
 <script>
 /**
- * DMS STRATEGIC ENGINE v3.1
- * Core logico per analisi pit-stop e distacchi virtuali.
+ * DMS STRATEGIC ENGINE v3.2
+ * Calcoli virtuali basati su target pit database e distacchi real-time.
  */
 const Engine = (() => {
-    // Stato persistente
     let state = {
         active: false,
         ourKart: "",
-        directs: JSON.parse(localStorage.getItem('dms_v31_directs')) || [],
-        ovr: JSON.parse(localStorage.getItem('dms_v31_ovr')) || {},
+        directs: JSON.parse(localStorage.getItem('dms_v32_directs')) || [],
+        ovr: JSON.parse(localStorage.getItem('dms_v32_ovr')) || {},
         chart: null,
         refresh: null,
-        lastData: [],
-        history: {}
+        lastData: []
     };
 
     const init = () => {
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
             authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
@@ -352,17 +347,16 @@ const Engine = (() => {
         
         firebase.initializeApp(firebaseConfig);
         
-        // Listener per il nostro Kart ID
         firebase.database().ref('raceState/ourKartId').on('value', snap => {
             state.ourKart = snap.val() || "22";
-            document.getElementById('statusLive').innerText = `MONITORING DMS: #${state.ourKart}`;
+            document.getElementById('statusLive').innerText = `DMS MONITOR: #${state.ourKart}`;
             recompute();
         });
 
         setupChart();
         updateDirectsUI();
         recompute(); 
-        addLog("Engine v3.1 Online. Pronto per la gara.");
+        addLog("DMS Analytics Pro v3.2 inizializzato con successo.");
     };
 
     const setupChart = () => {
@@ -377,7 +371,7 @@ const Engine = (() => {
                 scales: {
                     y: { 
                         grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#666', font: { size: 10, family: 'JetBrains Mono' } }
+                        ticks: { color: '#888', font: { size: 10, family: 'JetBrains Mono' } }
                     },
                     x: { display: false }
                 },
@@ -385,21 +379,19 @@ const Engine = (() => {
                     legend: { 
                         display: true, 
                         position: 'bottom',
-                        labels: { color: '#aaa', font: { size: 10 }, boxWidth: 12, padding: 15 }
-                    },
-                    tooltip: { mode: 'index', intersect: false }
+                        labels: { color: '#ccc', font: { size: 10 }, boxWidth: 12, padding: 10 }
+                    }
                 }
             }
         });
     };
 
-    // Utility di conversione tempi
     const toSec = (timeStr) => {
-        if(!timeStr || timeStr === "") return 0;
+        if(!timeStr) return 0;
         const parts = timeStr.toString().split(':');
         try {
             if(parts.length === 3) return (+parts[0] * 3600) + (+parts[1] * 60) + (+parts[2]);
-            if(parts.length === 2) return (+parts[1].includes('.') ? (parseFloat(parts[0]*60) + parseFloat(parts[1])) : (+parts[0] * 60) + (+parts[1]));
+            if(parts.length === 2) return (+parts[0] * 60) + (+parts[1]);
             return parseFloat(timeStr) || 0;
         } catch(e) { return 0; }
     };
@@ -414,62 +406,48 @@ const Engine = (() => {
 
     const addLog = (msg) => {
         const box = document.getElementById('logBox');
-        const ts = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        const ts = new Date().toLocaleTimeString();
         const entry = document.createElement('div');
         entry.className = 'msg-line';
         entry.innerHTML = `<span class="msg-ts">${ts}</span> <span>${msg}</span>`;
         box.prepend(entry);
     };
 
-    // CUORE DEL CALCOLO
     const recompute = () => {
-        const pitTargetValue = parseInt(document.getElementById('pitTarget').value) || 0;
-        const catFilter = document.getElementById('filterCat').value;
-        const nowTs = new Date().toLocaleTimeString();
-        document.getElementById('lastUpdate').innerText = `LAST UPDATE: ${nowTs}`;
+        const target = parseInt(document.getElementById('pitTarget').value) || 0;
+        const filter = document.getElementById('filterCat').value;
+        const now = new Date().toLocaleTimeString();
+        document.getElementById('lastUpdate').innerText = `REFRESH: ${now}`;
 
-        // Simulazione Dati (Da integrare con Fetch API di Apex)
-        // In una situazione reale, qui faresti: fetch(state.apexUrl).then(...)
+        // Simulazione (Sostituire con Fetch reale Apex)
         let rawData = [
-            { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rT: 36000, pits: 14, pT: "38:00", last: "1:02.721" },
-            { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+12.42", rT: 36012, pits: 12, pT: "40:20", last: "1:02.810" },
-            { num: "49", team: "SPARKART", cat: "EK2", dist: "1 Lap", rT: 36065, pits: 15, pT: "37:50", last: "1:03.112" },
-            { num: "16", team: "TEAM EVO", cat: "EK1", dist: "+45.1", rT: 36045, pits: 14, pT: "38:00", last: "1:02.501" },
-            { num: "7", team: "KARTING PRO", cat: "EK3", dist: "+1:12", rT: 36110, pits: 13, pT: "39:10", last: "1:03.002" }
+            { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rT: 36000, pits: 14, pT: "38:00", last: "1:02.72" },
+            { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+12.42", rT: 36012, pits: 12, pT: "40:20", last: "1:02.81" },
+            { num: "49", team: "SPARKART", cat: "EK2", dist: "1 Lap", rT: 36065, pits: 15, pT: "37:50", last: "1:03.11" },
+            { num: "16", team: "TEAM EVO", cat: "EK1", dist: "+45.1", rT: 36045, pits: 14, pT: "38:00", last: "1:02.50" },
+            { num: "7", team: "KARTING PRO", cat: "EK3", dist: "+1:12", rT: 36110, pits: 13, pT: "39:10", last: "1:03.00" }
         ];
 
-        // 1. Applica Override e Calcola Totale Virtuale
         let processed = rawData.map(kart => {
-            const actualCat = state.ovr[kart.num] || kart.cat;
-            const currentBoxSec = toSec(kart.pT);
-            
-            // Formula core: Tempo di gara + (Tempo mancante ai box per raggiungere il target)
-            const missingBoxTime = Math.max(0, pitTargetValue - currentBoxSec);
-            const virtualTotal = kart.rT + missingBoxTime;
+            const cat = state.ovr[kart.num] || kart.cat;
+            const currentBox = toSec(kart.pT);
+            const deficit = Math.max(0, target - currentBox);
+            const vTotal = kart.rT + deficit;
 
             return { 
                 ...kart, 
-                cat: actualCat, 
-                vTotal: virtualTotal, 
-                rem: pitTargetValue - currentBoxSec 
+                cat, 
+                vTotal, 
+                rem: target - currentBox 
             };
         });
 
-        // 2. Filtro Categoria
-        if (catFilter !== "ALL") {
-            processed = processed.filter(k => k.cat === catFilter);
-        }
-
-        // 3. Ordinamento Virtuale
+        if (filter !== "ALL") processed = processed.filter(k => k.cat === filter);
         processed.sort((a, b) => a.vTotal - b.vTotal);
 
-        // 4. Calcolo Gap Virtuale rispetto al Leader di categoria
         if (processed.length > 0) {
-            const leaderVirtualTime = processed[0].vTotal;
-            processed = processed.map(k => ({
-                ...k,
-                vGap: (k.vTotal - leaderVirtualTime).toFixed(2)
-            }));
+            const leaderV = processed[0].vTotal;
+            processed = processed.map(k => ({ ...k, vGap: (k.vTotal - leaderV).toFixed(2) }));
         }
 
         state.lastData = processed;
@@ -480,7 +458,6 @@ const Engine = (() => {
     const renderTable = (data) => {
         const body = document.getElementById('rowsBody');
         body.innerHTML = "";
-
         data.forEach((k, i) => {
             const isOur = (k.num === state.ourKart);
             const tr = document.createElement('tr');
@@ -491,12 +468,12 @@ const Engine = (() => {
                 <td style="color:var(--dim); font-weight:bold;">${i+1}</td>
                 <td><span class="badge-cat cat-${k.cat}" onclick="Engine.cycleCat('${k.num}','${k.cat}')">${k.cat}</span></td>
                 <td style="font-weight:bold;">#${k.num}</td>
-                <td style="font-weight:800; overflow:hidden; text-overflow:ellipsis;">${k.team}</td>
+                <td style="font-weight:800;">${k.team}</td>
                 <td style="color:var(--accent); font-family:'JetBrains Mono';">${k.dist}</td>
                 <td style="text-align:center">${k.pits}</td>
                 <td>${k.pT}</td>
                 <td class="timer-box ${k.rem < 0 ? 'timer-over' : ''}">${formatTime(k.rem)}</td>
-                <td style="font-family:'JetBrains Mono'; color:#aaa;">${k.last}</td>
+                <td style="font-family:'JetBrains Mono'; color:#888;">${k.last}</td>
                 <td class="v-gap-box">+${k.vGap}s</td>
             `;
             body.appendChild(tr);
@@ -509,12 +486,11 @@ const Engine = (() => {
 
         const timeLabel = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
         state.chart.data.labels.push(timeLabel);
-        if(state.chart.data.labels.length > 40) state.chart.data.labels.shift();
+        if(state.chart.data.labels.length > 50) state.chart.data.labels.shift();
 
-        // DMS è sempre la baseline (Zero)
         [state.ourKart, ...state.directs].forEach(id => {
-            const teamData = data.find(k => k.num === id);
-            if (!teamData) return;
+            const team = data.find(k => k.num === id);
+            if (!team) return;
 
             let dataset = state.chart.data.datasets.find(d => d.label === `#${id}`);
             if (!dataset) {
@@ -522,19 +498,16 @@ const Engine = (() => {
                 dataset = {
                     label: `#${id}`,
                     data: [],
-                    borderColor: isOur ? '#00f2c3' : `hsl(${Math.random()*360}, 70%, 60%)`,
-                    borderWidth: isOur ? 4 : 2,
+                    borderColor: isOur ? '#00f2c3' : `hsl(${Math.random()*360}, 75%, 60%)`,
+                    borderWidth: isOur ? 3 : 2,
                     tension: 0.3,
-                    pointRadius: 0,
-                    borderDash: isOur ? [] : [5, 5]
+                    pointRadius: 0
                 };
                 state.chart.data.datasets.push(dataset);
             }
             
-            // Gap relativo a DMS
-            const relGap = teamData.vTotal - dms.vTotal;
-            dataset.data.push(relGap);
-            if(dataset.data.length > 40) dataset.data.shift();
+            dataset.data.push(team.vTotal - dms.vTotal);
+            if(dataset.data.length > 50) dataset.data.shift();
         });
 
         state.chart.update('none');
@@ -542,16 +515,11 @@ const Engine = (() => {
 
     const updateDirectsUI = () => {
         const container = document.getElementById('directsBox');
-        container.innerHTML = "";
-        state.directs.forEach(id => {
-            const tag = document.createElement('div');
-            tag.className = 'direct-tag';
-            tag.innerHTML = `<span>#${id}</span> <span class="remove-tag" onclick="Engine.removeDirect('${id}')">×</span>`;
-            container.appendChild(tag);
-        });
+        container.innerHTML = state.directs.map(id => `
+            <div class="direct-tag"><span>#${id}</span> <span class="remove-tag" onclick="Engine.removeDirect('${id}')">×</span></div>
+        `).join('');
     };
 
-    // API Pubbliche dell'oggetto Engine
     return {
         toggleSync: () => {
             state.active = !state.active;
@@ -560,12 +528,12 @@ const Engine = (() => {
                 btn.innerText = "STOP ANALISI";
                 btn.className = "btn-action btn-danger";
                 state.refresh = setInterval(recompute, 3000);
-                addLog("Analisi avviata. Refresh ogni 3 secondi.");
+                addLog("Monitoraggio Live attivato.");
             } else {
-                btn.innerText = "AVVIA SESSIONE";
+                btn.innerText = "AVVIA LIVE MONITOR";
                 btn.className = "btn-action btn-success";
                 clearInterval(state.refresh);
-                addLog("Analisi interrotta.");
+                addLog("Monitoraggio Live disattivato.");
             }
         },
         
@@ -574,36 +542,29 @@ const Engine = (() => {
             const val = input.value.trim();
             if(val && !state.directs.includes(val)) {
                 state.directs.push(val);
-                localStorage.setItem('dms_v31_directs', JSON.stringify(state.directs));
-                updateDirectsUI();
-                recompute();
-                addLog(`Monitoraggio attivato per Kart #${val}`);
+                localStorage.setItem('dms_v32_directs', JSON.stringify(state.directs));
+                updateDirectsUI(); recompute(); addLog(`Monitoraggio kart #${val} aggiunto.`);
             }
             input.value = "";
         },
 
         removeDirect: (id) => {
             state.directs = state.directs.filter(x => x !== id);
-            localStorage.setItem('dms_v31_directs', JSON.stringify(state.directs));
-            // Rimuovi anche dal grafico
+            localStorage.setItem('dms_v32_directs', JSON.stringify(state.directs));
             state.chart.data.datasets = state.chart.data.datasets.filter(d => d.label !== `#${id}`);
-            updateDirectsUI();
-            state.chart.update();
-            addLog(`Monitoraggio rimosso per Kart #${id}`);
+            updateDirectsUI(); state.chart.update();
         },
 
         cycleCat: (num, current) => {
             const cats = ["EK1", "EK2", "EK3"];
-            const next = cats[(cats.indexOf(current) + 1) % 3];
-            state.ovr[num] = next;
-            localStorage.setItem('dms_v31_ovr', JSON.stringify(state.ovr));
+            state.ovr[num] = cats[(cats.indexOf(current) + 1) % 3];
+            localStorage.setItem('dms_v32_ovr', JSON.stringify(state.ovr));
             recompute();
         },
 
         openBoxPage: () => {
-            // Ripristinato URL diretto legacy v2.3
-            const url = "https://gestione-cambi-kart---dms.firebaseapp.com";
-            window.open(url, '_blank', 'noopener,noreferrer');
+            // COLLEGAMENTO DIRETTO RICHIESTO
+            window.open("https://alecurti02-max.github.io/DMS-Boxstrategy/index.html", "_blank");
         },
 
         exportCSV: () => {
@@ -614,24 +575,22 @@ const Engine = (() => {
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `DMS_Report_${new Date().getTime()}.csv`;
+            link.download = `DMS_Race_Data_${Date.now()}.csv`;
             link.click();
         },
 
         reset: () => {
-            if(confirm("ATTENZIONE: Questo cancellerà tutti i tracking e gli override. Procedere?")) {
+            if(confirm("Vuoi davvero resettare la sessione?")) {
                 localStorage.clear();
                 location.reload();
             }
         },
 
         recompute: () => recompute(),
-        
         start: () => init()
     };
 })();
 
-// Inizializzazione al caricamento
 window.onload = () => Engine.start();
 </script>
 </body>
