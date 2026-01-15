@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v3.0 RESTORED</title>
+    <title>DMS Analytics Pro - v3.1 LEGACY RESTORE</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,77 +18,213 @@
             --ek1: #00e676; --ek2: #ffffff; --ek3: #ff5252;
         }
 
-        * { box-sizing: border-box; outline: none; }
+        * { box-sizing: border-box; outline: none; transition: background 0.2s ease; }
+        
         body { 
             height: 100vh; width: 100vw; margin: 0; padding: 0;
             background-color: var(--bg-deep); color: var(--text);
             font-family: 'Inter', sans-serif; overflow: hidden;
         }
 
-        .app-wrapper { display: grid; grid-template-rows: 75px 1fr; height: 100vh; padding: 6px; gap: 6px; }
+        /* Layout Principale */
+        .app-wrapper { 
+            display: grid; 
+            grid-template-rows: 80px 1fr; 
+            height: 100vh; 
+            padding: 8px; 
+            gap: 8px; 
+        }
 
+        /* Header con controlli */
         .main-header {
-            display: grid; grid-template-columns: 200px 1fr 480px;
-            background: var(--bg-header); border: 1px solid var(--border);
-            border-radius: 8px; padding: 0 15px; align-items: center;
+            display: grid; 
+            grid-template-columns: 220px 1fr 450px;
+            background: var(--bg-header); 
+            border: 1px solid var(--border);
+            border-radius: 10px; 
+            padding: 0 20px; 
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        .brand h1 { margin: 0; font-size: 0.9rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
-        
-        .input-dark {
-            background: #000; border: 1px solid var(--border); color: #fff;
-            padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
-        }
-        .input-target { width: 85px; text-align: center; border-color: var(--warning); color: var(--warning); font-weight: 800; font-size: 1rem; }
 
+        .brand h1 { 
+            margin: 0; 
+            font-size: 1rem; 
+            color: var(--accent); 
+            letter-spacing: 2px; 
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .status-pill {
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(0, 242, 195, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+            display: inline-block;
+            margin-top: 4px;
+        }
+        
+        /* Input Styles */
+        .input-dark {
+            background: #000; 
+            border: 1px solid var(--border); 
+            color: #fff;
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 0.8rem; 
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .input-target { 
+            width: 100px; 
+            text-align: center; 
+            border: 2px solid var(--warning); 
+            color: var(--warning); 
+            font-weight: 800; 
+            font-size: 1.1rem; 
+            background: rgba(245, 174, 11, 0.05);
+        }
+
+        /* Dashboard Grid */
         .dashboard-grid {
             display: grid; 
-            grid-template-columns: 1fr 380px; 
-            grid-template-rows: 1fr 220px;
-            gap: 6px; overflow: hidden;
+            grid-template-columns: 1fr 400px; 
+            grid-template-rows: 1fr 240px;
+            gap: 8px; 
+            overflow: hidden;
         }
 
         .telemetry-panel { grid-row: 1 / 3; }
 
         .panel {
-            background: var(--bg-panel); border: 1px solid var(--border);
-            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
+            background: var(--bg-panel); 
+            border: 1px solid var(--border);
+            border-radius: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
         }
 
         .panel-header {
-            padding: 8px 12px; background: rgba(255,255,255,0.02);
-            border-bottom: 1px solid var(--border); font-size: 0.6rem;
-            font-weight: 900; text-transform: uppercase; color: var(--dim);
-            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; 
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border); 
+            font-size: 0.7rem;
+            font-weight: 900; 
+            text-transform: uppercase; 
+            color: var(--dim);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
         }
 
+        /* Table Design */
         .scroll-area { flex: 1; overflow-y: auto; scrollbar-width: thin; }
-        .scroll-area::-webkit-scrollbar { width: 2px; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.72rem; table-layout: fixed; }
-        thead th { 
-            position: sticky; top: 0; background: var(--bg-panel); padding: 10px 8px; 
-            text-align: left; z-index: 50; border-bottom: 2px solid var(--border);
-            color: var(--dim); font-size: 0.55rem;
-        }
-        tbody td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.01); white-space: nowrap; }
-
-        .row-us { background: rgba(0, 242, 195, 0.07) !important; border-left: 4px solid var(--success); }
-        .row-direct { border-left: 4px solid var(--direct) !important; background: rgba(236, 72, 153, 0.03); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; table-layout: fixed; }
         
-        .badge-cat { padding: 2px 4px; border-radius: 3px; font-weight: 900; font-size: 0.5rem; color: #000; min-width: 32px; text-align: center; cursor: pointer; }
-        .cat-EK1 { background: var(--ek1); } .cat-EK2 { background: var(--ek2); } .cat-EK3 { background: var(--ek3); }
+        thead th { 
+            position: sticky; 
+            top: 0; 
+            background: var(--bg-panel); 
+            padding: 12px 8px; 
+            text-align: left; 
+            z-index: 100; 
+            border-bottom: 2px solid var(--border);
+            color: var(--dim); 
+            font-size: 0.6rem;
+            text-transform: uppercase;
+        }
 
-        .v-gap-box { font-family: 'JetBrains Mono'; font-weight: 800; color: var(--success); font-size: 0.9rem; }
-        .timer-box { font-family: 'JetBrains Mono'; font-weight: 700; color: var(--warning); }
-        .timer-over { color: var(--danger); animation: critical-blink 1s infinite; }
-        @keyframes critical-blink { 50% { opacity: 0.4; } }
+        tbody td { 
+            padding: 8px; 
+            border-bottom: 1px solid rgba(255,255,255,0.02); 
+            white-space: nowrap; 
+            vertical-align: middle;
+        }
 
-        .btn-action { padding: 6px 12px; border-radius: 4px; font-weight: 800; border: none; cursor: pointer; font-size: 0.65rem; }
+        .row-us { background: rgba(0, 242, 195, 0.1) !important; border-left: 4px solid var(--success); }
+        .row-direct { background: rgba(236, 72, 153, 0.05); border-left: 4px solid var(--direct); }
+        
+        .badge-cat { 
+            padding: 4px 6px; 
+            border-radius: 4px; 
+            font-weight: 900; 
+            font-size: 0.6rem; 
+            color: #000; 
+            min-width: 40px; 
+            text-align: center; 
+            cursor: pointer; 
+            display: inline-block;
+        }
+        .cat-EK1 { background: var(--ek1); } 
+        .cat-EK2 { background: var(--ek2); } 
+        .cat-EK3 { background: var(--ek3); }
+
+        .v-gap-box { 
+            font-family: 'JetBrains Mono'; 
+            font-weight: 800; 
+            color: var(--success); 
+            font-size: 1rem; 
+        }
+
+        .timer-box { 
+            font-family: 'JetBrains Mono'; 
+            font-weight: 700; 
+            color: var(--warning);
+            font-size: 0.85rem;
+        }
+
+        .timer-over { 
+            color: var(--danger); 
+            animation: blinker 1s linear infinite; 
+        }
+
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        /* Buttons */
+        .btn-action { 
+            padding: 8px 16px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 0.7rem; 
+            text-transform: uppercase;
+        }
         .btn-success { background: var(--success); color: #000; }
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--dim); }
-        
-        .msg-line { padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 0.65rem; color: var(--dim); font-family: 'JetBrains Mono'; }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+
+        /* Log News Feed */
+        .msg-line { 
+            padding: 8px 12px; 
+            border-bottom: 1px solid rgba(255,255,255,0.02); 
+            font-size: 0.7rem; 
+            color: #aaa; 
+            font-family: 'JetBrains Mono';
+            display: flex;
+            gap: 10px;
+        }
+        .msg-ts { color: var(--accent); font-weight: bold; }
+
+        .direct-tag {
+            background: var(--bg-header);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+        }
+        .remove-tag { color: var(--danger); cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -96,74 +232,92 @@
 <div class="app-wrapper">
     <header class="main-header">
         <div class="brand">
-            <h1>DMS ANALYTICS <span>v3.0</span></h1>
-            <div id="statusLive" style="font-size: 0.5rem; color: var(--success);">SYSTEM ONLINE</div>
+            <h1>DMS STRATEGIC <span>v3.1</span></h1>
+            <div id="statusLive" class="status-pill">WAITING FOR DATA...</div>
         </div>
         
-        <div style="display: flex; gap: 15px; align-items: center; justify-content: center;">
-            <input type="text" id="apexFeed" class="input-dark" style="width: 200px;" placeholder="Apex Feed URL...">
-            <button class="btn-action btn-success" onclick="Engine.toggleSync()" id="syncBtn">AVVIA LIVE STREAM</button>
-            <div style="width: 1px; height: 20px; background: var(--border);"></div>
-            <span style="font-size: 0.55rem; font-weight: 900; color: var(--warning);">PIT TARGET</span>
-            <input type="number" id="pitTarget" class="input-dark input-target" value="2280">
+        <div style="display: flex; gap: 20px; align-items: center; justify-content: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.6rem; font-weight: 900; color: var(--dim);">APEX:</span>
+                <input type="text" id="apexFeed" class="input-dark" style="width: 180px;" placeholder="URL FEED...">
+            </div>
+            
+            <button class="btn-action btn-success" onclick="Engine.toggleSync()" id="syncBtn">AVVIA SESSIONE</button>
+            
+            <div style="width: 1px; height: 30px; background: var(--border);"></div>
+            
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.55rem; font-weight: 900; color: var(--warning); margin-bottom: 2px;">SEC. TARGET PIT</span>
+                <input type="number" id="pitTarget" class="input-dark input-target" value="2280" oninput="Engine.recompute()">
+            </div>
         </div>
 
-        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
             <button class="btn-action btn-outline" onclick="Engine.openBoxPage()">PAGINA BOX</button>
-            <button class="btn-action btn-outline" onclick="Engine.exportCSV()">DOWNLOAD CSV</button>
-            <button class="btn-action btn-danger" onclick="Engine.reset()">RESET</button>
+            <button class="btn-action btn-outline" onclick="Engine.exportCSV()">EXPORT CSV</button>
+            <button class="btn-action btn-danger" onclick="Engine.reset()">RESET ALL</button>
         </div>
     </header>
 
     <main class="dashboard-grid">
         <section class="panel telemetry-panel">
             <div class="panel-header">
-                <span>Real-Time Virtual Classification</span>
-                <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="height: 22px; font-size: 0.55rem;">
-                    <option value="ALL">CLASSE: TUTTE</option>
-                    <option value="EK1">EK1</option><option value="EK2">EK2</option><option value="EK3">EK3</option>
-                </select>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span>LIVE RANKING & STRATEGY</span>
+                    <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="height: 25px; padding: 0 10px; font-size: 0.6rem;">
+                        <option value="ALL">TUTTE LE CATEGORIE</option>
+                        <option value="EK1">CATEGORIA EK1</option>
+                        <option value="EK2">CATEGORIA EK2</option>
+                        <option value="EK3">CATEGORIA EK3</option>
+                    </select>
+                </div>
+                <div id="lastUpdate" style="font-family: 'JetBrains Mono'; font-size: 0.6rem;">LAST UPDATE: --:--:--</div>
             </div>
             <div class="scroll-area">
                 <table id="mainTable">
                     <thead>
                         <tr>
-                            <th style="width: 30px;">POS</th>
-                            <th style="width: 45px;">CAT</th>
-                            <th style="width: 40px;">KART</th>
-                            <th style="width: 180px;">NOME TEAM</th>
-                            <th style="width: 80px; color:var(--accent)">DIST. APEX</th>
-                            <th style="width: 35px;">PIT</th>
-                            <th style="width: 75px;">BOX TIME</th>
-                            <th style="width: 100px; color: var(--warning);">REMAINING</th>
-                            <th style="width: 75px;">LAST LAP</th>
-                            <th style="width: 85px; color: var(--success);">V-GAP</th>
+                            <th style="width: 40px;">POS</th>
+                            <th style="width: 55px;">CAT</th>
+                            <th style="width: 50px;">KART</th>
+                            <th style="width: 180px;">TEAM NAME</th>
+                            <th style="width: 90px; color:var(--accent)">APEX DIST.</th>
+                            <th style="width: 45px;">PIT</th>
+                            <th style="width: 85px;">BOX SEC.</th>
+                            <th style="width: 110px; color: var(--warning);">PIT REMAINING</th>
+                            <th style="width: 85px;">LAST LAP</th>
+                            <th style="width: 100px; color: var(--success);">VIRTUAL GAP</th>
                         </tr>
                     </thead>
-                    <tbody id="rowsBody"></tbody>
+                    <tbody id="rowsBody">
+                        </tbody>
                 </table>
             </div>
         </section>
 
         <section class="panel">
-            <div class="panel-header">Relative Strategy Trend (vs DMS)</div>
-            <div style="flex:1; padding: 10px; position: relative;"><canvas id="strategyChart"></canvas></div>
+            <div class="panel-header">STRATEGY TREND (GAP RELATIVO A DMS)</div>
+            <div style="flex:1; padding: 15px; position: relative;">
+                <canvas id="strategyChart"></canvas>
+            </div>
         </section>
 
-        <section style="display: grid; grid-template-rows: 100px 1fr; gap: 6px;">
+        <section style="display: grid; grid-template-rows: 110px 1fr; gap: 8px;">
             <div class="panel">
-                <div class="panel-header">Direct Opponents Tracking</div>
-                <div style="padding: 10px;">
-                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
-                        <input type="text" id="addInput" class="input-dark" style="flex:1" placeholder="Inserisci # Kart">
+                <div class="panel-header">TRACKING AVVERSARI DIRETTI</div>
+                <div style="padding: 12px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <input type="text" id="addInput" class="input-dark" style="flex:1" placeholder="Inserisci # Kart...">
                         <button class="btn-action btn-success" onclick="Engine.addDirect()">AGGIUNGI</button>
                     </div>
-                    <div id="directsBox" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+                    <div id="directsBox" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
                 </div>
             </div>
+            
             <div class="panel">
-                <div class="panel-header">Race Direction News Feed</div>
-                <div class="scroll-area" id="logBox"></div>
+                <div class="panel-header">DIREZIONE GARA & NEWS</div>
+                <div class="scroll-area" id="logBox" style="background: rgba(0,0,0,0.2);">
+                    </div>
             </div>
         </section>
     </main>
@@ -171,40 +325,44 @@
 
 <script>
 /**
- * DMS STRATEGIC ENGINE v3.0 - FULL RESTORE
- * Ripristino totale funzionalità override, log, tracking e export.
+ * DMS STRATEGIC ENGINE v3.1
+ * Core logico per analisi pit-stop e distacchi virtuali.
  */
 const Engine = (() => {
+    // Stato persistente
     let state = {
         active: false,
         ourKart: "",
-        directs: JSON.parse(localStorage.getItem('dms_v3_directs')) || [],
-        ovr: JSON.parse(localStorage.getItem('dms_v3_ovr')) || {},
+        directs: JSON.parse(localStorage.getItem('dms_v31_directs')) || [],
+        ovr: JSON.parse(localStorage.getItem('dms_v31_ovr')) || {},
         chart: null,
         refresh: null,
-        lastData: []
+        lastData: [],
+        history: {}
     };
 
     const init = () => {
-        firebase.initializeApp({
+        // Firebase Config
+        const firebaseConfig = {
             apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco",
             authDomain: "gestione-cambi-kart---dms.firebaseapp.com",
             databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "gestione-cambi-kart---dms"
-        });
-
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        // Listener per il nostro Kart ID
         firebase.database().ref('raceState/ourKartId').on('value', snap => {
-            state.ourKart = snap.val() || "";
-            document.getElementById('statusLive').innerText = `DMS ACTIVE: #${state.ourKart}`;
+            state.ourKart = snap.val() || "22";
+            document.getElementById('statusLive').innerText = `MONITORING DMS: #${state.ourKart}`;
             recompute();
         });
 
         setupChart();
         updateDirectsUI();
         recompute(); 
-        
-        // Log iniziale
-        addLog("System initialized. Version 3.0 RESTORED.");
+        addLog("Engine v3.1 Online. Pronto per la gara.");
     };
 
     const setupChart = () => {
@@ -213,176 +371,268 @@ const Engine = (() => {
             type: 'line',
             data: { labels: [], datasets: [] },
             options: {
-                responsive: true, maintainAspectRatio: false, animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#888', font: { size: 9 } } },
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#666', font: { size: 10, family: 'JetBrains Mono' } }
+                    },
                     x: { display: false }
                 },
-                plugins: { legend: { display: true, position: 'bottom', labels: { color: '#aaa', boxWidth: 10, font: { size: 9 } } } }
+                plugins: {
+                    legend: { 
+                        display: true, 
+                        position: 'bottom',
+                        labels: { color: '#aaa', font: { size: 10 }, boxWidth: 12, padding: 15 }
+                    },
+                    tooltip: { mode: 'index', intersect: false }
+                }
             }
         });
     };
 
-    const toSec = (s) => {
-        if(!s) return 0;
-        const p = s.toString().split(':');
-        if(p.length === 3) return (+p[0]*3600)+(+p[1]*60)+(+p[2]);
-        if(p.length === 2) return (+p[0]*60)+(+p[1]);
-        return parseFloat(s) || 0;
+    // Utility di conversione tempi
+    const toSec = (timeStr) => {
+        if(!timeStr || timeStr === "") return 0;
+        const parts = timeStr.toString().split(':');
+        try {
+            if(parts.length === 3) return (+parts[0] * 3600) + (+parts[1] * 60) + (+parts[2]);
+            if(parts.length === 2) return (+parts[1].includes('.') ? (parseFloat(parts[0]*60) + parseFloat(parts[1])) : (+parts[0] * 60) + (+parts[1]));
+            return parseFloat(timeStr) || 0;
+        } catch(e) { return 0; }
     };
 
-    const fmt = (s) => {
-        const sign = s < 0 ? "-" : "";
-        const abs = Math.abs(s);
-        const m = Math.floor(abs / 60);
-        const sc = Math.floor(abs % 60);
-        return `${sign}${m}:${sc.toString().padStart(2, '0')}`;
+    const formatTime = (seconds) => {
+        const isNeg = seconds < 0;
+        const absSec = Math.abs(seconds);
+        const m = Math.floor(absSec / 60);
+        const s = Math.floor(absSec % 60);
+        return `${isNeg ? '-' : ''}${m}:${s.toString().padStart(2, '0')}`;
     };
 
     const addLog = (msg) => {
-        const lb = document.getElementById('logBox');
-        const d = new Date().toLocaleTimeString();
-        lb.innerHTML = `<div class="msg-line">[${d}] ${msg}</div>` + lb.innerHTML;
+        const box = document.getElementById('logBox');
+        const ts = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        const entry = document.createElement('div');
+        entry.className = 'msg-line';
+        entry.innerHTML = `<span class="msg-ts">${ts}</span> <span>${msg}</span>`;
+        box.prepend(entry);
     };
 
+    // CUORE DEL CALCOLO
     const recompute = () => {
-        const target = parseInt(document.getElementById('pitTarget').value) || 0;
-        const filter = document.getElementById('filterCat').value;
+        const pitTargetValue = parseInt(document.getElementById('pitTarget').value) || 0;
+        const catFilter = document.getElementById('filterCat').value;
+        const nowTs = new Date().toLocaleTimeString();
+        document.getElementById('lastUpdate').innerText = `LAST UPDATE: ${nowTs}`;
 
-        // Dati di prova (Saranno sostituiti dal fetch Apex reale)
-        let raw = [
-            { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rT: 36000, pits: 14, pT: "38:00", last: "1:02.7" },
-            { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+12.8", rT: 36012, pits: 12, pT: "40:20", last: "1:02.8" },
-            { num: "49", team: "SPARKART", cat: "EK2", dist: "1 Lap", rT: 36050, pits: 15, pT: "37:50", last: "1:03.1" },
-            { num: "4", team: "GOATS RT RED", cat: "EK3", dist: "+1:15", rT: 36075, pits: 12, pT: "38:05", last: "1:02.9" }
+        // Simulazione Dati (Da integrare con Fetch API di Apex)
+        // In una situazione reale, qui faresti: fetch(state.apexUrl).then(...)
+        let rawData = [
+            { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rT: 36000, pits: 14, pT: "38:00", last: "1:02.721" },
+            { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+12.42", rT: 36012, pits: 12, pT: "40:20", last: "1:02.810" },
+            { num: "49", team: "SPARKART", cat: "EK2", dist: "1 Lap", rT: 36065, pits: 15, pT: "37:50", last: "1:03.112" },
+            { num: "16", team: "TEAM EVO", cat: "EK1", dist: "+45.1", rT: 36045, pits: 14, pT: "38:00", last: "1:02.501" },
+            { num: "7", team: "KARTING PRO", cat: "EK3", dist: "+1:12", rT: 36110, pits: 13, pT: "39:10", last: "1:03.002" }
         ];
 
-        let processed = raw.map(k => {
-            const cat = state.ovr[k.num] || k.cat;
-            const pSec = toSec(k.pT);
-            const deficit = Math.max(0, target - pSec);
-            return { ...k, cat, vTotal: k.rT + deficit, rem: target - pSec };
+        // 1. Applica Override e Calcola Totale Virtuale
+        let processed = rawData.map(kart => {
+            const actualCat = state.ovr[kart.num] || kart.cat;
+            const currentBoxSec = toSec(kart.pT);
+            
+            // Formula core: Tempo di gara + (Tempo mancante ai box per raggiungere il target)
+            const missingBoxTime = Math.max(0, pitTargetValue - currentBoxSec);
+            const virtualTotal = kart.rT + missingBoxTime;
+
+            return { 
+                ...kart, 
+                cat: actualCat, 
+                vTotal: virtualTotal, 
+                rem: pitTargetValue - currentBoxSec 
+            };
         });
 
-        if (filter !== "ALL") processed = processed.filter(k => k.cat === filter);
-        processed.sort((a,b) => a.vTotal - b.vTotal);
+        // 2. Filtro Categoria
+        if (catFilter !== "ALL") {
+            processed = processed.filter(k => k.cat === catFilter);
+        }
 
+        // 3. Ordinamento Virtuale
+        processed.sort((a, b) => a.vTotal - b.vTotal);
+
+        // 4. Calcolo Gap Virtuale rispetto al Leader di categoria
         if (processed.length > 0) {
-            const lead = processed[0].vTotal;
-            processed = processed.map(k => ({ ...k, vGap: (k.vTotal - lead).toFixed(1) }));
+            const leaderVirtualTime = processed[0].vTotal;
+            processed = processed.map(k => ({
+                ...k,
+                vGap: (k.vTotal - leaderVirtualTime).toFixed(2)
+            }));
         }
 
         state.lastData = processed;
-        render(processed);
-        updateChart(processed);
+        renderTable(processed);
+        updateChartData(processed);
     };
 
-    const render = (data) => {
+    const renderTable = (data) => {
         const body = document.getElementById('rowsBody');
         body.innerHTML = "";
+
         data.forEach((k, i) => {
-            const isUs = k.num === state.ourKart;
-            const isDir = state.directs.includes(k.num);
+            const isOur = (k.num === state.ourKart);
             const tr = document.createElement('tr');
-            if(isUs) tr.className = "row-us";
-            if(isDir) tr.classList.add("row-direct");
+            if (isOur) tr.className = "row-us";
+            if (state.directs.includes(k.num)) tr.classList.add("row-direct");
 
             tr.innerHTML = `
-                <td style="color:var(--dim)">${i+1}</td>
+                <td style="color:var(--dim); font-weight:bold;">${i+1}</td>
                 <td><span class="badge-cat cat-${k.cat}" onclick="Engine.cycleCat('${k.num}','${k.cat}')">${k.cat}</span></td>
-                <td style="font-weight:bold; color:var(--dim)">#${k.num}</td>
-                <td style="font-weight:800;">${k.team}</td>
-                <td style="color:var(--accent); font-family: 'JetBrains Mono';">${k.dist}</td>
+                <td style="font-weight:bold;">#${k.num}</td>
+                <td style="font-weight:800; overflow:hidden; text-overflow:ellipsis;">${k.team}</td>
+                <td style="color:var(--accent); font-family:'JetBrains Mono';">${k.dist}</td>
                 <td style="text-align:center">${k.pits}</td>
-                <td style="font-size:0.65rem;">${k.pT}</td>
-                <td class="timer-box ${k.rem < 0 ? 'timer-over' : ''}">${fmt(k.rem)}</td>
-                <td style="font-family:'JetBrains Mono';">${k.last}</td>
+                <td>${k.pT}</td>
+                <td class="timer-box ${k.rem < 0 ? 'timer-over' : ''}">${formatTime(k.rem)}</td>
+                <td style="font-family:'JetBrains Mono'; color:#aaa;">${k.last}</td>
                 <td class="v-gap-box">+${k.vGap}s</td>
             `;
             body.appendChild(tr);
         });
     };
 
-    const updateChart = (data) => {
-        const our = data.find(k => k.num === state.ourKart);
-        if (!our || !state.chart) return;
-        const time = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
-        state.chart.data.labels.push(time);
-        if(state.chart.data.labels.length > 60) state.chart.data.labels.shift();
+    const updateChartData = (data) => {
+        const dms = data.find(k => k.num === state.ourKart);
+        if (!dms || !state.chart) return;
 
-        [state.ourKart, ...state.directs].forEach(num => {
-            const team = data.find(k => k.num === num);
-            if (!team) return;
-            let ds = state.chart.data.datasets.find(d => d.label === `#${num}`);
-            if (!ds) {
-                const col = (num === state.ourKart) ? '#00f2c3' : `hsl(${Math.random()*360}, 75%, 60%)`;
-                ds = { label: `#${num}`, data: [], borderColor: col, borderWidth: (num === state.ourKart ? 3 : 2), tension: 0.3, pointRadius: 0 };
-                state.chart.data.datasets.push(ds);
+        const timeLabel = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
+        state.chart.data.labels.push(timeLabel);
+        if(state.chart.data.labels.length > 40) state.chart.data.labels.shift();
+
+        // DMS è sempre la baseline (Zero)
+        [state.ourKart, ...state.directs].forEach(id => {
+            const teamData = data.find(k => k.num === id);
+            if (!teamData) return;
+
+            let dataset = state.chart.data.datasets.find(d => d.label === `#${id}`);
+            if (!dataset) {
+                const isOur = (id === state.ourKart);
+                dataset = {
+                    label: `#${id}`,
+                    data: [],
+                    borderColor: isOur ? '#00f2c3' : `hsl(${Math.random()*360}, 70%, 60%)`,
+                    borderWidth: isOur ? 4 : 2,
+                    tension: 0.3,
+                    pointRadius: 0,
+                    borderDash: isOur ? [] : [5, 5]
+                };
+                state.chart.data.datasets.push(dataset);
             }
-            ds.data.push(team.vTotal - our.vTotal);
-            if(ds.data.length > 60) ds.data.shift();
+            
+            // Gap relativo a DMS
+            const relGap = teamData.vTotal - dms.vTotal;
+            dataset.data.push(relGap);
+            if(dataset.data.length > 40) dataset.data.shift();
         });
+
         state.chart.update('none');
     };
 
     const updateDirectsUI = () => {
-        document.getElementById('directsBox').innerHTML = state.directs.map(d => `
-            <span class="btn-action" style="background:#1a1f26; color:var(--text); padding:3px 8px; border:1px solid var(--border); margin:2px; font-size:0.6rem;" onclick="Engine.removeDirect('${d}')">#${d} ×</span>
-        `).join('');
+        const container = document.getElementById('directsBox');
+        container.innerHTML = "";
+        state.directs.forEach(id => {
+            const tag = document.createElement('div');
+            tag.className = 'direct-tag';
+            tag.innerHTML = `<span>#${id}</span> <span class="remove-tag" onclick="Engine.removeDirect('${id}')">×</span>`;
+            container.appendChild(tag);
+        });
     };
 
+    // API Pubbliche dell'oggetto Engine
     return {
         toggleSync: () => {
             state.active = !state.active;
-            const b = document.getElementById('syncBtn');
-            if(state.active) { b.innerText="STOP STREAM"; b.className="btn-action btn-danger"; state.refresh = setInterval(recompute, 3000); addLog("Stream Started."); }
-            else { b.innerText="AVVIA LIVE STREAM"; b.className="btn-action btn-success"; clearInterval(state.refresh); addLog("Stream Stopped."); }
-        },
-        addDirect: () => {
-            const v = document.getElementById('addInput').value.trim();
-            if(v && !state.directs.includes(v)) {
-                state.directs.push(v);
-                localStorage.setItem('dms_v3_directs', JSON.stringify(state.directs));
-                updateDirectsUI(); recompute(); addLog(`Tracking added for Kart #${v}`);
+            const btn = document.getElementById('syncBtn');
+            if(state.active) {
+                btn.innerText = "STOP ANALISI";
+                btn.className = "btn-action btn-danger";
+                state.refresh = setInterval(recompute, 3000);
+                addLog("Analisi avviata. Refresh ogni 3 secondi.");
+            } else {
+                btn.innerText = "AVVIA SESSIONE";
+                btn.className = "btn-action btn-success";
+                clearInterval(state.refresh);
+                addLog("Analisi interrotta.");
             }
-            document.getElementById('addInput').value = "";
         },
-        removeDirect: (n) => {
-            state.directs = state.directs.filter(x => x !== n);
-            localStorage.setItem('dms_v3_directs', JSON.stringify(state.directs));
-            state.chart.data.datasets = state.chart.data.datasets.filter(d => d.label !== `#${n}`);
-            updateDirectsUI(); state.chart.update(); addLog(`Stopped tracking Kart #${n}`);
+        
+        addDirect: () => {
+            const input = document.getElementById('addInput');
+            const val = input.value.trim();
+            if(val && !state.directs.includes(val)) {
+                state.directs.push(val);
+                localStorage.setItem('dms_v31_directs', JSON.stringify(state.directs));
+                updateDirectsUI();
+                recompute();
+                addLog(`Monitoraggio attivato per Kart #${val}`);
+            }
+            input.value = "";
         },
-        cycleCat: (n, c) => {
+
+        removeDirect: (id) => {
+            state.directs = state.directs.filter(x => x !== id);
+            localStorage.setItem('dms_v31_directs', JSON.stringify(state.directs));
+            // Rimuovi anche dal grafico
+            state.chart.data.datasets = state.chart.data.datasets.filter(d => d.label !== `#${id}`);
+            updateDirectsUI();
+            state.chart.update();
+            addLog(`Monitoraggio rimosso per Kart #${id}`);
+        },
+
+        cycleCat: (num, current) => {
             const cats = ["EK1", "EK2", "EK3"];
-            state.ovr[n] = cats[(cats.indexOf(c) + 1) % 3];
-            localStorage.setItem('dms_v3_ovr', JSON.stringify(state.ovr));
+            const next = cats[(cats.indexOf(current) + 1) % 3];
+            state.ovr[num] = next;
+            localStorage.setItem('dms_v31_ovr', JSON.stringify(state.ovr));
             recompute();
         },
+
         openBoxPage: () => {
-            const url = 'https://gestione-cambi-kart---dms.firebaseapp.com';
-            const win = window.open(url, '_blank');
-            if (!win) alert("Il browser ha bloccato il popup. Abilita i popup per questo sito.");
+            // Ripristinato URL diretto legacy v2.3
+            const url = "https://gestione-cambi-kart---dms.firebaseapp.com";
+            window.open(url, '_blank', 'noopener,noreferrer');
         },
+
         exportCSV: () => {
-            let csv = "POS_VIRT;KART;TEAM;CAT;REMAINING;V_GAP\n";
-            state.lastData.forEach((k,i) => {
-                csv += `${i+1};${k.num};${k.team};${k.cat};${fmt(k.rem)};${k.vGap}\n`;
+            let csv = "POS;CAT;KART;TEAM;BOX_TIME;REMAINING;V_GAP\n";
+            state.lastData.forEach((k, i) => {
+                csv += `${i+1};${k.cat};${k.num};${k.team};${k.pT};${formatTime(k.rem)};${k.vGap}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `DMS_Race_Report_${Date.now()}.csv`;
-            a.click();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `DMS_Report_${new Date().getTime()}.csv`;
+            link.click();
         },
+
+        reset: () => {
+            if(confirm("ATTENZIONE: Questo cancellerà tutti i tracking e gli override. Procedere?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        },
+
         recompute: () => recompute(),
-        reset: () => { if(confirm("Resettare tutti i dati di sessione?")) { localStorage.clear(); location.reload(); } },
+        
         start: () => init()
     };
 })();
 
-Engine.start();
+// Inizializzazione al caricamento
+window.onload = () => Engine.start();
 </script>
 </body>
 </html>
