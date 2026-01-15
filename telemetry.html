@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v1.7 SOLID</title>
+    <title>DMS Analytics Pro - v1.9 TANK EDITION</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,68 +13,77 @@
             --accent: #1d8cf8; --success: #00f2c3; --direct: #fd5d93; --warning: #ff4757;
             --ek1: #2ecc71; --ek2: #ffffff; --ek3: #e74c3c;
         }
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; height: 100vh; overflow: hidden; }
         
-        .header-flex { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; background: var(--card); padding: 18px; border-radius: 10px; border: 1px solid #2b3548; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .main-container { display: grid; grid-template-columns: 1fr 200px 400px; gap: 15px; height: calc(100vh - 230px); }
+        /* Layout Strutturale */
+        .header-flex { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; background: var(--card); padding: 18px; border-radius: 10px; border: 1px solid #2b3548; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .main-container { display: grid; grid-template-columns: 1fr 220px 420px; gap: 15px; height: calc(100vh - 230px); }
         
-        .panel { background: var(--card); border-radius: 10px; border: 1px solid #2b3548; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .panel-header { padding: 12px; background: #1d2331; font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #3d4b64; display: flex; justify-content: space-between; align-items: center; }
+        .panel { background: var(--card); border-radius: 10px; border: 1px solid #2b3548; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .panel-header { padding: 12px 15px; background: #1d2331; font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #3d4b64; display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
         
         .scroll-area { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #3d4b64 transparent; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9em; table-layout: fixed; }
-        th { background: #1d2331; padding: 12px 8px; text-align: left; position: sticky; top: 0; color: #888; z-index: 10; font-size: 0.8em; text-transform: uppercase; }
-        td { padding: 12px 8px; border-bottom: 1px solid #2b3548; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .scroll-area::-webkit-scrollbar { width: 6px; }
+        .scroll-area::-webkit-scrollbar-thumb { background-color: #3d4b64; border-radius: 10px; }
+
+        /* Tabelle e Dati */
+        table { width: 100%; border-collapse: collapse; font-size: 0.88em; table-layout: fixed; }
+        th { background: #1d2331; padding: 12px 10px; text-align: left; position: sticky; top: 0; color: #888; z-index: 10; border-bottom: 2px solid #2b3548; font-size: 0.75em; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid #2b3548; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .row-our-team { background: rgba(0, 242, 195, 0.12) !important; color: var(--success); }
-        .row-direct { background: rgba(253, 93, 147, 0.08); border-left: 4px solid var(--direct); }
+        .row-direct { background: rgba(253, 93, 147, 0.1) !important; border-left: 4px solid var(--direct); }
         
-        .cat-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.7em; color: #000; font-weight: 900; display: inline-block; min-width: 45px; text-align: center; }
+        /* Badge Categorie */
+        .cat-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.7em; color: #000; font-weight: 900; display: inline-block; min-width: 50px; text-align: center; cursor: pointer; transition: transform 0.1s; border: 2px solid transparent; }
+        .cat-badge:hover { transform: scale(1.1); border-color: rgba(255,255,255,0.3); }
         .cat-EK1 { background: var(--ek1); }
         .cat-EK2 { background: var(--ek2); }
         .cat-EK3 { background: var(--ek3); }
 
-        .filter-select { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; outline: none; }
+        /* Controlli */
+        .filter-select { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; appearance: none; }
+        input { background: #0b0e14; border: 1px solid #3d4b64; color: white; padding: 10px; border-radius: 6px; font-family: monospace; }
+        button { cursor: pointer; font-weight: bold; border: none; border-radius: 6px; padding: 10px 18px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active { transform: scale(0.95); }
+
+        /* Grafico e Utility */
         .chart-container { flex: 1; background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #2b3548; position: relative; }
-        
-        input, select { background: #0b0e14; border: 1px solid #3d4b64; color: white; padding: 10px; border-radius: 6px; font-size: 0.9em; }
-        button { cursor: pointer; font-weight: bold; border: none; border-radius: 6px; padding: 10px 18px; transition: all 0.2s ease; }
-        button:active { transform: scale(0.96); }
-        
-        .status-tag { font-size: 0.75em; padding: 2px 6px; border-radius: 4px; background: #2b3548; }
-        .status-pit { background: var(--warning); color: white; }
+        .pit-warning { color: var(--warning); font-size: 0.7em; font-weight: 900; display: block; margin-top: 2px; }
+        .pos-num { color: #555; font-family: monospace; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
 <div class="header-flex">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex; align-items:baseline; gap:15px;">
-            <h2 style="margin:0; letter-spacing: 1px;">DMS ANALYTICS <span style="color:var(--accent); font-size:0.6em;">V1.7 SOLID</span></h2>
-            <div id="ourTeamDisplay" style="color:var(--success); font-weight:bold; font-size:1.1em; background: rgba(0,242,195,0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--success);">--</div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <h2 style="margin:0; letter-spacing: 2px; color: #fff;">DMS ANALYTICS <span style="color:var(--accent); font-size:0.6em;">v1.9 TANK</span></h2>
+            <div id="ourTeamDisplay" style="color:var(--success); font-weight:bold; font-size:1.1em; background: rgba(0,242,195,0.1); padding: 6px 15px; border-radius: 30px; border: 1px solid var(--success); min-width: 180px; text-align: center;">--</div>
         </div>
         <div style="display:flex; gap:12px; align-items:center;">
-            <span style="font-size:0.8em; font-weight:bold; color:#888;">FILTRO:</span>
+            <span style="font-size:0.8em; font-weight:bold; color:#556a89;">MODALITÀ VISTA:</span>
             <select id="catSelector" class="filter-select" onchange="updateTelemetry()">
                 <option value="ALL">CLASSIFICA ASSOLUTA</option>
                 <option value="EK1">CATEGORIA EK1 (VERDE)</option>
                 <option value="EK2">CATEGORIA EK2 (BIANCO)</option>
                 <option value="EK3">CATEGORIA EK3 (ROSSO)</option>
             </select>
-            <button onclick="exportTelemetryCSV()" style="background:#2c2c44; color:white; border: 1px solid #3d4b64;">EXPORT CSV</button>
-            <button onclick="resetGara()" style="background:var(--warning); color:white;">RESET GARA</button>
+            <button onclick="exportTelemetryCSV()" style="background:#2c2c44; color:white; border: 1px solid #3d4b64;">EXPORT REPORT</button>
+            <button onclick="resetGara()" style="background:var(--warning); color:white;">RESET TOTALE</button>
         </div>
     </div>
-    <div style="display:flex; gap:20px; align-items:center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-        <div style="flex:1; display:flex; align-items:center; gap:10px;">
-            <strong style="font-size:0.8em;">🔗 APEX FEED:</strong>
-            <input type="text" id="apexUrlInput" placeholder="Inserisci URL .json ufficiale..." style="flex:1;">
-            <button onclick="connectToApex()" style="background:var(--success); color:black; min-width:140px;">CONNETTI LIVE</button>
+    
+    <div style="display:flex; gap:20px; align-items:center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid #2b3548;">
+        <div style="flex:1; display:flex; align-items:center; gap:12px;">
+            <strong style="font-size:0.8em; color:var(--accent);">APEX LIVE FEED:</strong>
+            <input type="text" id="apexUrlInput" placeholder="Incolla URL .json qui..." style="flex:1;">
+            <button id="connectBtn" onclick="connectToApex()" style="background:var(--success); color:black; min-width:160px; text-transform:uppercase;">Avvia Acquisizione</button>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <strong style="font-size:0.8em;">PIT OBBLIGATORIO (SEC):</strong>
-            <input type="number" id="minPitInput" value="2280" style="width:100px; text-align:center;" onchange="updateTelemetry()">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <strong style="font-size:0.8em; color:var(--success);">TARGET PIT (SEC):</strong>
+            <input type="number" id="minPitInput" value="2280" style="width:110px; text-align:center; font-size:1.1em;" onchange="updateTelemetry()">
         </div>
     </div>
 </div>
@@ -85,13 +94,13 @@
             <table id="telemetryTable">
                 <thead>
                     <tr>
-                        <th style="width:50px;">POS</th>
-                        <th style="width:70px;">CAT</th>
-                        <th style="width:180px;">TEAM / KART</th>
-                        <th style="width:60px;">PIT</th>
-                        <th style="width:90px;">TEMPO BOX</th>
-                        <th style="width:90px;">ULTIMO</th>
-                        <th style="color:var(--success)">GAP VIRTUAL</th>
+                        <th style="width:60px;">POS</th>
+                        <th style="width:90px;">CLASSE</th>
+                        <th style="width:220px;">TEAM / KART</th>
+                        <th style="width:70px;">PIT #</th>
+                        <th style="width:110px;">BOX TIME</th>
+                        <th style="width:100px;">LAST LAP</th>
+                        <th style="color:var(--success); width:120px;">VIRTUAL GAP</th>
                     </tr>
                 </thead>
                 <tbody id="mainBody"></tbody>
@@ -100,109 +109,118 @@
     </div>
 
     <div class="panel">
-        <div class="panel-header">RANK VIRTUALE</div>
-        <div class="scroll-area" id="virtualRankList" style="padding:10px;"></div>
+        <div class="panel-header">ESTRATTO CLASSIFICA</div>
+        <div class="scroll-area" id="virtualRankList" style="padding:12px;"></div>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:15px;">
-        <div class="panel" style="padding:15px;">
-            <strong style="font-size:0.8em; text-transform:uppercase; color:#888;">Marcatura Avversari</strong>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <input type="text" id="directInput" placeholder="Inserisci # Kart..." style="flex:1">
-                <button onclick="addDirect()" style="background:var(--direct); color:white;">AGGIUNGI</button>
+        <div class="panel" style="padding:18px;">
+            <strong style="font-size:0.8em; text-transform:uppercase; color:#888;">Monitoraggio Diretti</strong>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <input type="text" id="directInput" placeholder="# Kart" style="flex:1; text-align:center;">
+                <button onclick="addDirect()" style="background:var(--direct); color:white;">TRACCIA</button>
             </div>
-            <div id="directList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
+            <div id="directList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:15px;"></div>
         </div>
 
         <div class="chart-container">
+            <div style="position:absolute; top:5px; right:10px; font-size:0.6em; color:#555; z-index:1;">Δ SEC VS NOSTRO TEAM</div>
             <canvas id="gapChart"></canvas>
         </div>
         
-        <button onclick="window.location.href='index.html'" style="background:#2c2c44; color:white; padding:15px; font-size:1em; border:1px solid #3d4b64;">
-            ↩ RITORNA ALLA GESTIONE BOX
+        <button onclick="window.location.href='index.html'" style="background:#2c2c44; color:white; padding:18px; font-size:1.1em; border: 1px solid #3d4b64; letter-spacing:1px;">
+            ↩ TORNA ALLA GESTIONE BOX
         </button>
     </div>
 </div>
 
 <script>
-    // Configurazione Firebase (Invariata per solidità ponte)
+    // --- INIZIALIZZAZIONE FIREBASE ---
     const firebaseConfig = { apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", authDomain: "gestione-cambi-kart---dms.firebaseapp.com", databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app", projectId: "gestione-cambi-kart---dms" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Stato Globale
+    // --- VARIABILI DI STATO ---
     let ourKartNum = ""; 
     let directCompetitors = JSON.parse(localStorage.getItem('directCompetitors')) || [];
+    let catOverrides = JSON.parse(localStorage.getItem('catOverrides')) || {}; 
     let telemetryHistory = [];
-    let apexInterval = null;
     let chartInstance = null;
+    let apexInterval = null;
 
-    // Sincronizzazione Real-time con Pagina Box
+    // --- SYNC CON DATABASE BOX ---
     db.ref('raceState/ourKartId').on('value', snap => {
         ourKartNum = snap.val() || "";
-        document.getElementById('ourTeamDisplay').innerText = "KART ATTUALE: #" + ourKartNum;
+        document.getElementById('ourTeamDisplay').innerText = "DMS KART: #" + ourKartNum;
         updateTelemetry(); 
     });
 
-    // Utility: Conversione "mm:ss" o "hh:mm:ss" in Secondi
-    function timeToSeconds(str) {
-        if (!str) return 0;
-        if (typeof str === 'number') return str;
-        const p = str.split(':');
-        let s = 0, m = 1;
-        while (p.length > 0) {
-            s += m * parseInt(p.pop(), 10);
-            m *= 60;
+    // --- LOGICA DI CONVERSIONE TEMPO ---
+    function parseTime(timeStr) {
+        if (!timeStr) return 0;
+        if (typeof timeStr === 'number') return timeStr;
+        const parts = timeStr.split(':');
+        let seconds = 0;
+        if (parts.length === 3) { // hh:mm:ss
+            seconds = (+parts[0]) * 3600 + (+parts[1]) * 60 + (+parts[2]);
+        } else if (parts.length === 2) { // mm:ss
+            seconds = (+parts[0]) * 60 + (+parts[1]);
+        } else {
+            seconds = parseInt(timeStr) || 0;
         }
-        return s;
+        return seconds;
     }
 
-    // Inizializzazione Grafico
-    const initChart = () => {
-        const ctx = document.getElementById('gapChart').getContext('2d');
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: { labels: [], datasets: [] },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: { 
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 } }, title: { display: true, text: 'SEC VS NOI', color: '#555' } },
-                    x: { display: false }
-                },
-                plugins: { legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 8, font: { size: 10 } } } }
-            }
-        });
-    };
+    // --- OVERRIDE CATEGORIA ---
+    function cycleCategory(kartNum, currentCat) {
+        const cats = ["EK1", "EK2", "EK3"];
+        let idx = cats.indexOf(currentCat);
+        let next = cats[(idx + 1) % cats.length];
+        catOverrides[kartNum] = next;
+        localStorage.setItem('catOverrides', JSON.stringify(catOverrides));
+        updateTelemetry();
+    }
 
+    // --- CORE LOGIC: CALCOLO E FILTRAGGIO ---
     async function updateTelemetry() {
-        const minPitTotal = parseInt(document.getElementById('minPitInput').value) || 0;
-        const selectedCat = document.getElementById('catSelector').value;
+        const targetPit = parseInt(document.getElementById('minPitInput').value) || 0;
+        const viewCat = document.getElementById('catSelector').value;
         
-        // DATI SIMULATI (Qui andrà la fetch reale da Apex)
+        // ESEMPIO DATI REALI (Verranno sovrascritti dal fetch)
         let rawData = [
-            { num: "1", team: "NAC TEAM", cat: "EK1", raceTime: 36000, pitCount: 14, pitTime: "38:01", last: "1:02.794", status: "TRACK" },
-            { num: "23", team: "KRT", cat: "EK1", raceTime: 36015, pitCount: 14, pitTime: "38:23", last: "1:02.605", status: "TRACK" },
-            { num: "22", team: "DMS RACING TEAM", cat: "EK1", raceTime: 36018, pitCount: 12, pitTime: "38:02", last: "1:02.873", status: "TRACK" },
-            { num: "5", team: "PF RACING", cat: "EK1", raceTime: 36050, pitCount: 12, pitTime: "38:39", last: "1:02.522", status: "TRACK" },
-            { num: "49", team: "SPARKART RACING", cat: "EK2", raceTime: 36060, pitCount: 15, pitTime: "38:05", last: "1:02.728", status: "TRACK" },
-            { num: "4", team: "GOATS RT RED", cat: "EK3", raceTime: 36090, pitCount: 12, pitTime: "38:03", last: "1:02.656", status: "PIT" }
+            { num: "1", team: "NAC TEAM", cat: "EK1", raceTime: 36000, pitCount: 14, pitTime: "38:00", last: "1:02.79", status: "TRACK" },
+            { num: "22", team: "DMS RACING", cat: "EK1", raceTime: 36020, pitCount: 12, pitTime: "41:00", last: "1:02.85", status: "TRACK" },
+            { num: "49", team: "SPARKART", cat: "EK2", raceTime: 36040, pitCount: 15, pitTime: "37:50", last: "1:03.11", status: "TRACK" },
+            { num: "4", team: "GOATS RT", cat: "EK3", raceTime: 36080, pitCount: 12, pitTime: "38:05", last: "1:02.95", status: "PIT" }
         ];
 
-        // 1. Calcolo Virtuale Solido
+        // 1. Processamento con LOGICA ANTI-SCONTO
         let processed = rawData.map(t => {
-            const pSec = timeToSeconds(t.pitTime);
-            const deficit = Math.max(0, minPitTotal - pSec);
-            return { ...t, vTotal: t.raceTime + deficit };
+            const currentCat = catOverrides[t.num] || t.cat;
+            const pitSec = parseTime(t.pitTime);
+            
+            // Se pitSec > targetPit, il debito è 0 (hanno già pagato troppo)
+            // Se pitSec < targetPit, il debito è la differenza
+            const deficit = Math.max(0, targetPit - pitSec);
+            
+            return {
+                ...t,
+                cat: currentCat,
+                vTotal: t.raceTime + deficit,
+                isLento: pitSec > targetPit,
+                overSeconds: pitSec - targetPit
+            };
         });
 
-        // 2. Filtro Categoria
-        if (selectedCat !== 'ALL') {
-            processed = processed.filter(t => t.cat === selectedCat);
+        // 2. Filtro Vista
+        if (viewCat !== 'ALL') {
+            processed = processed.filter(t => t.cat === viewCat);
         }
 
-        // 3. Ordinamento e Calcolo Gap
+        // 3. Ordinamento Virtuale
         processed.sort((a,b) => a.vTotal - b.vTotal);
         
+        // 4. Calcolo Gap vs Leader Virtuale
         if (processed.length > 0) {
             const vLeader = processed[0].vTotal;
             processed = processed.map(t => ({ ...t, vGap: (t.vTotal - vLeader).toFixed(1) }));
@@ -211,15 +229,16 @@
         renderUI(processed);
         updateChart(processed);
         
-        // Archiviazione per CSV (limitata agli ultimi 500 step per memoria)
+        // Salvataggio storico per CSV
+        if(telemetryHistory.length > 1000) telemetryHistory.shift();
         telemetryHistory.push({ ts: new Date().toLocaleTimeString(), data: processed });
-        if(telemetryHistory.length > 500) telemetryHistory.shift();
     }
 
+    // --- INTERFACCIA UTENTE ---
     function renderUI(data) {
-        const mainBody = document.getElementById('mainBody');
-        const virtRank = document.getElementById('virtualRankList');
-        mainBody.innerHTML = ""; virtRank.innerHTML = "";
+        const body = document.getElementById('mainBody');
+        const list = document.getElementById('virtualRankList');
+        body.innerHTML = ""; list.innerHTML = "";
 
         data.forEach((row, idx) => {
             const isUs = row.num === ourKartNum;
@@ -231,27 +250,48 @@
             else if(isDirect) tr.className = 'row-direct';
 
             tr.innerHTML = `
-                <td style="color:#888">#${idx+1}</td>
-                <td><span class="cat-badge cat-${row.cat}">${row.cat}</span></td>
-                <td><div style="font-size:0.9em">${row.team}</div><div style="font-size:0.7em; color:#888">KART #${row.num}</div></td>
+                <td><span class="pos-num">#${idx+1}</span></td>
+                <td><span class="cat-badge cat-${row.cat}" onclick="cycleCategory('${row.num}', '${row.cat}')">${row.cat}</span></td>
+                <td><div style="font-size:1em">${row.team}</div><div style="font-size:0.7em; color:#888">KART #${row.num}</div></td>
                 <td>${row.pitCount}</td>
-                <td>${row.pitTime}</td>
-                <td>${row.last}</td>
-                <td style="color:var(--success); font-family: monospace; font-size:1.1em;">+${row.vGap}s</td>
+                <td>
+                    ${row.pitTime}
+                    ${row.isLento ? `<span class="pit-warning">LENTO (+${row.overSeconds}s)</span>` : ''}
+                </td>
+                <td style="font-family:monospace">${row.last}</td>
+                <td style="color:var(--success); font-family:monospace; font-size:1.1em; font-weight:bold;">+${row.vGap}s</td>
             `;
-            mainBody.appendChild(tr);
+            body.appendChild(tr);
             
-            // Rank Cards
-            const rankCard = document.createElement('div');
-            rankCard.style = `background:#1d2331; border-radius:6px; margin-bottom:6px; padding:10px; border: 1px solid ${isUs ? 'var(--success)' : '#3d4b64'}`;
-            rankCard.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.7em; color:#888">POS ${idx+1}</span>
-                    <span class="cat-badge cat-${row.cat}" style="font-size:0.5em; padding:2px 4px;">${row.cat}</span>
+            // Cards Rank
+            const card = document.createElement('div');
+            card.style = `background:#1d2331; border-radius:8px; margin-bottom:8px; padding:12px; border: 1px solid ${isUs ? 'var(--success)' : '#3d4b64'}; position:relative;`;
+            card.innerHTML = `
+                <div style="font-size:0.6em; color:#888; text-transform:uppercase;">Posizione Virtuale ${idx+1}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                    <span style="font-size:1.3em; font-weight:900; color:${isUs ? 'var(--success)' : 'white'}">#${row.num}</span>
+                    <span class="cat-badge cat-${row.cat}" style="font-size:0.6em; cursor:default;">${row.cat}</span>
                 </div>
-                <div style="font-size:1.1em; font-weight:bold; margin-top:4px; color:${isUs ? 'var(--success)' : 'white'}">#${row.num}</div>
             `;
-            virtRank.appendChild(rankCard);
+            list.appendChild(card);
+        });
+    }
+
+    // --- GRAFICO EVOLUTIVO ---
+    function initChart() {
+        const ctx = document.getElementById('gapChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                animation: { duration: 0 },
+                scales: { 
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', font: { size: 9 } } },
+                    x: { display: false }
+                },
+                plugins: { legend: { position: 'bottom', labels: { color: '#ccc', boxWidth: 10, font: { size: 10 } } } }
+            }
         });
     }
 
@@ -259,27 +299,28 @@
         const ourData = data.find(t => t.num === ourKartNum);
         if(!ourData || !chartInstance) return;
 
-        const now = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
-        chartInstance.data.labels.push(now);
-        if(chartInstance.data.labels.length > 40) chartInstance.data.labels.shift();
+        const timeLabel = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
+        chartInstance.data.labels.push(timeLabel);
+        if(chartInstance.data.labels.length > 50) chartInstance.data.labels.shift();
 
-        const toTrack = [ourKartNum, ...directCompetitors];
-        toTrack.forEach(num => {
+        const targets = [ourKartNum, ...directCompetitors];
+        targets.forEach(num => {
             const team = data.find(t => t.num === num);
             if(!team) return;
 
-            let dataset = chartInstance.data.datasets.find(d => d.label === `Kart #${num}`);
-            if(!dataset) {
-                const color = (num === ourKartNum) ? '#00f2c3' : `hsl(${Math.random() * 360}, 70%, 60%)`;
-                dataset = { label: `Kart #${num}`, data: [], borderColor: color, borderWidth: (num === ourKartNum ? 3 : 2), tension: 0.3, pointRadius: 0 };
-                chartInstance.data.datasets.push(dataset);
+            let ds = chartInstance.data.datasets.find(d => d.label === `K#${num}`);
+            if(!ds) {
+                const color = (num === ourKartNum) ? '#00f2c3' : `hsl(${Math.random() * 360}, 75%, 65%)`;
+                ds = { label: `K#${num}`, data: [], borderColor: color, borderWidth: (num === ourKartNum ? 3 : 2), tension: 0.4, pointRadius: 0 };
+                chartInstance.data.datasets.push(ds);
             }
-            dataset.data.push(team.vTotal - ourData.vTotal);
-            if(dataset.data.length > 40) dataset.data.shift();
+            ds.data.push(team.vTotal - ourData.vTotal);
+            if(ds.data.length > 50) ds.data.shift();
         });
         chartInstance.update('none');
     }
 
+    // --- FUNZIONALITÀ AGGIUNTIVE ---
     function addDirect() {
         const val = document.getElementById('directInput').value.trim();
         if(val && !directCompetitors.includes(val) && val !== ourKartNum) {
@@ -293,46 +334,48 @@
 
     function renderDirects() {
         document.getElementById('directList').innerHTML = directCompetitors.map(d => 
-            `<span style="background:var(--direct); padding:5px 10px; border-radius:6px; font-size:0.75em; cursor:pointer; font-weight:bold;" onclick="removeDirect('${d}')">#${d} ✕</span>`).join('');
+            `<span style="background:var(--direct); padding:6px 12px; border-radius:6px; font-size:0.8em; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);" onclick="removeDirect('${d}')">#${d} ✕</span>`).join('');
     }
 
     function removeDirect(num) {
         directCompetitors = directCompetitors.filter(d => d !== num);
         localStorage.setItem('directCompetitors', JSON.stringify(directCompetitors));
         if(chartInstance) {
-            chartInstance.data.datasets = chartInstance.data.datasets.filter(d => d.label !== `Kart #${num}`);
+            chartInstance.data.datasets = chartInstance.data.datasets.filter(d => d.label !== `K#${num}`);
             chartInstance.update();
         }
         renderDirects();
-        updateTelemetry();
     }
 
     function connectToApex() {
         const url = document.getElementById('apexUrlInput').value.trim();
-        if(!url) { alert("Inserisci un URL Feed valido!"); return; }
+        if(!url) { alert("ERRORE: Inserire un URL Feed valido."); return; }
         if(apexInterval) clearInterval(apexInterval);
+        
+        document.getElementById('connectBtn').style.background = "#ff9f43";
+        document.getElementById('connectBtn').innerText = "In Ascolto...";
+        
         apexInterval = setInterval(updateTelemetry, 3000);
-        alert("Connessione stabilita. Aggiornamento ogni 3s.");
         updateTelemetry();
     }
 
     function exportTelemetryCSV() {
-        if(telemetryHistory.length === 0) return;
-        let csv = "Timestamp;Pos;Cat;Kart;Team;GapVirt(s)\n";
+        if(telemetryHistory.length === 0) { alert("Nessun dato da esportare."); return; }
+        let csv = "\uFEFFTimestamp;Pos;Cat;Kart;Team;GapVirtual(s);Status\n";
         telemetryHistory.forEach(step => {
             step.data.forEach((t, i) => {
-                csv += `${step.ts};${i+1};${t.cat};${t.num};${t.team};${t.vGap}\n`;
+                csv += `${step.ts};${i+1};${t.cat};${t.num};${t.team};${t.vGap};${t.status}\n`;
             });
         });
-        const blob = new Blob([csv], {type:'text/csv'});
+        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `DMS_Report_${new Date().getTime()}.csv`;
+        a.download = `Report_DMS_${new Date().getTime()}.csv`;
         a.click();
     }
 
     function resetGara() {
-        if(confirm("ATTENZIONE: Questo resetterà lo storico telemetria e il grafico. Procedere?")) {
+        if(confirm("ATTENZIONE: Stai per resettare tutti i dati di telemetria e il grafico. Confermi?")) {
             telemetryHistory = [];
             if(chartInstance) {
                 chartInstance.data.labels = [];
@@ -343,7 +386,7 @@
         }
     }
 
-    // Avvio
+    // Startup
     window.onload = () => {
         initChart();
         renderDirects();
