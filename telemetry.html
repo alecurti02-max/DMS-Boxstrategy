@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v1.6 R-One Edition</title>
+    <title>DMS Analytics Pro - v1.7 SOLID</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,69 +13,86 @@
             --accent: #1d8cf8; --success: #00f2c3; --direct: #fd5d93; --warning: #ff4757;
             --ek1: #2ecc71; --ek2: #ffffff; --ek3: #e74c3c;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; overflow: hidden; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; height: 100vh; overflow: hidden; }
         
-        .header-flex { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #2b3548; }
-        .main-container { display: grid; grid-template-columns: 1fr 180px 380px; gap: 15px; height: calc(100vh - 220px); }
+        .header-flex { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; background: var(--card); padding: 18px; border-radius: 10px; border: 1px solid #2b3548; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .main-container { display: grid; grid-template-columns: 1fr 200px 400px; gap: 15px; height: calc(100vh - 230px); }
         
-        .panel { background: var(--card); border-radius: 8px; border: 1px solid #2b3548; display: flex; flex-direction: column; overflow: hidden; }
-        .scroll-area { flex: 1; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-        th { background: #1d2331; padding: 12px; text-align: left; position: sticky; top: 0; color: #888; z-index: 10; border-bottom: 2px solid #2b3548; }
-        td { padding: 10px; border-bottom: 1px solid #2b3548; font-weight: bold; }
+        .panel { background: var(--card); border-radius: 10px; border: 1px solid #2b3548; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .panel-header { padding: 12px; background: #1d2331; font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #3d4b64; display: flex; justify-content: space-between; align-items: center; }
         
-        .row-our-team { background: rgba(0, 242, 195, 0.15) !important; outline: 1px solid var(--success); }
-        .row-direct { background: rgba(253, 93, 147, 0.1); border-left: 4px solid var(--direct); }
+        .scroll-area { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #3d4b64 transparent; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; table-layout: fixed; }
+        th { background: #1d2331; padding: 12px 8px; text-align: left; position: sticky; top: 0; color: #888; z-index: 10; font-size: 0.8em; text-transform: uppercase; }
+        td { padding: 12px 8px; border-bottom: 1px solid #2b3548; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .cat-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75em; color: #000; font-weight: 900; }
+        .row-our-team { background: rgba(0, 242, 195, 0.12) !important; color: var(--success); }
+        .row-direct { background: rgba(253, 93, 147, 0.08); border-left: 4px solid var(--direct); }
+        
+        .cat-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.7em; color: #000; font-weight: 900; display: inline-block; min-width: 45px; text-align: center; }
         .cat-EK1 { background: var(--ek1); }
         .cat-EK2 { background: var(--ek2); }
         .cat-EK3 { background: var(--ek3); }
 
-        .filter-select { background: #1d8cf8; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-
-        .chart-container { flex: 1; background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid #2b3548; min-height: 250px; }
+        .filter-select { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; outline: none; }
+        .chart-container { flex: 1; background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid #2b3548; position: relative; }
         
-        button { cursor: pointer; font-weight: bold; border: none; border-radius: 4px; padding: 8px 15px; transition: 0.2s; }
-        .btn-nav { background: #2c2c44; width: 100%; padding: 12px; color: white; margin-top: 10px; }
-        input, select { background: #0b0e14; border: 1px solid #3d4b64; color: white; padding: 8px; border-radius: 4px; }
+        input, select { background: #0b0e14; border: 1px solid #3d4b64; color: white; padding: 10px; border-radius: 6px; font-size: 0.9em; }
+        button { cursor: pointer; font-weight: bold; border: none; border-radius: 6px; padding: 10px 18px; transition: all 0.2s ease; }
+        button:active { transform: scale(0.96); }
+        
+        .status-tag { font-size: 0.75em; padding: 2px 6px; border-radius: 4px; background: #2b3548; }
+        .status-pit { background: var(--warning); color: white; }
     </style>
 </head>
 <body>
 
 <div class="header-flex">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-            <h2 style="margin:0;">DMS ANALYTICS <span style="font-size:0.5em; color:var(--accent)">V1.6 R-ONE</span></h2>
-            <div id="ourTeamDisplay" style="color:var(--success); font-weight:bold; font-size:0.9em; margin-top:5px;">NOSTRO TEAM: --</div>
+        <div style="display:flex; align-items:baseline; gap:15px;">
+            <h2 style="margin:0; letter-spacing: 1px;">DMS ANALYTICS <span style="color:var(--accent); font-size:0.6em;">V1.7 SOLID</span></h2>
+            <div id="ourTeamDisplay" style="color:var(--success); font-weight:bold; font-size:1.1em; background: rgba(0,242,195,0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--success);">--</div>
         </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <strong>FILTRA CLASSIFICA:</strong>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <span style="font-size:0.8em; font-weight:bold; color:#888;">FILTRO:</span>
             <select id="catSelector" class="filter-select" onchange="updateTelemetry()">
-                <option value="ALL">ASSOLUTA (Tutte)</option>
-                <option value="EK1">SOLO EK1 (Verdi)</option>
-                <option value="EK2">SOLO EK2 (Bianchi)</option>
-                <option value="EK3">SOLO EK3 (Rossi)</option>
+                <option value="ALL">CLASSIFICA ASSOLUTA</option>
+                <option value="EK1">CATEGORIA EK1 (VERDE)</option>
+                <option value="EK2">CATEGORIA EK2 (BIANCO)</option>
+                <option value="EK3">CATEGORIA EK3 (ROSSO)</option>
             </select>
             <button onclick="exportTelemetryCSV()" style="background:#2c2c44; color:white; border: 1px solid #3d4b64;">EXPORT CSV</button>
-            <button onclick="resetGara()" style="background:var(--warning); color:white;">RESET</button>
+            <button onclick="resetGara()" style="background:var(--warning); color:white;">RESET GARA</button>
         </div>
     </div>
-    <div style="display:flex; gap:15px; align-items:center;">
-        <strong>🔗 APEX FEED URL:</strong>
-        <input type="text" id="apexUrlInput" placeholder="URL .json..." style="flex:1;">
-        <button onclick="connectToApex()" style="background:var(--success); color:black;">CONNECT LIVE</button>
-        <strong>PIT OBBL (SEC):</strong>
-        <input type="number" id="minPitInput" value="2280" style="width:90px;" onchange="updateTelemetry()">
+    <div style="display:flex; gap:20px; align-items:center; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+        <div style="flex:1; display:flex; align-items:center; gap:10px;">
+            <strong style="font-size:0.8em;">🔗 APEX FEED:</strong>
+            <input type="text" id="apexUrlInput" placeholder="Inserisci URL .json ufficiale..." style="flex:1;">
+            <button onclick="connectToApex()" style="background:var(--success); color:black; min-width:140px;">CONNETTI LIVE</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <strong style="font-size:0.8em;">PIT OBBLIGATORIO (SEC):</strong>
+            <input type="number" id="minPitInput" value="2280" style="width:100px; text-align:center;" onchange="updateTelemetry()">
+        </div>
     </div>
 </div>
 
 <div class="main-container">
     <div class="panel">
         <div class="scroll-area">
-            <table>
+            <table id="telemetryTable">
                 <thead>
-                    <tr><th>POS</th><th>CAT</th><th>TEAM</th><th>PIT</th><th>TEMPO BOX</th><th>LAST</th><th>GAP VIRTUAL</th></tr>
+                    <tr>
+                        <th style="width:50px;">POS</th>
+                        <th style="width:70px;">CAT</th>
+                        <th style="width:180px;">TEAM / KART</th>
+                        <th style="width:60px;">PIT</th>
+                        <th style="width:90px;">TEMPO BOX</th>
+                        <th style="width:90px;">ULTIMO</th>
+                        <th style="color:var(--success)">GAP VIRTUAL</th>
+                    </tr>
                 </thead>
                 <tbody id="mainBody"></tbody>
             </table>
@@ -83,151 +100,184 @@
     </div>
 
     <div class="panel">
-        <div style="padding:10px; background:#1d2331; font-weight:bold; text-align:center; font-size:0.8em; border-bottom: 1px solid #3d4b64;">RANK VIRTUALE</div>
-        <div class="scroll-area" id="virtualRankList" style="padding:5px;"></div>
+        <div class="panel-header">RANK VIRTUALE</div>
+        <div class="scroll-area" id="virtualRankList" style="padding:10px;"></div>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:15px;">
-        <div class="panel" style="padding:10px;">
-            <strong>AVVERSARI DIRETTI</strong>
-            <div style="display:flex; gap:5px; margin-top:8px;">
-                <input type="text" id="directInput" placeholder="Num. Kart..." style="flex:1">
-                <button onclick="addDirect()" style="background:var(--direct); color:white;">ADD</button>
+        <div class="panel" style="padding:15px;">
+            <strong style="font-size:0.8em; text-transform:uppercase; color:#888;">Marcatura Avversari</strong>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <input type="text" id="directInput" placeholder="Inserisci # Kart..." style="flex:1">
+                <button onclick="addDirect()" style="background:var(--direct); color:white;">AGGIUNGI</button>
             </div>
-            <div id="directList" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;"></div>
+            <div id="directList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;"></div>
         </div>
 
         <div class="chart-container">
             <canvas id="gapChart"></canvas>
         </div>
         
-        <button onclick="window.location.href='index.html'" class="btn-nav">↩ TORNA AI BOX</button>
+        <button onclick="window.location.href='index.html'" style="background:#2c2c44; color:white; padding:15px; font-size:1em; border:1px solid #3d4b64;">
+            ↩ RITORNA ALLA GESTIONE BOX
+        </button>
     </div>
 </div>
 
 <script>
+    // Configurazione Firebase (Invariata per solidità ponte)
     const firebaseConfig = { apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", authDomain: "gestione-cambi-kart---dms.firebaseapp.com", databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app", projectId: "gestione-cambi-kart---dms" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Stato Globale
     let ourKartNum = ""; 
     let directCompetitors = JSON.parse(localStorage.getItem('directCompetitors')) || [];
     let telemetryHistory = [];
     let apexInterval = null;
+    let chartInstance = null;
 
+    // Sincronizzazione Real-time con Pagina Box
     db.ref('raceState/ourKartId').on('value', snap => {
         ourKartNum = snap.val() || "";
-        document.getElementById('ourTeamDisplay').innerText = "NOSTRO TEAM: #" + ourKartNum;
+        document.getElementById('ourTeamDisplay').innerText = "KART ATTUALE: #" + ourKartNum;
+        updateTelemetry(); 
     });
 
-    function parsePitTimeToSeconds(timeStr) {
-        if (!timeStr) return 0;
-        if (typeof timeStr === 'number') return timeStr;
-        if (!timeStr.includes(':')) return parseInt(timeStr) || 0;
-        const parts = timeStr.split(':');
-        return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
+    // Utility: Conversione "mm:ss" o "hh:mm:ss" in Secondi
+    function timeToSeconds(str) {
+        if (!str) return 0;
+        if (typeof str === 'number') return str;
+        const p = str.split(':');
+        let s = 0, m = 1;
+        while (p.length > 0) {
+            s += m * parseInt(p.pop(), 10);
+            m *= 60;
+        }
+        return s;
     }
 
-    const ctx = document.getElementById('gapChart').getContext('2d');
-    const gapChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: [], datasets: [] },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            scales: { 
-                y: { grid: { color: '#2b3548' }, ticks: { color: '#fff' } },
-                x: { display: false }
-            },
-            plugins: { legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 10, font: { size: 10 } } } }
-        }
-    });
+    // Inizializzazione Grafico
+    const initChart = () => {
+        const ctx = document.getElementById('gapChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 } }, title: { display: true, text: 'SEC VS NOI', color: '#555' } },
+                    x: { display: false }
+                },
+                plugins: { legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 8, font: { size: 10 } } } }
+            }
+        });
+    };
 
     async function updateTelemetry() {
-        const minPit = parseInt(document.getElementById('minPitInput').value);
+        const minPitTotal = parseInt(document.getElementById('minPitInput').value) || 0;
         const selectedCat = document.getElementById('catSelector').value;
         
-        // DATI SIMULATI (Sostituiti dal feed Apex in gara)
+        // DATI SIMULATI (Qui andrà la fetch reale da Apex)
         let rawData = [
-            { num: "1", team: "NAC TEAM", cat: "EK1", raceTime: 36000, pitCount: 14, pitTime: "38:01", last: "1:06.7", status: "TRACK" },
-            { num: "23", team: "KRT", cat: "EK1", raceTime: 36015, pitCount: 14, pitTime: "38:23", last: "1:04.8", status: "TRACK" },
-            { num: "22", team: "DMS RACING TEAM", cat: "EK1", raceTime: 36020, pitCount: 12, pitTime: "38:02", last: "1:03.2", status: "TRACK" },
-            { num: "49", team: "SPARKART RACING", cat: "EK2", raceTime: 36050, pitCount: 15, pitTime: "38:05", last: "1:03.3", status: "TRACK" },
-            { num: "4", team: "GOATS RT RED", cat: "EK3", raceTime: 36080, pitCount: 12, pitTime: "38:03", last: "1:03.8", status: "TRACK" }
+            { num: "1", team: "NAC TEAM", cat: "EK1", raceTime: 36000, pitCount: 14, pitTime: "38:01", last: "1:02.794", status: "TRACK" },
+            { num: "23", team: "KRT", cat: "EK1", raceTime: 36015, pitCount: 14, pitTime: "38:23", last: "1:02.605", status: "TRACK" },
+            { num: "22", team: "DMS RACING TEAM", cat: "EK1", raceTime: 36018, pitCount: 12, pitTime: "38:02", last: "1:02.873", status: "TRACK" },
+            { num: "5", team: "PF RACING", cat: "EK1", raceTime: 36050, pitCount: 12, pitTime: "38:39", last: "1:02.522", status: "TRACK" },
+            { num: "49", team: "SPARKART RACING", cat: "EK2", raceTime: 36060, pitCount: 15, pitTime: "38:05", last: "1:02.728", status: "TRACK" },
+            { num: "4", team: "GOATS RT RED", cat: "EK3", raceTime: 36090, pitCount: 12, pitTime: "38:03", last: "1:02.656", status: "PIT" }
         ];
 
-        // 1. Processamento e Calcolo Virtuale
+        // 1. Calcolo Virtuale Solido
         let processed = rawData.map(t => {
-            const pitSec = parsePitTimeToSeconds(t.pitTime);
-            return {
-                ...t,
-                pitSeconds: pitSec,
-                vTotal: t.raceTime + Math.max(0, minPit - pitSec)
-            };
-        }).sort((a,b) => a.vTotal - b.vTotal);
+            const pSec = timeToSeconds(t.pitTime);
+            const deficit = Math.max(0, minPitTotal - pSec);
+            return { ...t, vTotal: t.raceTime + deficit };
+        });
 
-        // 2. Applicazione Filtro Categoria
+        // 2. Filtro Categoria
         if (selectedCat !== 'ALL') {
             processed = processed.filter(t => t.cat === selectedCat);
         }
 
+        // 3. Ordinamento e Calcolo Gap
+        processed.sort((a,b) => a.vTotal - b.vTotal);
+        
+        if (processed.length > 0) {
+            const vLeader = processed[0].vTotal;
+            processed = processed.map(t => ({ ...t, vGap: (t.vTotal - vLeader).toFixed(1) }));
+        }
+
         renderUI(processed);
         updateChart(processed);
-        telemetryHistory.push({ts: new Date().toLocaleTimeString(), data: processed});
+        
+        // Archiviazione per CSV (limitata agli ultimi 500 step per memoria)
+        telemetryHistory.push({ ts: new Date().toLocaleTimeString(), data: processed });
+        if(telemetryHistory.length > 500) telemetryHistory.shift();
     }
 
     function renderUI(data) {
         const mainBody = document.getElementById('mainBody');
         const virtRank = document.getElementById('virtualRankList');
         mainBody.innerHTML = ""; virtRank.innerHTML = "";
-        
-        if(data.length === 0) return;
-        const vLeaderTime = data[0].vTotal;
 
         data.forEach((row, idx) => {
             const isUs = row.num === ourKartNum;
             const isDirect = directCompetitors.includes(row.num);
-            const vGap = (row.vTotal - vLeaderTime).toFixed(1);
             
-            mainBody.innerHTML += `
-                <tr class="${isUs ? 'row-our-team' : (isDirect ? 'row-direct' : '')}">
-                    <td>${idx+1}</td>
-                    <td><span class="cat-badge cat-${row.cat}">${row.cat}</span></td>
-                    <td>${row.team} <small>#${row.num}</small></td>
-                    <td>${row.pitCount}</td>
-                    <td>${row.pitTime}</td>
-                    <td>${row.last}</td>
-                    <td style="color:var(--success)">+${vGap}s</td>
-                </tr>`;
+            // Tabella
+            const tr = document.createElement('tr');
+            if(isUs) tr.className = 'row-our-team';
+            else if(isDirect) tr.className = 'row-direct';
+
+            tr.innerHTML = `
+                <td style="color:#888">#${idx+1}</td>
+                <td><span class="cat-badge cat-${row.cat}">${row.cat}</span></td>
+                <td><div style="font-size:0.9em">${row.team}</div><div style="font-size:0.7em; color:#888">KART #${row.num}</div></td>
+                <td>${row.pitCount}</td>
+                <td>${row.pitTime}</td>
+                <td>${row.last}</td>
+                <td style="color:var(--success); font-family: monospace; font-size:1.1em;">+${row.vGap}s</td>
+            `;
+            mainBody.appendChild(tr);
             
-            virtRank.innerHTML += `
-                <div style="background:#1d2331; border-radius:4px; margin:4px; padding:8px; text-align:center; border: 1px solid ${isUs ? 'var(--success)' : '#3d4b64'}; color:${isUs ? 'var(--success)' : 'white'}">
-                    <span style="font-size:0.7em; color:#888">P${idx+1}</span><br>#${row.num}
-                </div>`;
+            // Rank Cards
+            const rankCard = document.createElement('div');
+            rankCard.style = `background:#1d2331; border-radius:6px; margin-bottom:6px; padding:10px; border: 1px solid ${isUs ? 'var(--success)' : '#3d4b64'}`;
+            rankCard.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.7em; color:#888">POS ${idx+1}</span>
+                    <span class="cat-badge cat-${row.cat}" style="font-size:0.5em; padding:2px 4px;">${row.cat}</span>
+                </div>
+                <div style="font-size:1.1em; font-weight:bold; margin-top:4px; color:${isUs ? 'var(--success)' : 'white'}">#${row.num}</div>
+            `;
+            virtRank.appendChild(rankCard);
         });
     }
 
     function updateChart(data) {
         const ourData = data.find(t => t.num === ourKartNum);
-        if(!ourData) return;
+        if(!ourData || !chartInstance) return;
 
         const now = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
-        gapChart.data.labels.push(now);
-        if(gapChart.data.labels.length > 30) gapChart.data.labels.shift();
+        chartInstance.data.labels.push(now);
+        if(chartInstance.data.labels.length > 40) chartInstance.data.labels.shift();
 
         const toTrack = [ourKartNum, ...directCompetitors];
         toTrack.forEach(num => {
             const team = data.find(t => t.num === num);
             if(!team) return;
-            let dataset = gapChart.data.datasets.find(d => d.label === `Kart #${num}`);
+
+            let dataset = chartInstance.data.datasets.find(d => d.label === `Kart #${num}`);
             if(!dataset) {
-                const color = (num === ourKartNum) ? '#00f2c3' : '#' + Math.floor(Math.random()*16777215).toString(16);
+                const color = (num === ourKartNum) ? '#00f2c3' : `hsl(${Math.random() * 360}, 70%, 60%)`;
                 dataset = { label: `Kart #${num}`, data: [], borderColor: color, borderWidth: (num === ourKartNum ? 3 : 2), tension: 0.3, pointRadius: 0 };
-                gapChart.data.datasets.push(dataset);
+                chartInstance.data.datasets.push(dataset);
             }
             dataset.data.push(team.vTotal - ourData.vTotal);
-            if(dataset.data.length > 30) dataset.data.shift();
+            if(dataset.data.length > 40) dataset.data.shift();
         });
-        gapChart.update('none');
+        chartInstance.update('none');
     }
 
     function addDirect() {
@@ -236,35 +286,69 @@
             directCompetitors.push(val);
             localStorage.setItem('directCompetitors', JSON.stringify(directCompetitors));
             renderDirects();
+            updateTelemetry();
         }
         document.getElementById('directInput').value = "";
     }
 
     function renderDirects() {
         document.getElementById('directList').innerHTML = directCompetitors.map(d => 
-            `<span style="background:var(--direct); padding:4px 8px; border-radius:4px; font-size:0.8em; cursor:pointer;" onclick="removeDirect('${d}')">#${d} ✕</span>`).join('');
+            `<span style="background:var(--direct); padding:5px 10px; border-radius:6px; font-size:0.75em; cursor:pointer; font-weight:bold;" onclick="removeDirect('${d}')">#${d} ✕</span>`).join('');
     }
 
     function removeDirect(num) {
         directCompetitors = directCompetitors.filter(d => d !== num);
         localStorage.setItem('directCompetitors', JSON.stringify(directCompetitors));
-        gapChart.data.datasets = gapChart.data.datasets.filter(d => d.label !== `Kart #${num}`);
-        gapChart.update();
+        if(chartInstance) {
+            chartInstance.data.datasets = chartInstance.data.datasets.filter(d => d.label !== `Kart #${num}`);
+            chartInstance.update();
+        }
         renderDirects();
+        updateTelemetry();
     }
 
     function connectToApex() {
         const url = document.getElementById('apexUrlInput').value.trim();
-        if(!url) return;
+        if(!url) { alert("Inserisci un URL Feed valido!"); return; }
         if(apexInterval) clearInterval(apexInterval);
         apexInterval = setInterval(updateTelemetry, 3000);
+        alert("Connessione stabilita. Aggiornamento ogni 3s.");
         updateTelemetry();
     }
 
-    function resetGara() { if(confirm("Resettare i dati?")) { telemetryHistory = []; gapChart.data.labels = []; gapChart.data.datasets = []; gapChart.update(); } }
-    
-    renderDirects();
-    updateTelemetry();
+    function exportTelemetryCSV() {
+        if(telemetryHistory.length === 0) return;
+        let csv = "Timestamp;Pos;Cat;Kart;Team;GapVirt(s)\n";
+        telemetryHistory.forEach(step => {
+            step.data.forEach((t, i) => {
+                csv += `${step.ts};${i+1};${t.cat};${t.num};${t.team};${t.vGap}\n`;
+            });
+        });
+        const blob = new Blob([csv], {type:'text/csv'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `DMS_Report_${new Date().getTime()}.csv`;
+        a.click();
+    }
+
+    function resetGara() {
+        if(confirm("ATTENZIONE: Questo resetterà lo storico telemetria e il grafico. Procedere?")) {
+            telemetryHistory = [];
+            if(chartInstance) {
+                chartInstance.data.labels = [];
+                chartInstance.data.datasets = [];
+                chartInstance.update();
+            }
+            updateTelemetry();
+        }
+    }
+
+    // Avvio
+    window.onload = () => {
+        initChart();
+        renderDirects();
+        updateTelemetry();
+    };
 </script>
 </body>
 </html>
