@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v2.6 ULTIMATE</title>
+    <title>DMS Analytics Pro - v2.7 RACE-READY</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -27,24 +27,22 @@
 
         .app-wrapper { display: grid; grid-template-rows: 75px 1fr; height: 100vh; padding: 6px; gap: 6px; }
 
-        /* Header Engine */
         .main-header {
-            display: grid; grid-template-columns: 200px 1fr 450px;
+            display: grid; grid-template-columns: 180px 1fr 480px;
             background: var(--bg-header); border: 1px solid var(--border);
             border-radius: 8px; padding: 0 15px; align-items: center;
         }
-        .brand h1 { margin: 0; font-size: 0.9rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+        .brand h1 { margin: 0; font-size: 0.85rem; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
         
         .input-dark {
             background: #000; border: 1px solid var(--border); color: #fff;
             padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
         }
-        .input-target { width: 85px; text-align: center; border-color: var(--warning); color: var(--warning); font-weight: 800; font-size: 1rem; }
+        .input-target { width: 80px; text-align: center; border-color: var(--warning); color: var(--warning); font-weight: 800; font-size: 1rem; }
 
-        /* Layout Grid */
         .dashboard-grid {
             display: grid; 
-            grid-template-columns: 1fr 350px; 
+            grid-template-columns: 1fr 380px; 
             grid-template-rows: 1fr 220px;
             gap: 6px; overflow: hidden;
         }
@@ -61,13 +59,11 @@
             border-bottom: 1px solid var(--border); font-size: 0.6rem;
             font-weight: 900; text-transform: uppercase; color: var(--dim);
             display: flex; justify-content: space-between; align-items: center;
-            letter-spacing: 0.5px;
         }
 
         .scroll-area { flex: 1; overflow-y: auto; scrollbar-width: thin; }
         .scroll-area::-webkit-scrollbar { width: 2px; }
 
-        /* Table Design v2.6 */
         table { width: 100%; border-collapse: collapse; font-size: 0.72rem; table-layout: fixed; }
         thead th { 
             position: sticky; top: 0; background: var(--bg-panel); padding: 10px 8px; 
@@ -76,7 +72,7 @@
         }
         tbody td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.01); white-space: nowrap; }
 
-        .row-us { background: rgba(0, 242, 195, 0.07) !important; border-left: 4px solid var(--success); }
+        .row-us { background: rgba(0, 242, 195, 0.08) !important; border-left: 4px solid var(--success); }
         .row-direct { border-left: 4px solid var(--direct) !important; background: rgba(236, 72, 153, 0.03); }
         
         .badge-cat { padding: 2px 4px; border-radius: 3px; font-weight: 900; font-size: 0.5rem; color: #000; min-width: 32px; text-align: center; cursor: pointer; }
@@ -88,13 +84,11 @@
 
         @keyframes critical-blink { 50% { opacity: 0.4; } }
 
-        .btn-action { padding: 6px 12px; border-radius: 4px; font-weight: 800; border: none; cursor: pointer; font-size: 0.65rem; transition: 0.2s; }
+        .btn-action { padding: 6px 10px; border-radius: 4px; font-weight: 800; border: none; cursor: pointer; font-size: 0.65rem; }
         .btn-success { background: var(--success); color: #000; }
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--dim); }
         .btn-outline:hover { border-color: var(--accent); color: #fff; }
-
-        .msg-line { padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 0.65rem; color: var(--dim); font-family: 'JetBrains Mono'; }
     </style>
 </head>
 <body>
@@ -102,20 +96,20 @@
 <div class="app-wrapper">
     <header class="main-header">
         <div class="brand">
-            <h1>DMS ULTIMATE <span>v2.6</span></h1>
-            <div id="statusLive" style="font-size: 0.5rem; color: var(--success);">FIREBASE CONNECTED</div>
+            <h1>DMS STRATEGIC <span>v2.7</span></h1>
+            <div id="statusLive" style="font-size: 0.5rem; color: var(--success);">ACTIVE</div>
         </div>
         
-        <div style="display: flex; gap: 15px; align-items: center; justify-content: center;">
-            <input type="text" id="apexFeed" class="input-dark" style="width: 200px;" placeholder="Apex Feed URL...">
-            <button class="btn-action btn-success" onclick="Engine.toggleSync()" id="syncBtn">AVVIA STREAM</button>
-            <div style="width: 1px; height: 20px; background: var(--border);"></div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <input type="text" id="apexFeed" class="input-dark" style="width: 180px;" placeholder="Apex Feed URL...">
+            <button class="btn-action btn-success" onclick="Engine.toggleSync()" id="syncBtn">AVVIA</button>
+            <div style="width: 1px; height: 15px; background: var(--border);"></div>
             <span style="font-size: 0.55rem; font-weight: 900; color: var(--warning);">PIT TARGET</span>
             <input type="number" id="pitTarget" class="input-dark input-target" value="2280">
         </div>
 
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
-            <button class="btn-action btn-outline" onclick="window.open('https://gestione-cambi-kart---dms.firebaseapp.com', '_blank')">PAGINA BOX</button>
+            <button class="btn-action btn-outline" onclick="Engine.openBoxPage()">PAGINA BOX</button>
             <button class="btn-action btn-outline" onclick="Engine.exportCSV()">CSV</button>
             <button class="btn-action btn-danger" onclick="Engine.reset()">RESET</button>
         </div>
@@ -124,8 +118,8 @@
     <main class="dashboard-grid">
         <section class="panel telemetry-panel">
             <div class="panel-header">
-                <span>Real-Time Virtual Classification</span>
-                <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="height: 22px; font-size: 0.55rem; padding: 0 5px;">
+                <span>Classification & Strategy</span>
+                <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="height: 20px; font-size: 0.55rem;">
                     <option value="ALL">CLASSE: TUTTE</option>
                     <option value="EK1">EK1</option><option value="EK2">EK2</option><option value="EK3">EK3</option>
                 </select>
@@ -152,21 +146,19 @@
         </section>
 
         <section class="panel">
-            <div class="panel-header">Relative Trend vs DMS (Zero)</div>
-            <div style="flex:1; padding: 10px; position: relative;">
-                <canvas id="strategyChart"></canvas>
-            </div>
+            <div class="panel-header">Relative Trend (Zero = DMS)</div>
+            <div style="flex:1; padding: 10px; position: relative;"><canvas id="strategyChart"></canvas></div>
         </section>
 
-        <section style="display: grid; grid-template-rows: 110px 1fr; gap: 6px;">
+        <section style="display: grid; grid-template-rows: 100px 1fr; gap: 6px;">
             <div class="panel">
                 <div class="panel-header">Direct Opponents</div>
                 <div style="padding: 10px;">
-                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
                         <input type="text" id="addInput" class="input-dark" style="flex:1" placeholder="# Kart">
                         <button class="btn-action btn-success" onclick="Engine.addDirect()">TRACK</button>
                     </div>
-                    <div id="directsBox" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+                    <div id="directsBox"></div>
                 </div>
             </div>
             <div class="panel">
@@ -178,21 +170,9 @@
 </div>
 
 <script>
-/**
- * DMS STRATEGIC ENGINE v2.6 - ULTIMATE RELIABILITY
- * Moduli: Firebase Sync, Strategy Calc, CSV Export, Live Charting.
- */
-
 const Engine = (() => {
-    let state = {
-        active: false,
-        ourKart: "",
-        directs: JSON.parse(localStorage.getItem('dms_v26_directs')) || [],
-        ovr: JSON.parse(localStorage.getItem('dms_v26_ovr')) || {},
-        chart: null,
-        refresh: null,
-        lastData: []
-    };
+    let state = { active: false, ourKart: "", directs: JSON.parse(localStorage.getItem('dms_v27_directs')) || [], 
+                  ovr: JSON.parse(localStorage.getItem('dms_v27_ovr')) || {}, chart: null, refresh: null, lastData: [] };
 
     const init = () => {
         firebase.initializeApp({
@@ -201,78 +181,56 @@ const Engine = (() => {
             databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "gestione-cambi-kart---dms"
         });
-
         firebase.database().ref('raceState/ourKartId').on('value', snap => {
-            state.ourKart = snap.val() || "";
-            document.getElementById('statusLive').innerText = `DMS KART ACTIVE: #${state.ourKart}`;
+            state.ourKart = snap.val() || "22";
             recompute();
         });
-
-        document.getElementById('pitTarget').addEventListener('input', () => recompute());
-        setupChart();
-        updateDirectsUI();
-        recompute(); 
+        setupChart(); updateDirectsUI(); recompute();
     };
 
     const setupChart = () => {
         const ctx = document.getElementById('strategyChart').getContext('2d');
-        state.chart = new Chart(ctx, {
-            type: 'line',
-            data: { labels: [], datasets: [] },
-            options: {
-                responsive: true, maintainAspectRatio: false, animation: false,
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#444', font: { size: 8 } } },
-                    x: { display: false }
-                },
-                plugins: { legend: { display: true, position: 'bottom', labels: { color: '#888', boxWidth: 6, font: { size: 8 } } } }
-            }
-        });
+        state.chart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [] }, options: {
+            responsive: true, maintainAspectRatio: false, animation: false,
+            scales: { y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#444', font: { size: 8 } } }, x: { display: false } },
+            plugins: { legend: { display: true, position: 'bottom', labels: { color: '#888', boxWidth: 6, font: { size: 8 } } } }
+        }});
     };
 
     const toSec = (s) => {
         if(!s) return 0;
         const p = s.toString().split(':');
-        if(p.length === 3) return (+p[0]*3600)+(+p[1]*60)+(+p[2]);
-        if(p.length === 2) return (+p[0]*60)+(+p[1]);
-        return parseFloat(s) || 0;
+        return p.length === 3 ? (+p[0]*3600)+(+p[1]*60)+(+p[2]) : (p.length === 2 ? (+p[0]*60)+(+p[1]) : parseFloat(s) || 0);
     };
 
     const fmt = (s) => {
         const sign = s < 0 ? "-" : "";
         const abs = Math.abs(s);
-        const m = Math.floor(abs / 60);
-        const sc = Math.floor(abs % 60);
-        return `${sign}${m}:${sc.toString().padStart(2, '0')}`;
+        return `${sign}${Math.floor(abs/60)}:${Math.floor(abs%60).toString().padStart(2, '0')}`;
     };
 
     const recompute = () => {
         const target = parseInt(document.getElementById('pitTarget').value) || 0;
         const filter = document.getElementById('filterCat').value;
-
-        // Dati Simulati (Saranno rimpiazzati dal fetch Apex)
         let raw = [
             { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rT: 36000, pits: 14, pT: "38:00", last: "1:02.7" },
             { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+12.8", rT: 36012, pits: 12, pT: "40:20", last: "1:02.8" },
             { num: "49", team: "SPARKART", cat: "EK2", dist: "1 Lap", rT: 36050, pits: 15, pT: "37:50", last: "1:03.1" },
-            { num: "4", team: "GOATS RT RED", cat: "EK3", dist: "+1:15", rT: 36075, pits: 12, pT: "38:05", last: "1:02.9" }
+            { num: "16", team: "TEAM EVO", cat: "EK1", dist: "+45.2", rT: 36040, pits: 14, pT: "38:00", last: "1:02.5" }
         ];
 
         let processed = raw.map(k => {
             const cat = state.ovr[k.num] || k.cat;
             const pSec = toSec(k.pT);
-            const deficit = Math.max(0, target - pSec);
-            return { ...k, cat, vTotal: k.rT + deficit, rem: target - pSec };
+            return { ...k, cat, vTotal: k.rT + Math.max(0, target - pSec), rem: target - pSec };
         });
 
         if (filter !== "ALL") processed = processed.filter(k => k.cat === filter);
         processed.sort((a,b) => a.vTotal - b.vTotal);
-
         if (processed.length > 0) {
             const lead = processed[0].vTotal;
             processed = processed.map(k => ({ ...k, vGap: (k.vTotal - lead).toFixed(1) }));
         }
-
         state.lastData = processed;
         render(processed);
         updateChart(processed);
@@ -281,26 +239,15 @@ const Engine = (() => {
     const render = (data) => {
         const body = document.getElementById('rowsBody');
         body.innerHTML = "";
-
         data.forEach((k, i) => {
             const isUs = k.num === state.ourKart;
-            const isDir = state.directs.includes(k.num);
             const tr = document.createElement('tr');
             if(isUs) tr.className = "row-us";
-            if(isDir) tr.classList.add("row-direct");
-
-            tr.innerHTML = `
-                <td style="color:var(--dim)">${i+1}</td>
-                <td><span class="badge-cat cat-${k.cat}" onclick="Engine.cycleCat('${k.num}','${k.cat}')">${k.cat}</span></td>
-                <td style="font-weight:bold; color:var(--dim)">#${k.num}</td>
-                <td style="font-weight:800; overflow:hidden; text-overflow:ellipsis;">${k.team}</td>
-                <td style="font-family:'JetBrains Mono'; font-size:0.65rem; color:var(--dim)">${k.dist}</td>
-                <td style="text-align:center">${k.pits}</td>
-                <td style="font-size:0.65rem;">${k.pT}</td>
-                <td class="timer-box ${k.rem < 0 ? 'timer-over' : ''}">${fmt(k.rem)}</td>
-                <td style="font-family:'JetBrains Mono';">${k.last}</td>
-                <td class="v-gap-box">+${k.vGap}s</td>
-            `;
+            if(state.directs.includes(k.num)) tr.classList.add("row-direct");
+            tr.innerHTML = `<td>${i+1}</td><td><span class="badge-cat cat-${k.cat}" onclick="Engine.cycleCat('${k.num}','${k.cat}')">${k.cat}</span></td>
+                <td>#${k.num}</td><td style="font-weight:800">${k.team}</td><td style="font-family:'JetBrains Mono'; color:var(--dim)">${k.dist}</td>
+                <td align="center">${k.pits}</td><td>${k.pT}</td><td class="timer-box ${k.rem < 0 ? 'timer-over' : ''}">${fmt(k.rem)}</td>
+                <td>${k.last}</td><td class="v-gap-box">+${k.vGap}s</td>`;
             body.appendChild(tr);
         });
     };
@@ -311,7 +258,6 @@ const Engine = (() => {
         const time = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
         state.chart.data.labels.push(time);
         if(state.chart.data.labels.length > 60) state.chart.data.labels.shift();
-
         [state.ourKart, ...state.directs].forEach(num => {
             const team = data.find(k => k.num === num);
             if (!team) return;
@@ -329,56 +275,45 @@ const Engine = (() => {
 
     const updateDirectsUI = () => {
         document.getElementById('directsBox').innerHTML = state.directs.map(d => `
-            <span class="btn-action" style="background:#1a1f26; color:var(--dim); padding:3px 8px; border:1px solid var(--border); margin:2px;" onclick="Engine.removeDirect('${d}')">#${d} ×</span>
-        `).join('');
+            <span class="btn-action" style="background:#1a1f26; color:var(--dim); padding:3px 8px; border:1px solid var(--border); margin:2px;" onclick="Engine.removeDirect('${d}')">#${d} ×</span>`).join('');
     };
 
     return {
         toggleSync: () => {
             state.active = !state.active;
             const b = document.getElementById('syncBtn');
-            if(state.active) { b.innerText="STOP STREAM"; b.className="btn-action btn-danger"; state.refresh = setInterval(recompute, 3000); }
-            else { b.innerText="AVVIA STREAM"; b.className="btn-action btn-success"; clearInterval(state.refresh); }
+            if(state.active) { b.innerText="STOP"; b.className="btn-action btn-danger"; state.refresh = setInterval(recompute, 3000); }
+            else { b.innerText="AVVIA"; b.className="btn-action btn-success"; clearInterval(state.refresh); }
         },
         addDirect: () => {
             const v = document.getElementById('addInput').value.trim();
-            if(v && !state.directs.includes(v)) {
-                state.directs.push(v);
-                localStorage.setItem('dms_v26_directs', JSON.stringify(state.directs));
-                updateDirectsUI(); recompute();
-            }
+            if(v && !state.directs.includes(v)) { state.directs.push(v); localStorage.setItem('dms_v27_directs', JSON.stringify(state.directs)); updateDirectsUI(); recompute(); }
             document.getElementById('addInput').value = "";
         },
         removeDirect: (n) => {
-            state.directs = state.directs.filter(x => x !== n);
-            localStorage.setItem('dms_v26_directs', JSON.stringify(state.directs));
-            state.chart.data.datasets = state.chart.data.datasets.filter(d => d.label !== `K#${n}`);
-            updateDirectsUI(); state.chart.update();
+            state.directs = state.directs.filter(x => x !== n); localStorage.setItem('dms_v27_directs', JSON.stringify(state.directs));
+            state.chart.data.datasets = state.chart.data.datasets.filter(d => d.label !== `K#${n}`); updateDirectsUI(); state.chart.update();
         },
         cycleCat: (n, c) => {
-            const cs = ["EK1", "EK2", "EK3"];
-            state.ovr[n] = cs[(cs.indexOf(c)+1)%3];
-            localStorage.setItem('dms_v26_ovr', JSON.stringify(state.ovr));
-            recompute();
+            const cs = ["EK1", "EK2", "EK3"]; state.ovr[n] = cs[(cs.indexOf(c)+1)%3];
+            localStorage.setItem('dms_v27_ovr', JSON.stringify(state.ovr)); recompute();
         },
         exportCSV: () => {
             let csv = "POS_VIRT;KART;TEAM;CAT;REMAINING;V_GAP\n";
-            state.lastData.forEach((k,i) => {
-                csv += `${i+1};${k.num};${k.team};${k.cat};${fmt(k.rem)};${k.vGap}\n`;
-            });
+            state.lastData.forEach((k,i) => { csv += `${i+1};${k.num};${k.team};${k.cat};${fmt(k.rem)};${k.vGap}\n`; });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `DMS_Race_Report_${Date.now()}.csv`);
-            a.click();
+            const a = document.createElement('a'); a.setAttribute('href', url); a.setAttribute('download', `DMS_Report.csv`); a.click();
+        },
+        openBoxPage: () => {
+            // Indirizzo corretto della console di gestione box
+            window.open('https://gestione-cambi-kart---dms.web.app', '_blank');
         },
         recompute: () => recompute(),
-        reset: () => { if(confirm("Resettare tutto?")) { localStorage.clear(); location.reload(); } },
+        reset: () => { if(confirm("Resettare sessione?")) { localStorage.clear(); location.reload(); } },
         start: () => init()
     };
 })();
-
 Engine.start();
 </script>
 </body>
