@@ -3,96 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS Analytics Pro - v2.4 FULL CONTROL</title>
+    <title>DMS Analytics Pro - v2.5 STRATEGIC</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --bg-deep: #050709; --bg-panel: #0d1117; --bg-header: #151921;
-            --border: #2d343f; --text: #f1f3f5; --dim: #8b949e;
-            --accent: #3b82f6; --success: #10b981; --warning: #f59e0b;
-            --danger: #ef4444; --direct: #ec4899;
-            --ek1: #22c55e; --ek2: #ffffff; --ek3: #ef4444;
+            --bg-deep: #040506; --bg-panel: #0b0e14; --bg-header: #12161d;
+            --border: #262c35; --text: #f1f3f5; --dim: #768390;
+            --accent: #3b82f6; --success: #00f2c3; --warning: #f5ae0b;
+            --danger: #ff4d4d; --direct: #ec4899;
+            --ek1: #00e676; --ek2: #ffffff; --ek3: #ff5252;
         }
 
         * { box-sizing: border-box; outline: none; }
         body { 
             height: 100vh; width: 100vw; margin: 0; padding: 0;
             background-color: var(--bg-deep); color: var(--text);
-            font-family: 'Inter', sans-serif; overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif; overflow: hidden;
         }
 
-        .app-wrapper { display: grid; grid-template-rows: 85px 1fr; height: 100vh; padding: 8px; gap: 8px; }
+        .app-wrapper { display: grid; grid-template-rows: 80px 1fr; height: 100vh; padding: 6px; gap: 6px; }
 
-        /* Header */
+        /* Header Slim */
         .main-header {
-            display: grid; grid-template-columns: 250px 1fr 300px;
+            display: grid; grid-template-columns: 220px 1fr 250px;
             background: var(--bg-header); border: 1px solid var(--border);
-            border-radius: 10px; padding: 0 20px; align-items: center;
+            border-radius: 8px; padding: 0 15px; align-items: center;
         }
-        .brand h1 { margin: 0; font-size: 1.1rem; letter-spacing: -0.5px; }
+        .brand h1 { margin: 0; font-size: 1rem; color: var(--accent); letter-spacing: 1px; }
         .input-dark {
             background: #000; border: 1px solid var(--border); color: #fff;
-            padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; font-family: monospace;
+            padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-family: monospace;
         }
-        .input-target { width: 85px; text-align: center; border-color: var(--warning); color: var(--warning); font-weight: bold; font-size: 1rem; }
+        .input-target { width: 90px; text-align: center; border-color: var(--warning); color: var(--warning); font-weight: bold; font-size: 1.1rem; }
 
-        /* Dashboard Layout: Telemetria molto più larga */
+        /* Main Grid: Telemetria Estesa + Grafico e Comandi */
         .dashboard-grid {
             display: grid; 
-            grid-template-columns: 1fr 180px 420px 250px; 
-            gap: 8px; overflow: hidden;
+            grid-template-columns: 1fr 380px; 
+            grid-template-rows: 1fr 200px;
+            gap: 6px; overflow: hidden;
         }
+
+        .telemetry-panel { grid-row: 1 / 3; }
 
         .panel {
             background: var(--bg-panel); border: 1px solid var(--border);
-            border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
         }
 
         .panel-header {
-            padding: 8px 15px; background: rgba(255,255,255,0.03);
+            padding: 6px 12px; background: rgba(255,255,255,0.02);
             border-bottom: 1px solid var(--border); font-size: 0.65rem;
             font-weight: 800; text-transform: uppercase; color: var(--dim);
             display: flex; justify-content: space-between; align-items: center;
         }
 
         .scroll-area { flex: 1; overflow-y: auto; scrollbar-width: thin; }
-        .scroll-area::-webkit-scrollbar { width: 3px; }
+        .scroll-area::-webkit-scrollbar { width: 2px; }
         .scroll-area::-webkit-scrollbar-thumb { background: var(--border); }
 
-        /* Tabella Ottimizzata per Spazio */
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
+        /* Tabella Ultra-Compatta (Single Block Style) */
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; table-layout: fixed; }
         thead th { 
-            position: sticky; top: 0; background: var(--bg-panel); padding: 8px; 
+            position: sticky; top: 0; background: var(--bg-panel); padding: 10px 8px; 
             text-align: left; z-index: 50; border-bottom: 2px solid var(--border);
-            color: var(--dim); font-size: 0.65rem;
+            color: var(--dim); font-size: 0.6rem;
         }
-        tbody td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.02); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        tbody td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.01); overflow: hidden; white-space: nowrap; }
 
-        .row-us { background: rgba(16, 185, 129, 0.08) !important; color: var(--success); }
-        .row-direct { border-left: 4px solid var(--direct) !important; background: rgba(236, 72, 153, 0.03); }
+        .row-us { background: rgba(0, 242, 195, 0.05) !important; border-left: 3px solid var(--success); }
+        .row-direct { border-left: 3px solid var(--direct) !important; background: rgba(236, 72, 153, 0.02); }
         
-        .badge-cat { padding: 2px 6px; border-radius: 3px; font-weight: 900; font-size: 0.6rem; color: #000; min-width: 40px; text-align: center; cursor: pointer; }
+        .badge-cat { padding: 2px 4px; border-radius: 3px; font-weight: 900; font-size: 0.55rem; color: #000; min-width: 35px; text-align: center; }
         .cat-EK1 { background: var(--ek1); } .cat-EK2 { background: var(--ek2); } .cat-EK3 { background: var(--ek3); }
 
-        .v-gap-box { font-family: monospace; font-weight: 900; color: var(--success); font-size: 0.95rem; }
-        .last-lap-box { font-family: monospace; font-weight: bold; }
+        .v-gap-box { font-family: 'JetBrains Mono', monospace; font-weight: 900; color: var(--success); font-size: 0.9rem; }
+        .timer-box { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 0.85rem; color: var(--warning); }
+        .timer-over { color: var(--danger); animation: blink 1s infinite; }
 
-        .rank-card {
-            padding: 6px 10px; margin: 3px 6px; background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border); border-radius: 6px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .rank-card.is-us { border-color: var(--success); }
+        @keyframes blink { 50% { opacity: 0.3; } }
 
-        .btn { padding: 8px 15px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; font-size: 0.75rem; }
+        .btn-small { padding: 4px 10px; border-radius: 4px; font-weight: 700; border: none; cursor: pointer; font-size: 0.65rem; }
         .btn-success { background: var(--success); color: #000; }
         .btn-danger { background: var(--danger); color: #fff; }
 
-        /* Messaggi Direzione Gara Rimpiccioliti */
-        .msg-small { padding: 6px 10px; border-bottom: 1px solid var(--border); font-size: 0.7rem; line-height: 1.2; }
+        /* Direzione Gara */
+        .msg-line { padding: 4px 10px; border-bottom: 1px solid var(--border); font-size: 0.65rem; color: var(--dim); }
+        .msg-time { color: var(--accent); margin-right: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -100,29 +100,33 @@
 <div class="app-wrapper">
     <header class="main-header">
         <div class="brand">
-            <h1>DMS ANALYTICS <span>V2.4 FULL CONTROL</span></h1>
-            <div id="syncStatus" style="font-size: 0.6rem; color: var(--success);">FIREBASE LIVE</div>
+            <h1>DMS STRATEGIC <span>v2.5</span></h1>
+            <div id="statusLive" style="font-size: 0.55rem; font-weight: bold; color: var(--success);">● SYNC ACTIVE</div>
         </div>
         
-        <div class="connection-bar">
-            <input type="text" id="apexInput" class="input-dark" style="width: 300px;" placeholder="URL Apex Feed...">
-            <button class="btn btn-success" id="linkBtn" onclick="RaceEngine.toggleSync()">LIVE</button>
+        <div style="display: flex; gap: 20px; align-items: center; justify-content: center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <input type="text" id="apexFeed" class="input-dark" style="width: 250px;" placeholder="Apex Live Feed URL...">
+                <button class="btn-small btn-success" onclick="Engine.toggleSync()">AVVIA</button>
+            </div>
             <div style="width: 1px; height: 20px; background: var(--border);"></div>
-            <span style="font-size: 0.6rem; font-weight: 800; color: var(--warning);">PIT TARGET (S)</span>
-            <input type="number" id="pitTargetValue" class="input-dark input-target" value="2280">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size: 0.6rem; font-weight: 800; color: var(--warning);">PIT TARGET (S)</span>
+                <input type="number" id="pitTarget" class="input-dark input-target" value="2280">
+            </div>
         </div>
 
-        <div style="display: flex; gap: 8px; justify-content: flex-end;">
-            <button class="btn btn-danger" style="padding: 5px 10px;" onclick="RaceEngine.systemReset()">RESET</button>
+        <div style="display: flex; gap: 5px; justify-content: flex-end;">
+            <button class="btn-small" style="background: #2d343f; color: #fff;" onclick="Engine.reset()">RESET</button>
         </div>
     </header>
 
     <main class="dashboard-grid">
-        <section class="panel">
+        <section class="panel telemetry-panel">
             <div class="panel-header">
-                <span>Live Feed</span>
-                <select id="classFilter" onchange="RaceEngine.triggerRecompute()" class="input-dark" style="padding: 1px 5px; font-size: 0.6rem;">
-                    <option value="ALL">ASSOLUTA</option>
+                <span>Race Telemetry & Strategy</span>
+                <select id="filterCat" onchange="Engine.recompute()" class="input-dark" style="padding: 1px 5px; font-size: 0.6rem;">
+                    <option value="ALL">CLASSE: TUTTE</option>
                     <option value="EK1">EK1</option><option value="EK2">EK2</option><option value="EK3">EK3</option>
                 </select>
             </div>
@@ -130,50 +134,44 @@
                 <table id="mainTable">
                     <thead>
                         <tr>
-                            <th style="width: 35px;">P</th>
-                            <th style="width: 55px;">CAT</th>
-                            <th style="width: 50px;">KART</th>
-                            <th>NOME TEAM</th>
-                            <th style="width: 85px;">DISTACCO</th>
+                            <th style="width: 30px;">P</th>
+                            <th style="width: 50px;">CAT</th>
+                            <th style="width: 45px;">KART</th>
+                            <th style="width: 180px;">NOME TEAM</th>
+                            <th style="width: 90px;">DISTACCO</th>
                             <th style="width: 40px;">PIT</th>
-                            <th style="width: 90px;">BOX TIME</th>
-                            <th style="width: 85px;">LAST LAP</th>
+                            <th style="width: 80px;">BOX TIME</th>
+                            <th style="width: 110px; color: var(--warning);">REMAINING</th>
+                            <th style="width: 80px;">LAST LAP</th>
                             <th style="width: 90px; color: var(--success);">V-GAP</th>
                         </tr>
                     </thead>
-                    <tbody id="telemetryRows"></tbody>
+                    <tbody id="rowsBody"></tbody>
                 </table>
             </div>
         </section>
 
         <section class="panel">
-            <div class="panel-header">Rank</div>
-            <div class="scroll-area" id="rankFlow"></div>
+            <div class="panel-header">Relative Gap (Zero = DMS)</div>
+            <div style="flex:1; padding: 10px; position: relative;">
+                <canvas id="strategyChart"></canvas>
+            </div>
         </section>
 
-        <section style="display: grid; grid-template-rows: 1fr 140px; gap: 8px;">
+        <section style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
             <div class="panel">
-                <div class="panel-header">Relative Gap Chart (0 = DMS)</div>
-                <div style="flex:1; padding: 10px; position: relative;">
-                    <canvas id="relGapChart"></canvas>
-                </div>
-            </div>
-            <div class="panel">
-                <div class="panel-header">Direct Competitors</div>
-                <div style="padding: 10px;">
-                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
-                        <input type="text" id="newDirect" class="input-dark" style="flex:1" placeholder="# Kart">
-                        <button class="btn btn-success" onclick="RaceEngine.addDirect()">ADD</button>
+                <div class="panel-header">Tracking Avversari</div>
+                <div style="padding: 8px;">
+                    <div style="display: flex; gap: 4px; margin-bottom: 5px;">
+                        <input type="text" id="addInput" class="input-dark" style="flex:1" placeholder="# Kart">
+                        <button class="btn-small btn-success" onclick="Engine.addDirect()">ADD</button>
                     </div>
-                    <div id="directListContainer" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+                    <div id="directsBox" style="display: flex; flex-wrap: wrap; gap: 3px;"></div>
                 </div>
             </div>
-        </section>
-
-        <section class="panel">
-            <div class="panel-header">Race Control</div>
-            <div class="scroll-area" id="raceDirectionLog">
-                <div class="msg-small"><b style="color:var(--accent)">14:20</b> Benvenuti nella dashboard DMS Analytics. Sistema pronto.</div>
+            <div class="panel">
+                <div class="panel-header">Race Direction</div>
+                <div class="scroll-area" id="logBox"></div>
             </div>
         </section>
     </main>
@@ -181,18 +179,18 @@
 
 <script>
 /**
- * DMS RACE ENGINE v2.4 - FULL CONTROL
- * Architettura rinforzata per endurance.
+ * DMS STRATEGIC ENGINE v2.5
+ * Core logic per calcolo Virtual Gap e Countdown Pit Stop.
  */
 
-const RaceEngine = (() => {
+const Engine = (() => {
     let state = {
-        isRunning: false,
+        active: false,
         ourKart: "",
-        directs: JSON.parse(localStorage.getItem('dms_f24_directs')) || [],
-        ovr: JSON.parse(localStorage.getItem('dms_f24_ovr')) || {},
+        directs: JSON.parse(localStorage.getItem('dms_v25_directs')) || [],
+        overrides: JSON.parse(localStorage.getItem('dms_v25_ovr')) || {},
         chart: null,
-        refreshTimer: null
+        timer: null
     };
 
     const init = () => {
@@ -205,171 +203,172 @@ const RaceEngine = (() => {
 
         firebase.database().ref('raceState/ourKartId').on('value', snap => {
             state.ourKart = snap.val() || "";
-            document.getElementById('syncStatus').innerText = `DMS KART: #${state.ourKart}`;
-            compute();
+            document.getElementById('statusLive').innerText = `● KART DMS: #${state.ourKart}`;
+            recompute();
         });
 
-        document.getElementById('pitTargetValue').addEventListener('input', () => compute());
+        document.getElementById('pitTarget').addEventListener('input', () => recompute());
 
         setupChart();
         updateDirectsUI();
-        compute(); 
+        recompute(); 
     };
 
     const setupChart = () => {
-        const ctx = document.getElementById('relGapChart').getContext('2d');
+        const ctx = document.getElementById('strategyChart').getContext('2d');
         state.chart = new Chart(ctx, {
             type: 'line',
             data: { labels: [], datasets: [] },
             options: {
                 responsive: true, maintainAspectRatio: false, animation: false,
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#555', font: { size: 8 } } },
                     x: { display: false }
                 },
-                plugins: { legend: { position: 'bottom', labels: { color: '#888', boxWidth: 8, font: { size: 9 } } } }
+                plugins: { legend: { position: 'bottom', labels: { color: '#888', boxWidth: 8, font: { size: 8 } } } }
             }
         });
     };
 
-    const timeToSec = (str) => {
-        if (!str) return 0;
-        const p = str.toString().split(':');
-        if (p.length === 3) return (+p[0] * 3600) + (+p[1] * 60) + (+p[2]);
-        if (p.length === 2) return (+p[0] * 60) + (+p[1]);
-        return parseFloat(str) || 0;
+    const toSec = (s) => {
+        if(!s) return 0;
+        const p = s.toString().split(':');
+        if(p.length === 3) return (+p[0]*3600)+(+p[1]*60)+(+p[2]);
+        if(p.length === 2) return (+p[0]*60)+(+p[1]);
+        return parseFloat(s) || 0;
     };
 
-    const compute = () => {
-        const target = parseInt(document.getElementById('pitTargetValue').value) || 0;
-        const filter = document.getElementById('classFilter').value;
+    const formatSec = (s) => {
+        const sign = s < 0 ? "-" : "";
+        const abs = Math.abs(s);
+        const m = Math.floor(abs / 60);
+        const sec = Math.floor(abs % 60);
+        return `${sign}${m}:${sec.toString().padStart(2, '0')}`;
+    };
 
-        // Esempio dati robusti
+    const recompute = () => {
+        const target = parseInt(document.getElementById('pitTarget').value) || 0;
+        const filter = document.getElementById('filterCat').value;
+
+        // Simulazione dati (Verrà sostituito dal fetch Apex)
         let raw = [
-            { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rTime: 36000, pits: 14, pTime: "38:00", last: "1:05.12" },
-            { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+15.2", rTime: 36015, pits: 12, pTime: "40:30", last: "1:05.35" },
-            { num: "49", team: "SPARKART", cat: "EK2", dist: "1 Laps", rTime: 36060, pits: 15, pTime: "37:50", last: "1:06.11" },
-            { num: "16", team: "TEAM EVO", cat: "EK1", dist: "+45.0", rTime: 36045, pits: 14, pTime: "38:00", last: "1:05.05" }
+            { num: "1", team: "NAC TEAM", cat: "EK1", dist: "LEADER", rTime: 36000, pits: 14, pTime: "38:00", last: "1:02.75" },
+            { num: state.ourKart, team: "DMS RACING", cat: "EK2", dist: "+12.8", rTime: 36012, pits: 12, pTime: "40:20", last: "1:02.85" },
+            { num: "49", team: "SPARKART RACING TEAM", cat: "EK2", dist: "1 Giri", rTime: 36050, pits: 15, pTime: "37:50", last: "1:03.11" },
+            { num: "4", team: "GOATS RT RED", cat: "EK3", dist: "+1:15.0", rTime: 36075, pits: 12, pTime: "38:05", last: "1:02.95" }
         ];
 
-        let mapped = raw.map(k => {
-            const cat = state.ovr[k.num] || k.cat;
-            const pSec = timeToSec(k.pTime);
+        let processed = raw.map(k => {
+            const cat = state.overrides[k.num] || k.cat;
+            const pSec = toSec(k.pTime);
             const deficit = Math.max(0, target - pSec);
-            return { ...k, cat, vTotal: k.rTime + deficit, isLento: pSec > target, over: Math.max(0, pSec - target) };
+            const remaining = target - pSec;
+            return { ...k, cat, vTotal: k.rTime + deficit, remaining };
         });
 
-        if (filter !== "ALL") mapped = mapped.filter(k => k.cat === filter);
-        mapped.sort((a,b) => a.vTotal - b.vTotal);
+        if (filter !== "ALL") processed = processed.filter(k => k.cat === filter);
+        processed.sort((a,b) => a.vTotal - b.vTotal);
 
-        if (mapped.length > 0) {
-            const leader = mapped[0].vTotal;
-            mapped = mapped.map(k => ({ ...k, vGap: (k.vTotal - leader).toFixed(1) }));
+        if (processed.length > 0) {
+            const lead = processed[0].vTotal;
+            processed = processed.map(k => ({ ...k, vGap: (k.vTotal - lead).toFixed(1) }));
         }
 
-        render(mapped);
-        updateChartData(mapped);
+        render(processed);
+        updateChart(processed);
     };
 
     const render = (data) => {
-        const tBody = document.getElementById('telemetryRows');
-        const rFlow = document.getElementById('rankFlow');
-        tBody.innerHTML = ""; rFlow.innerHTML = "";
+        const body = document.getElementById('rowsBody');
+        body.innerHTML = "";
 
         data.forEach((k, i) => {
             const isUs = k.num === state.ourKart;
             const isDir = state.directs.includes(k.num);
-
             const tr = document.createElement('tr');
             if(isUs) tr.className = "row-us";
             if(isDir) tr.classList.add("row-direct");
 
             tr.innerHTML = `
                 <td style="color:var(--dim)">${i+1}</td>
-                <td><span class="badge-cat cat-${k.cat}" onclick="RaceEngine.cycleCat('${k.num}','${k.cat}')">${k.cat}</span></td>
+                <td><span class="badge-cat cat-${k.cat}" onclick="Engine.cycleCat('${k.num}','${k.cat}')">${k.cat}</span></td>
                 <td style="font-weight:bold; color:var(--dim)">#${k.num}</td>
-                <td style="font-weight:800; font-size:0.85rem;">${k.team}</td>
-                <td style="font-family:monospace; font-size:0.7rem;">${k.dist}</td>
+                <td style="font-weight:700; font-size:0.8rem;">${k.team}</td>
+                <td style="font-family:monospace; color:var(--dim)">${k.dist}</td>
                 <td style="text-align:center">${k.pits}</td>
-                <td style="font-size:0.75rem;">${k.pTime}${k.isLento?`<br><small style="color:var(--danger)">+${k.over}s</small>`:''}</td>
-                <td class="last-lap-box">${k.last}</td>
+                <td style="font-size:0.7rem;">${k.pTime}</td>
+                <td class="timer-box ${k.remaining < 0 ? 'timer-over' : ''}">
+                    ${formatSec(k.remaining)}
+                </td>
+                <td style="font-family:monospace;">${k.last}</td>
                 <td class="v-gap-box">+${k.vGap}s</td>
             `;
-            tBody.appendChild(tr);
-
-            rFlow.innerHTML += `
-                <div class="rank-card ${isUs ? 'is-us' : ''}">
-                    <div><small style="font-size:0.5rem; color:var(--dim)">P${i+1}</small><br><strong>#${k.num}</strong></div>
-                    <span class="badge-cat cat-${k.cat}">${k.cat}</span>
-                    <span class="v-gap-box" style="font-size:0.8rem;">+${k.vGap}s</span>
-                </div>`;
+            body.appendChild(tr);
         });
     };
 
-    const updateChartData = (data) => {
+    const updateChart = (data) => {
         const our = data.find(k => k.num === state.ourKart);
         if (!our || !state.chart) return;
         const time = new Date().toLocaleTimeString([], {minute:'2-digit', second:'2-digit'});
         state.chart.data.labels.push(time);
-        if(state.chart.data.labels.length > 50) state.chart.data.labels.shift();
+        if(state.chart.data.labels.length > 60) state.chart.data.labels.shift();
 
         [state.ourKart, ...state.directs].forEach(num => {
             const team = data.find(k => k.num === num);
             if (!team) return;
             let ds = state.chart.data.datasets.find(d => d.label === `K#${num}`);
             if (!ds) {
-                const col = (num === state.ourKart) ? '#00f2c3' : `hsl(${Math.random()*360}, 70%, 60%)`;
-                ds = { label: `K#${num}`, data: [], borderColor: col, borderWidth: (num === state.ourKart ? 3 : 1.5), tension: 0.4, pointRadius: 0 };
+                const col = (num === state.ourKart) ? '#00f2c3' : `hsl(${Math.random()*360}, 70%, 50%)`;
+                ds = { label: `K#${num}`, data: [], borderColor: col, borderWidth: (num === state.ourKart ? 3 : 1), tension: 0.3, pointRadius: 0 };
                 state.chart.data.datasets.push(ds);
             }
             ds.data.push(team.vTotal - our.vTotal);
-            if(ds.data.length > 50) ds.data.shift();
+            if(ds.data.length > 60) ds.data.shift();
         });
         state.chart.update('none');
     };
 
     const updateDirectsUI = () => {
-        document.getElementById('directListContainer').innerHTML = state.directs.map(d => `
-            <span class="btn" style="padding:3px 8px; background:#2d343f; color:#fff; font-size:0.65rem;" onclick="RaceEngine.removeDirect('${d}')">#${d} ×</span>
+        document.getElementById('directsBox').innerHTML = state.directs.map(d => `
+            <span class="btn-small" style="background:#1a1f26; color:#fff; border:1px solid #333;" onclick="Engine.removeDirect('${d}')">#${d} ×</span>
         `).join('');
     };
 
     return {
         toggleSync: () => {
-            state.isRunning = !state.isRunning;
-            const btn = document.getElementById('linkBtn');
-            if(state.isRunning) { btn.innerText = "STOP"; btn.classList.replace('btn-success','btn-danger'); state.refreshTimer = setInterval(compute, 3000); }
-            else { btn.innerText = "LIVE"; btn.classList.replace('btn-danger','btn-success'); clearInterval(state.refreshTimer); }
+            state.active = !state.active;
+            if(state.active) state.timer = setInterval(recompute, 3000);
+            else clearInterval(state.timer);
         },
         addDirect: () => {
-            const input = document.getElementById('newDirect');
-            const val = input.value.trim();
+            const val = document.getElementById('addInput').value.trim();
             if(val && !state.directs.includes(val)) {
                 state.directs.push(val);
-                localStorage.setItem('dms_f24_directs', JSON.stringify(state.directs));
-                updateDirectsUI(); compute();
+                localStorage.setItem('dms_v25_directs', JSON.stringify(state.directs));
+                updateDirectsUI(); recompute();
             }
-            input.value = "";
+            document.getElementById('addInput').value = "";
         },
         removeDirect: (n) => {
             state.directs = state.directs.filter(x => x !== n);
-            localStorage.setItem('dms_f24_directs', JSON.stringify(state.directs));
+            localStorage.setItem('dms_v25_directs', JSON.stringify(state.directs));
             state.chart.data.datasets = state.chart.data.datasets.filter(d => d.label !== `K#${n}`);
             updateDirectsUI(); state.chart.update();
         },
         cycleCat: (n, c) => {
             const cats = ["EK1", "EK2", "EK3"];
-            state.ovr[n] = cats[(cats.indexOf(c)+1)%3];
-            localStorage.setItem('dms_f24_ovr', JSON.stringify(state.ovr));
-            compute();
+            state.overrides[n] = cats[(cats.indexOf(c)+1)%3];
+            localStorage.setItem('dms_v25_ovr', JSON.stringify(state.overrides));
+            recompute();
         },
-        triggerRecompute: () => compute(),
-        systemReset: () => { if(confirm("RESET TOTALE?")) { localStorage.clear(); location.reload(); } },
+        recompute: () => recompute(),
+        reset: () => { if(confirm("Resettare sessione?")) { localStorage.clear(); location.reload(); } },
         start: () => init()
     };
 })();
 
-RaceEngine.start();
+Engine.start();
 </script>
 </body>
 </html>
