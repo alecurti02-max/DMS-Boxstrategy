@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DMS STRATEGY V3.0 - TITAN EDITION</title>
+    <title>DMS STRATEGY V3 - ULTIMATE TITAN SYSTEM</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -12,451 +12,642 @@
 
     <style>
         :root {
-            /* Palette Professionale */
-            --bg: #0b0e14;
-            --card: #151921;
-            --header: #1d2331;
-            --border: #2b3548;
-            --text: #e9ecef;
-            --text-dim: #888;
-            --accent: #1d8cf8;
-            --success: #00f2c3;
-            --warning: #ff4757;
-            
-            /* Classi Rating */
-            --missile: #ffdf00;
-            --prestazione: #00f2c3;
-            --normale: #34495e;
-            --lento: #ff8d72;
-            --osceno: #fd5d93;
-
-            /* Classi Categoria */
-            --ek1: #2ecc71;
-            --ek2: #ffffff;
-            --ek3: #e74c3c;
-            
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* DARK THEME (DEFAULT) */
+            --bg: #0a0c10; --card: #141820; --header: #1c222d; --border: #2d3545;
+            --text: #eceff4; --text-dim: #9ba3b1; --accent: #1d8cf8; --success: #00f2c3;
+            --warning: #ff4757; --direct: #fd5d93;
+            /* RATING COLORS */
+            --missile: #ffdf00; --prestazione: #00f2c3; --normale: #34495e; --lento: #ff8d72; --osceno: #fd5d93;
+            /* CATEGORY COLORS */
+            --ek1: #2ecc71; --ek2: #ffffff; --ek3: #e74c3c;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body.light-theme {
-            --bg: #f4f7f6; --card: #ffffff; --header: #ebf0f1;
-            --text: #2d3436; --text-dim: #636e72; --border: #dfe6e9;
+            --bg: #f0f3f5; --card: #ffffff; --header: #e1e7eb; --border: #cbd5e0;
+            --text: #2d3748; --text-dim: #718096;
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
         body { 
-            background-color: var(--bg); color: var(--text); 
-            margin: 0; overflow-x: hidden; height: 100vh;
-            display: flex; flex-direction: column;
+            background-color: var(--bg); color: var(--text); margin: 0; padding: 0;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            transition: background 0.3s ease;
         }
 
-        /* SCROLLBARS */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        /* LAYOUT STRUTTURALE */
-        .app-header {
-            height: 70px; background: var(--header); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 25px;
-            position: sticky; top: 0; z-index: 1000;
+        /* --- HEADER & CONTROLS --- */
+        .top-bar {
+            height: 65px; background: var(--header); border-bottom: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+            z-index: 100;
         }
 
-        .main-content {
-            flex: 1; display: grid; grid-template-rows: 1fr 1fr; /* Telemetria sopra, Gestione sotto */
-            gap: 10px; padding: 10px; height: calc(100vh - 70px);
+        .pit-target-box {
+            background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 6px;
+            border: 1px solid var(--accent); display: flex; flex-direction: column;
+        }
+
+        .pit-target-box label { font-size: 10px; text-transform: uppercase; color: var(--accent); font-weight: 800; }
+        .pit-target-box input { 
+            background: transparent; border: none; color: white; font-weight: bold; 
+            font-size: 16px; width: 60px; outline: none; text-align: center;
+        }
+
+        /* --- MAIN LAYOUT GRID --- */
+        .main-grid {
+            flex: 1; display: grid; grid-template-rows: 1.2fr 1fr; /* Telemetria sopra, Gestione sotto */
+            gap: 10px; padding: 10px; overflow: hidden;
         }
 
         .panel { 
-            background: var(--card); border: 1px solid var(--border); border-radius: 10px; 
-            display: flex; flex-direction: column; overflow: hidden;
+            background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
 
-        /* TELEMETRIA */
-        .telemetry-header {
+        .panel-header {
             padding: 10px 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
         }
 
-        .table-container { flex: 1; overflow: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; table-layout: fixed; }
+        /* --- TELEMETRIA SECTION --- */
+        .telemetry-split { display: grid; grid-template-columns: 1fr 400px; height: 100%; }
+        
+        .table-wrapper { flex: 1; overflow: auto; border-right: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
         th { 
-            background: var(--header); color: var(--text-dim); position: sticky; top: 0; 
-            padding: 12px 10px; text-align: left; font-size: 0.7em; text-transform: uppercase;
-            border-bottom: 2px solid var(--border); z-index: 10;
+            background: var(--header); color: var(--text-dim); position: sticky; top: 0;
+            padding: 12px 8px; text-align: left; font-size: 10px; text-transform: uppercase;
+            border-bottom: 2px solid var(--border); z-index: 20;
         }
-        td { padding: 10px; border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap; }
+        td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .col-pos { width: 45px; } .col-cat { width: 70px; } .col-kart { width: 65px; }
-        .col-team { width: 220px; } .col-vgap { width: 110px; color: var(--success); font-weight: 800; }
+        .col-pos { width: 40px; } .col-cat { width: 60px; } .col-kart { width: 60px; }
+        .col-vgap { width: 90px; color: var(--success); font-weight: 800; font-size: 14px; }
+        
+        .row-us { background: rgba(29, 140, 248, 0.15) !important; color: var(--accent); }
+        .row-pitting { animation: pulse-pit 2s infinite; background: rgba(255, 71, 87, 0.1) !important; }
+        @keyframes pulse-pit { 50% { background: rgba(255, 71, 87, 0.2) !important; } }
 
-        .row-us { background: rgba(29, 140, 248, 0.1) !important; color: var(--accent); }
-        .row-pitting { animation: pit-pulse 2s infinite; }
-        @keyframes pit-pulse { 50% { background: rgba(255, 71, 87, 0.15); } }
+        .badge-cat { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; color: #000; }
+        .ek1 { background: var(--ek1); } .ek2 { background: var(--ek2); } .ek3 { background: var(--ek3); }
 
-        /* GESTIONE ORIZZONTALE */
-        .management-area {
-            display: grid; grid-template-columns: 1fr 380px 300px; /* Corsie | Controlli | Log */
-            gap: 10px; height: 100%;
-        }
+        /* --- CHART SECTION --- */
+        .chart-container { padding: 10px; display: flex; flex-direction: column; height: 100%; background: #080a0e; }
 
-        .lanes-scroll { 
-            display: flex; gap: 15px; overflow-x: auto; padding: 10px; 
-            background: rgba(0,0,0,0.1); border-radius: 8px;
+        /* --- MANAGEMENT SECTION --- */
+        .management-split { display: grid; grid-template-columns: 1fr 350px 250px; height: 100%; }
+
+        .lanes-container { 
+            display: flex; gap: 12px; overflow-x: auto; padding: 10px;
+            background: rgba(0,0,0,0.15); scrollbar-width: thin;
         }
 
         .lane {
-            min-width: 260px; background: var(--bg); border-radius: 8px;
-            border-top: 5px solid var(--accent); display: flex; flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            min-width: 280px; background: var(--bg); border-radius: 8px;
+            border-top: 4px solid var(--accent); display: flex; flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: var(--transition);
         }
 
-        .lane-header { 
-            padding: 10px; font-weight: 800; font-size: 0.75em; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
+        .lane-head { 
+            padding: 10px; font-weight: 800; font-size: 12px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);
         }
 
-        .kart-list { flex: 1; padding: 10px; min-height: 100px; }
-
-        /* KART ITEM */
+        .kart-list { flex: 1; padding: 8px; min-height: 50px; }
+        
+        /* KART CARD */
         .kart-card {
-            background: var(--card); padding: 12px; margin-bottom: 10px; border-radius: 6px;
-            border: 1px solid var(--border); cursor: grab; position: relative;
+            background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+            padding: 12px; margin-bottom: 8px; cursor: grab; position: relative;
             transition: var(--transition);
         }
-        .kart-card:active { cursor: grabbing; transform: scale(0.98); }
-        .kart-card .rating-row { 
-            display: flex; gap: 4px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); 
-        }
+        .kart-card:active { cursor: grabbing; transform: scale(0.97); }
+        .kart-card.selected { border: 2px solid var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-        /* BADGES & DOTS */
-        .badge-cat { padding: 3px 6px; border-radius: 4px; font-size: 0.7em; color: #000; font-weight: 900; }
-        .ek1 { background: var(--ek1); } .ek2 { background: var(--ek2); } .ek3 { background: var(--ek3); }
-
-        .rating-dot { 
-            width: 18px; height: 18px; border-radius: 4px; cursor: pointer; 
+        .rating-dots { display: flex; gap: 5px; margin-top: 10px; }
+        .dot { 
+            width: 14px; height: 14px; border-radius: 3px; cursor: pointer; 
             border: 1px solid rgba(255,255,255,0.1); transition: transform 0.2s;
         }
-        .rating-dot:hover { transform: scale(1.2); }
+        .dot:hover { transform: scale(1.3); }
 
-        /* CONTROLLI PIT */
-        .pit-controls { display: flex; flex-direction: column; gap: 15px; padding: 20px; border-left: 1px solid var(--border); }
+        /* --- CONTROL PANEL --- */
+        .control-panel { border-left: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; gap: 15px; }
         .btn { 
-            padding: 12px 18px; border: none; border-radius: 6px; font-weight: 800; 
-            cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition);
         }
         .btn-success { background: var(--success); color: #000; }
         .btn-accent { background: var(--accent); color: #fff; }
         .btn-danger { background: var(--warning); color: #fff; }
         .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn:hover { filter: brightness(1.2); }
 
         input, select { 
             background: var(--bg); border: 1px solid var(--border); color: var(--text);
-            padding: 10px; border-radius: 6px; outline: none; width: 100%;
+            padding: 10px; border-radius: 6px; width: 100%; outline: none;
         }
 
-        /* LOG SYSTEM */
-        .log-panel { border-left: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; }
-        #log-container { 
-            flex: 1; overflow-y: auto; font-size: 0.75em; font-family: 'Courier New', monospace;
-            display: flex; flex-direction: column-reverse; gap: 6px;
+        /* --- LOG PANEL --- */
+        .log-panel { border-left: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; }
+        #action-logs { 
+            flex: 1; overflow-y: auto; font-size: 11px; font-family: 'Consolas', monospace;
+            display: flex; flex-direction: column-reverse; gap: 5px; color: var(--text-dim);
         }
-        .log-entry { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+        .log-line { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 3px; }
 
-        /* DATABASE TABLE (MODAL/SECTION) */
-        .db-section { margin-top: 10px; padding: 20px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); }
+        /* --- BOTTOM DATABASE --- */
+        .db-drawer {
+            height: 250px; background: var(--card); border-top: 2px solid var(--border);
+            overflow-y: auto; padding: 20px; transition: height 0.3s ease;
+        }
 
-        /* ANIMAZIONI */
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- UTILITIES --- */
+        .hidden { display: none; }
+        .flex-row { display: flex; gap: 10px; align-items: center; }
+        [data-rating="missile"] { border-left: 4px solid var(--missile); }
+        [data-rating="prestazione"] { border-left: 4px solid var(--prestazione); }
+        [data-rating="normale"] { border-left: 4px solid var(--normale); }
+        [data-rating="lento"] { border-left: 4px solid var(--lento); }
+        [data-rating="osceno"] { border-left: 4px solid var(--osceno); }
     </style>
 </head>
 <body class="dark-theme">
 
-    <header class="app-header">
-        <div style="display:flex; align-items:center; gap:30px;">
-            <h1 style="margin:0; font-size:1.4em; letter-spacing:2px; color:var(--accent)">DMS TITAN V3.0</h1>
-            <div style="background:rgba(0,0,0,0.3); padding:8px 15px; border-radius:8px; display:flex; gap:15px; align-items:center;">
-                <label style="font-size:0.7em; font-weight:800; color:var(--text-dim)">PIT TARGET</label>
-                <input type="text" id="pit-target" value="38:00" style="width:70px; text-align:center; padding:5px; font-weight:bold; border-color:var(--accent)">
+    <header class="top-bar">
+        <div class="flex-row">
+            <h2 style="margin:0; color:var(--accent); letter-spacing:1px;">DMS TITAN <span style="font-size:12px; color:var(--text-dim)">v3.0.1</span></h2>
+            <div class="pit-target-box">
+                <label>Pit Target (min)</label>
+                <input type="text" id="pit-target-input" value="38:00" onchange="updateVirtualCalculations()">
             </div>
+            <div id="sync-status" style="font-size:11px; color:var(--success)">● DATABASE LIVE</div>
         </div>
 
-        <div style="display:flex; gap:12px;">
-            <input type="text" id="apex-url" placeholder="Apex API URL..." style="width:280px;">
-            <button class="btn btn-success" onclick="connectApex()">LIVE CONNECT</button>
-            <button class="btn btn-danger" onclick="undo()" title="Annulla Ultima Azione">UNDO ↩</button>
-            <button class="btn btn-ghost" onclick="exportCSV()">CSV 📊</button>
-            <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()">☀️</button>
+        <div class="flex-row" style="flex:1; justify-content:center; max-width: 600px;">
+            <input type="text" id="apex-url" placeholder="Incolla l'URL Apex Live Feed qui..." style="flex:1;">
+            <button class="btn btn-success" onclick="initApexConnection()" style="padding: 10px 20px;">CONNETTI APEX</button>
+        </div>
+
+        <div class="flex-row">
+            <button class="btn btn-ghost" onclick="undo()" title="Annulla ultima azione">UNDO ↩</button>
+            <button class="btn btn-ghost" onclick="exportFullCSV()">EXPORT CSV 📊</button>
+            <button class="btn btn-ghost" onclick="toggleTheme()">☀️/🌙</button>
+            <button class="btn btn-danger" onclick="resetEntireRace()" style="padding:10px;">RESET</button>
         </div>
     </header>
 
-    <div class="main-content">
+    <main class="main-grid">
         
         <section class="panel">
-            <div class="telemetry-header">
-                <div style="display:flex; gap:20px;">
-                    <span style="font-size:0.8em; font-weight:bold;">LIVE TELEMETRY - APEX FEED</span>
-                    <div id="live-indicator" style="font-size:0.7em; color:var(--text-dim)">● OFFLINE</div>
+            <div class="telemetry-split">
+                <div class="table-wrapper">
+                    <table id="telemetry-table">
+                        <thead>
+                            <tr>
+                                <th class="col-pos">P.</th>
+                                <th class="col-cat">CAT</th>
+                                <th class="col-kart">KART</th>
+                                <th class="col-team" style="width:180px">TEAM</th>
+                                <th class="col-vgap">VIRTUAL GAP</th>
+                                <th>PIT TIME</th>
+                                <th>PIT</th>
+                                <th>DISTACCO</th>
+                                <th>BEST</th>
+                                <th>IN PISTA</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="telemetry-body">
+                            </tbody>
+                    </table>
                 </div>
-                <div style="display:flex; gap:10px;">
-                    <select id="cat-filter" style="padding:4px; font-size:0.8em; width:120px;" onchange="renderTelemetry()">
-                        <option value="ALL">TUTTE CAT.</option>
-                        <option value="EK1">EK1 (VERDE)</option>
-                        <option value="EK2">EK2 (BIANCO)</option>
-                        <option value="EK3">EK3 (ROSSO)</option>
-                    </select>
+                <div class="chart-container">
+                    <div style="font-size:11px; font-weight:bold; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">Trend Virtual Gap (Diretti)</div>
+                    <canvas id="virtualChart"></canvas>
                 </div>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="col-pos">POS</th>
-                            <th class="col-cat">CAT</th>
-                            <th class="col-kart">KART</th>
-                            <th class="col-team">TEAM</th>
-                            <th style="color:var(--success)">VIRTUAL GAP</th>
-                            <th>DISTACCO</th>
-                            <th>GIRI</th>
-                            <th>PIT</th>
-                            <th>TEMPO BOX</th>
-                            <th>ULTIMO</th>
-                            <th>BEST</th>
-                            <th>IN PISTA</th>
-                        </tr>
-                    </thead>
-                    <tbody id="telemetry-body">
-                        </tbody>
-                </table>
             </div>
         </section>
 
         <section class="panel">
-            <div class="management-area">
-                
+            <div class="management-split">
                 <div style="display:flex; flex-direction:column; overflow:hidden;">
-                    <div style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:0.8em; font-weight:900; color:var(--text-dim)">KART DEPOT / BOX</span>
-                        <button class="btn btn-accent" style="padding:4px 12px; font-size:0.7em;" onclick="addNewLane()">+ AGGIUNGI CORSIA</button>
+                    <div class="panel-header">
+                        <span style="font-size:12px; font-weight:bold;">GESTIONE CORSIA BOX / KART DEPOT</span>
+                        <button class="btn btn-accent" style="padding:4px 10px; font-size:11px;" onclick="addNewLane()">+ NUOVA CORSIA</button>
                     </div>
-                    <div id="lanes-container" class="lanes-scroll">
+                    <div id="lanes-render-area" class="lanes-container">
                         </div>
                 </div>
 
-                <div class="pit-controls">
-                    <span style="font-size:0.8em; font-weight:900; color:var(--text-dim)">MOVIMENTO PIT STOP</span>
+                <div class="control-panel">
                     <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; border:1px solid var(--border);">
-                        <label style="font-size:0.7em; margin-bottom:5px; display:block;">TEAM ENTRANTE</label>
-                        <input type="text" id="pit-team-id" placeholder="Cerca # o Nome..." oninput="autoSearchTeam()">
-                        <div id="pit-search-res" style="margin-top:8px; height:20px; font-size:0.8em; color:var(--success); font-weight:bold;"></div>
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <button class="btn btn-ghost" onclick="setPitAction('drop', 'L1')">LASCIATO</button>
-                        <button class="btn btn-ghost" onclick="setPitAction('take', 'L1')">PRESO</button>
+                        <label style="font-size:11px; color:var(--text-dim); margin-bottom:8px; display:block;">SEARCH & ADD TEAM</label>
+                        <div class="flex-row" style="margin-bottom:10px;">
+                            <input type="text" id="quick-team-search" placeholder="Team # o Nome..." oninput="searchInDB()">
+                        </div>
+                        <div id="search-preview" style="min-height:20px; font-size:12px; font-weight:bold; color:var(--success);"></div>
                     </div>
 
-                    <button class="btn btn-success" id="confirm-pit-btn" style="height:60px; font-size:1.1em; display:none;" onclick="executePitAction()">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <button class="btn btn-ghost" onclick="markAction('drop')">LASCIATO</button>
+                        <button class="btn btn-ghost" onclick="markAction('take')">PRESO</button>
+                    </div>
+
+                    <div style="padding:10px; border:1px dashed var(--border); border-radius:8px;">
+                        <label style="font-size:11px; color:var(--text-dim)">OUR KART ID</label>
+                        <input type="text" id="our-kart-id" placeholder="Es. 22" style="margin-top:5px; border-color:var(--accent)" onchange="updateOurKart()">
+                    </div>
+
+                    <button id="main-pit-btn" class="btn btn-success" style="height:60px; font-size:18px; display:none;" onclick="finalizePitAction()">
                         CONFERMA PIT STOP
                     </button>
-
-                    <div style="margin-top:auto; padding-top:15px; border-top:1px solid var(--border);">
-                        <label style="font-size:0.7em; color:var(--text-dim)">FILTRO KART</label>
-                        <input type="text" id="kart-search" placeholder="Trova Kart #..." oninput="highlightKart()">
-                    </div>
                 </div>
 
                 <div class="log-panel">
-                    <span style="font-size:0.8em; font-weight:900; color:var(--text-dim); margin-bottom:10px;">RACE LOG</span>
-                    <div id="log-container">
+                    <div style="font-size:11px; font-weight:800; color:var(--text-dim); margin-bottom:10px;">LIVE RACE LOG</div>
+                    <div id="action-logs">
                         </div>
-                    <button class="btn btn-ghost" style="margin-top:10px; font-size:0.7em;" onclick="clearLogs()">CLEAR LOGS</button>
+                    <button class="btn btn-ghost" style="margin-top:10px; font-size:10px; padding:5px;" onclick="clearLogs()">Svuota Log</button>
                 </div>
-
             </div>
         </section>
-    </div>
+    </main>
 
-    <div style="padding:0 10px 20px 10px;">
-        <section class="db-section">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h3 style="margin:0;">DATABASE TEAM E CATEGORIE</h3>
-                <button class="btn btn-success" style="padding:5px 15px;" onclick="addTeamToDB()">+ AGGIUNGI TEAM</button>
+    <div class="db-drawer" id="db-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">DATABASE ANAGRAFICA TEAM</h3>
+            <div class="flex-row">
+                <input type="text" id="new-team-name" placeholder="Nome Team" style="width:180px;">
+                <input type="text" id="new-team-num" placeholder="#" style="width:60px;">
+                <select id="new-team-cat" style="width:80px;">
+                    <option value="EK1">EK1</option>
+                    <option value="EK2">EK2</option>
+                    <option value="EK3">EK3</option>
+                </select>
+                <button class="btn btn-success" style="padding:8px 15px;" onclick="addManualTeam()">+ AGGIUNGI</button>
             </div>
-            <table id="db-table-main">
-                <thead>
-                    <tr>
-                        <th>TEAM</th>
-                        <th># GARA</th>
-                        <th>CAT.</th>
-                        <th>KART ATTUALE</th>
-                        <th>PIT FATTI</th>
-                        <th>AZIONI</th>
-                    </tr>
-                </thead>
-                <tbody id="db-body"></tbody>
-            </table>
-        </section>
+        </div>
+        <table style="font-size:13px;">
+            <thead>
+                <tr>
+                    <th>TEAM NAME</th>
+                    <th># GARA</th>
+                    <th>CAT</th>
+                    <th>KART ATTUALE</th>
+                    <th>PIT EFFETTUATI</th>
+                    <th>TOTALE BOX</th>
+                    <th>AZIONI</th>
+                </tr>
+            </thead>
+            <tbody id="db-teams-body">
+                </tbody>
+        </table>
     </div>
 
 <script>
-    // CONFIGURAZIONE E STATO GLOBALE
+    // ==========================================
+    // CONFIGURAZIONE FIREBASE
+    // ==========================================
     const firebaseConfig = { 
         apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", 
-        databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app" 
+        databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "gestione-cambi-kart---dms"
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // ==========================================
+    // STATO GLOBALE APPLICAZIONE
+    // ==========================================
     let state = {
         lanes: [
-            { id: 'L1', name: 'CORSIA SX', karts: [] },
-            { id: 'L2', name: 'CORSIA DX', karts: [] }
+            { id: 'lane_1', name: 'CORSIA A', karts: [] },
+            { id: 'lane_2', name: 'CORSIA B', karts: [] }
         ],
         teams: [],
         logs: [],
         ourKart: "",
+        telemetryHistory: [], // Per il grafico
+        directCompetitors: [], // Team da monitorare sul grafico
         history: [] // Stack per Undo
     };
 
-    let sortableInstances = [];
-    let apexUpdateTimer = null;
-    let currentPitData = { teamIdx: null, dropLane: null, takeLane: null };
+    let chartInstance = null;
+    let apexInterval = null;
+    let pendingAction = { type: null, teamIdx: null };
 
-    // INIZIALIZZAZIONE
+    // ==========================================
+    // INIZIALIZZAZIONE & SYNC
+    // ==========================================
     window.onload = () => {
-        // Sync con Firebase
+        // Caricamento iniziale da Firebase
         database.ref('v3_titan_state').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                state = data;
+                // Merge intelligente per non rompere il grafico durante gli update
+                state.lanes = data.lanes || [];
+                state.teams = data.teams || [];
+                state.logs = data.logs || [];
+                state.ourKart = data.ourKart || "";
+                state.directCompetitors = data.directCompetitors || [];
+                
                 renderAll();
             }
         });
+
+        initChart();
         
-        // Mock iniziale se vuoto
-        if (state.teams.length === 0) {
+        // Mock se DB vuoto
+        if(state.teams.length === 0) {
             state.teams = [
-                { name: "DMS RACING", num: "22", cat: "EK1", pitCount: 0, currentKart: "22" },
-                { name: "NAC TEAM", num: "1", cat: "EK1", pitCount: 0, currentKart: "1" }
+                { name: "DMS RACING", num: "22", cat: "EK1", pitCount: 0, totalPitTime: "00:00", currentKart: "22" }
             ];
             save();
         }
     };
 
-    // FUNZIONI DI SALVATAGGIO E UNDO
+    // ==========================================
+    // GESTIONE DATABASE & SALVATAGGIO
+    // ==========================================
     function save() {
-        database.ref('v3_titan_state').set(state);
+        database.ref('v3_titan_state').set({
+            lanes: state.lanes,
+            teams: state.teams,
+            logs: state.logs,
+            ourKart: state.ourKart,
+            directCompetitors: state.directCompetitors
+        });
     }
 
     function pushHistory() {
+        // Snapshot per l'undo
         state.history.push(JSON.stringify({
             lanes: state.lanes,
             teams: state.teams,
-            logs: state.logs
+            logs: state.logs,
+            ourKart: state.ourKart
         }));
-        if (state.history.length > 50) state.history.shift();
+        if(state.history.length > 30) state.history.shift();
     }
 
     function undo() {
-        if (state.history.length === 0) return alert("Nessuna azione da annullare!");
+        if(state.history.length === 0) return alert("Nulla da annullare!");
         const last = JSON.parse(state.history.pop());
         state.lanes = last.lanes;
         state.teams = last.teams;
         state.logs = last.logs;
+        state.ourKart = last.ourKart;
         save();
     }
 
-    // LOGICA RENDERING
-    function renderAll() {
-        renderLanes();
-        renderDB();
-        renderLogs();
-        renderTelemetry(); // Aggiorna se abbiamo dati Apex
+    // ==========================================
+    // ENGINE TELEMETRIA APEX
+    // ==========================================
+    function initApexConnection() {
+        const url = document.getElementById('apex-url').value.trim();
+        if(!url) return alert("Inserisci un URL Feed valido");
+        
+        if(apexInterval) clearInterval(apexInterval);
+        
+        // Simulo aggiornamento ogni 3 sec
+        apexInterval = setInterval(() => {
+            fetchApexData(url);
+        }, 3000);
+        
+        addLog("Connessione Apex avviata.");
     }
 
+    async function fetchApexData(url) {
+        try {
+            // Qui andrebbe la chiamata fetch reale tramite proxy (CORS bypass)
+            // Per ora simuliamo i dati reali che arrivano da Apex
+            const mockRaw = [
+                { pos: 1, num: "1", team: "NAC TEAM", cat: "EK1", laps: 155, pit: 12, pitTime: "37:50", gap: "LEADER", last: "1:02.1", best: "1:01.8", track: "1:45" },
+                { pos: 2, num: "22", team: "DMS RACING", cat: "EK1", laps: 155, pit: 11, pitTime: "39:05", gap: "+5.2", last: "1:02.5", best: "1:02.0", track: "5:12" },
+                { pos: 3, num: "49", team: "SPARK", cat: "EK2", laps: 154, pit: 14, pitTime: "38:10", gap: "1 Giro", last: "1:03.4", best: "1:02.9", track: "IN PIT" },
+                { pos: 4, num: "7", team: "KRT ALLEY", cat: "EK1", laps: 154, pit: 13, pitTime: "36:20", gap: "1 Giro", last: "1:02.9", best: "1:02.4", track: "2:30" }
+            ];
+
+            processTelemetry(mockRaw);
+        } catch (err) {
+            console.error("Errore fetch:", err);
+        }
+    }
+
+    function processTelemetry(data) {
+        const targetSec = parseTimeToSec(document.getElementById('pit-target-input').value);
+        
+        const processed = data.map(t => {
+            const pitSec = parseTimeToSec(t.pitTime);
+            // Deficit: Quanto tempo box deve ancora fare rispetto al target
+            const deficit = Math.max(0, targetSec - pitSec);
+            // Calcolo Virtual Gap (semplificato: gap reale in secondi + deficit)
+            let realGapSec = 0;
+            if(t.gap !== "LEADER") {
+                if(t.gap.includes("Giro")) realGapSec = parseInt(t.gap) * 62; // 62s tempo medio giro
+                else realGapSec = parseFloat(t.gap.replace('+', ''));
+            }
+            
+            const vTotal = realGapSec + deficit;
+            return { ...t, vGap: vTotal };
+        });
+
+        // Riordiniamo la classifica basandoci sul Virtual Gap
+        processed.sort((a,b) => a.vGap - b.vGap);
+        const leaderV = processed[0].vGap;
+
+        const finalData = processed.map(t => ({
+            ...t,
+            vGapRel: (t.vGap - leaderV).toFixed(1)
+        }));
+
+        renderTelemetry(finalData);
+        updateChartData(finalData);
+    }
+
+    function renderTelemetry(data) {
+        const body = document.getElementById('telemetry-body');
+        body.innerHTML = data.map((t, idx) => `
+            <tr class="${t.num == state.ourKart ? 'row-us' : ''} ${t.track == 'IN PIT' ? 'row-pitting' : ''}">
+                <td>${idx+1}</td>
+                <td><span class="badge-cat ${t.cat.toLowerCase()}">${t.cat}</span></td>
+                <td style="font-weight:900">#${t.num}</td>
+                <td>${t.team}</td>
+                <td class="col-vgap">+${t.vGapRel}s</td>
+                <td>${t.pitTime}</td>
+                <td>${t.pit}</td>
+                <td style="color:var(--text-dim)">${t.gap}</td>
+                <td style="color:var(--text-dim)">${t.best}</td>
+                <td style="color:${t.track == 'IN PIT' ? 'var(--warning)' : 'inherit'}">${t.track}</td>
+                <td>
+                    <button class="btn btn-ghost" style="padding:2px 6px; font-size:9px;" onclick="toggleCompetitor('${t.num}')">
+                        ${state.directCompetitors.includes(t.num) ? '📉 RIMUOVI' : '📈 TRACCIA'}
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // ==========================================
+    // GRAFICO TREND (CHART.JS)
+    // ==========================================
+    function initChart() {
+        const ctx = document.getElementById('virtualChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    y: { reverse: true, grid: { color: '#1a202a' }, ticks: { color: '#9ba3b1' } },
+                    x: { grid: { display: false }, ticks: { display: false } }
+                },
+                plugins: { legend: { labels: { color: '#eceff4', boxWidth: 10, font: { size: 10 } } } }
+            }
+        });
+    }
+
+    function updateChartData(teleData) {
+        const now = new Date().toLocaleTimeString();
+        if(chartInstance.data.labels.length > 30) chartInstance.data.labels.shift();
+        chartInstance.data.labels.push(now);
+
+        state.directCompetitors.forEach(num => {
+            const teamData = teleData.find(t => t.num == num);
+            if(!teamData) return;
+
+            let dataset = chartInstance.data.datasets.find(d => d.label === `Kart #${num}`);
+            if(!dataset) {
+                dataset = {
+                    label: `Kart #${num}`,
+                    data: [],
+                    borderColor: num == state.ourKart ? '#1d8cf8' : getRandomColor(),
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 0
+                };
+                chartInstance.data.datasets.push(dataset);
+            }
+            if(dataset.data.length > 30) dataset.data.shift();
+            dataset.data.push(teamData.vGapRel);
+        });
+        chartInstance.update();
+    }
+
+    function toggleCompetitor(num) {
+        if(state.directCompetitors.includes(num)) {
+            state.directCompetitors = state.directCompetitors.filter(n => n !== num);
+            chartInstance.data.datasets = chartInstance.data.datasets.filter(d => d.label !== `Kart #${num}`);
+        } else {
+            state.directCompetitors.push(num);
+        }
+        save();
+        chartInstance.update();
+    }
+
+    // ==========================================
+    // GESTIONE CORSIE & DRAG-AND-DROP
+    // ==========================================
     function renderLanes() {
-        const container = document.getElementById('lanes-container');
+        const container = document.getElementById('lanes-render-area');
         container.innerHTML = '';
 
         state.lanes.forEach(lane => {
             const laneEl = document.createElement('div');
-            laneEl.className = 'lane fade-in';
+            laneEl.className = 'lane';
             laneEl.innerHTML = `
-                <div class="lane-header">
-                    <span>${lane.name}</span>
+                <div class="lane-head">
+                    <span contenteditable="true" onblur="renameLane('${lane.id}', this.innerText)">${lane.name}</span>
                     <button onclick="removeLane('${lane.id}')" style="background:none; border:none; color:var(--warning); cursor:pointer;">×</button>
                 </div>
-                <div class="kart-list" id="list-${lane.id}" data-lane-id="${lane.id}">
+                <div class="kart-list" id="list-${lane.id}" data-id="${lane.id}">
                     ${(lane.karts || []).map((k, idx) => `
                         <div class="kart-card" data-num="${k.num}" data-rating="${k.rating}">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-weight:900; font-size:1.1em;">#${k.num}</span>
-                                <button onclick="removeKart('${lane.id}', ${idx})" style="border:none; background:transparent; color:var(--text-dim); cursor:pointer;">&times;</button>
+                                <span style="font-weight:900; font-size:16px;">#${k.num}</span>
+                                <span style="font-size:9px; text-transform:uppercase; font-weight:bold; color:var(--${k.rating})">${k.rating}</span>
                             </div>
-                            <div class="rating-row">
-                                <div class="rating-dot" style="background:var(--missile)" onclick="updateKartRating('${lane.id}', ${idx}, 'missile')"></div>
-                                <div class="rating-dot" style="background:var(--prestazione)" onclick="updateKartRating('${lane.id}', ${idx}, 'prestazione')"></div>
-                                <div class="rating-dot" style="background:var(--normale)" onclick="updateKartRating('${lane.id}', ${idx}, 'normale')"></div>
-                                <div class="rating-dot" style="background:var(--lento)" onclick="updateKartRating('${lane.id}', ${idx}, 'lento')"></div>
-                                <div class="rating-dot" style="background:var(--osceno)" onclick="updateKartRating('${lane.id}', ${idx}, 'osceno')"></div>
-                                <span style="margin-left:auto; font-size:0.6em; color:var(--${k.rating}); font-weight:800; text-transform:uppercase;">${k.rating}</span>
+                            <div class="rating-dots">
+                                <div class="dot" style="background:var(--missile)" onclick="updateRating('${lane.id}', ${idx}, 'missile')"></div>
+                                <div class="dot" style="background:var(--prestazione)" onclick="updateRating('${lane.id}', ${idx}, 'prestazione')"></div>
+                                <div class="dot" style="background:var(--normale)" onclick="updateRating('${lane.id}', ${idx}, 'normale')"></div>
+                                <div class="dot" style="background:var(--lento)" onclick="updateRating('${lane.id}', ${idx}, 'lento')"></div>
+                                <div class="dot" style="background:var(--osceno)" onclick="updateRating('${lane.id}', ${idx}, 'osceno')"></div>
+                                <button onclick="removeKart('${lane.id}', ${idx})" style="margin-left:auto; border:none; background:none; color:var(--text-dim); cursor:pointer;">🗑️</button>
                             </div>
                         </div>
                     `).join('')}
                 </div>
-                <div style="padding:10px; display:flex; gap:5px; border-top:1px solid var(--border);">
-                    <input type="number" id="add-input-${lane.id}" placeholder="#" style="flex:1;">
-                    <button class="btn btn-success" style="padding:5px 12px;" onclick="addKartToLane('${lane.id}')">+</button>
+                <div style="padding:10px; border-top:1px solid var(--border); display:flex; gap:5px;">
+                    <input type="text" id="input-${lane.id}" placeholder="Kart #" style="font-size:12px; padding:5px;">
+                    <button class="btn btn-success" style="padding:5px 10px;" onclick="quickAddKart('${lane.id}')">+</button>
                 </div>
             `;
             container.appendChild(laneEl);
         });
 
-        initSortable();
+        reinitSortables();
     }
 
-    function initSortable() {
-        sortableInstances.forEach(i => i.destroy());
-        sortableInstances = [];
-
+    function reinitSortables() {
         state.lanes.forEach(lane => {
             const el = document.getElementById(`list-${lane.id}`);
-            sortableInstances.push(new Sortable(el, {
-                group: 'kart-lanes',
+            new Sortable(el, {
+                group: 'shared-karts',
                 animation: 150,
-                onEnd: () => {
-                    syncStateFromDOM();
-                }
-            }));
+                onEnd: () => syncLanesFromDOM()
+            });
         });
     }
 
-    // GESTIONE CORSIE E KART
+    function syncLanesFromDOM() {
+        pushHistory();
+        state.lanes.forEach(lane => {
+            const el = document.getElementById(`list-${lane.id}`);
+            const cards = Array.from(el.querySelectorAll('.kart-card'));
+            lane.karts = cards.map(c => ({
+                num: c.dataset.num,
+                rating: c.dataset.rating
+            }));
+        });
+        save();
+        addLog("Spostamento kart registrato.");
+    }
+
     function addNewLane() {
         pushHistory();
-        const newId = 'L' + (Date.now());
-        state.lanes.push({ id: newId, name: 'NUOVA CORSIA', karts: [] });
+        const id = 'lane_' + Date.now();
+        state.lanes.push({ id, name: 'NUOVA CORSIA', karts: [] });
         save();
     }
 
     function removeLane(id) {
-        if (!confirm("Rimuovere la corsia e tutti i kart al suo interno?")) return;
+        if(!confirm("Eliminare questa corsia e i kart contenuti?")) return;
         pushHistory();
         state.lanes = state.lanes.filter(l => l.id !== id);
         save();
     }
 
-    function addKartToLane(laneId) {
-        const input = document.getElementById(`add-input-${laneId}`);
-        if (!input.value) return;
+    function quickAddKart(laneId) {
+        const input = document.getElementById(`input-${laneId}`);
+        if(!input.value) return;
         pushHistory();
         const lane = state.lanes.find(l => l.id === laneId);
         lane.karts.push({ num: input.value, rating: 'normale' });
         input.value = '';
         save();
+        addLog(`Kart #${input.value} aggiunto a ${lane.name}`);
+    }
+
+    function updateRating(laneId, idx, rating) {
+        pushHistory();
+        state.lanes.find(l => l.id === laneId).karts[idx].rating = rating;
+        save();
+        addLog(`Kart #${state.lanes.find(l => l.id === laneId).karts[idx].num} aggiornato a ${rating}`);
     }
 
     function removeKart(laneId, idx) {
@@ -465,165 +656,168 @@
         save();
     }
 
-    function updateKartRating(laneId, kartIdx, rating) {
+    // ==========================================
+    // AZIONI PIT STOP
+    // ==========================================
+    function searchInDB() {
+        const query = document.getElementById('quick-team-search').value.toLowerCase();
+        const resDiv = document.getElementById('search-preview');
+        if(!query) { resDiv.innerText = ""; pendingAction.teamIdx = null; return; }
+
+        const idx = state.teams.findIndex(t => t.num === query || t.name.toLowerCase().includes(query));
+        if(idx !== -1) {
+            const t = state.teams[idx];
+            resDiv.innerText = `PRONTO: ${t.name} (Kart: ${t.currentKart})`;
+            resDiv.style.color = "var(--success)";
+            pendingAction.teamIdx = idx;
+        } else {
+            resDiv.innerText = "TEAM NON IN DB";
+            resDiv.style.color = "var(--warning)";
+            pendingAction.teamIdx = null;
+        }
+    }
+
+    function markAction(type) {
+        if(pendingAction.teamIdx === null) return alert("Cerca prima un team valido nel database!");
+        pendingAction.type = type;
+        document.getElementById('main-pit-btn').innerText = `CONFERMA ${type.toUpperCase()} (#${state.teams[pendingAction.teamIdx].num})`;
+        document.getElementById('main-pit-btn').style.display = "block";
+    }
+
+    function finalizePitAction() {
         pushHistory();
-        state.lanes.find(l => l.id === laneId).karts[kartIdx].rating = rating;
+        const team = state.teams[pendingAction.teamIdx];
+        const now = new Date().toLocaleTimeString();
+        
+        if(pendingAction.type === 'drop') {
+            team.pitCount++;
+            addLog(`PIT: ${team.name} ha LASCIATO il kart ${team.currentKart}`);
+        } else {
+            addLog(`PIT: ${team.name} ha PRESO il kart ${team.currentKart}`);
+        }
+
+        document.getElementById('main-pit-btn').style.display = "none";
+        document.getElementById('quick-team-search').value = "";
+        document.getElementById('search-preview').innerText = "";
         save();
     }
 
-    function syncStateFromDOM() {
-        pushHistory();
-        state.lanes.forEach(lane => {
-            const el = document.getElementById(`list-${lane.id}`);
-            const items = Array.from(el.querySelectorAll('.kart-card'));
-            lane.karts = items.map(item => ({
-                num: item.dataset.num,
-                rating: item.dataset.rating
-            }));
-        });
-        save();
-    }
-
-    // LOGICA TELEMETRIA E APEX
-    async function connectApex() {
-        const url = document.getElementById('apex-url').value;
-        if (!url) return alert("Inserisci un URL Feed valido");
-        
-        document.getElementById('live-indicator').innerText = "● LIVE SYNC ACTIVE";
-        document.getElementById('live-indicator').style.color = "var(--success)";
-
-        if (apexUpdateTimer) clearInterval(apexUpdateTimer);
-        
-        apexUpdateTimer = setInterval(() => {
-            fetchTelemetry(url);
-        }, 3000);
-    }
-
-    async function fetchTelemetry(url) {
-        // Mock per dimostrazione, in produzione usa fetch(url)
-        const mockData = [
-            { pos: 1, cat: "EK1", num: "1", team: "NAC TEAM", dist: "LEADER", laps: 150, pit: 12, pitTime: "37:45", last: "1:02.5", best: "1:02.1", track: "1:20" },
-            { pos: 2, cat: "EK1", num: "22", team: "DMS RACING", dist: "+12.5", laps: 150, pit: 11, pitTime: "39:10", last: "1:02.8", best: "1:02.4", track: "5:45" },
-            { pos: 3, cat: "EK2", num: "49", team: "SPARKART", dist: "1 Giro", laps: 149, pit: 14, pitTime: "38:05", last: "1:03.2", best: "1:02.9", track: "IN PIT" }
-        ];
-        
-        processTelemetry(mockData);
-    }
-
-    function processTelemetry(rawData) {
-        const targetSec = parseTime(document.getElementById('pit-target').value);
-        const filter = document.getElementById('cat-filter').value;
-
-        let processed = rawData.map(t => {
-            const pitSec = parseTime(t.pitTime);
-            // Deficit = Se hai fatto meno del target, sei "indebitato" di tempo
-            const deficit = Math.max(0, targetSec - pitSec);
-            // Calcolo tempo virtuale (distacco reale + deficit pit)
-            // Nota: semplificato, in produzione usiamo i secondi totali di gara
-            return { ...t, vTotalDeficit: deficit };
-        });
-
-        if (filter !== "ALL") processed = processed.filter(t => t.cat === filter);
-        
-        // Ordiniamo per virtual gap (pos reale + deficit)
-        // In questo mock simuliamo solo l'output
-        renderTelemetryTable(processed);
-    }
-
-    function renderTelemetryTable(data) {
-        const body = document.getElementById('telemetry-body');
-        body.innerHTML = data.map((t, idx) => `
-            <tr class="${t.num == state.ourKart ? 'row-us' : ''} ${t.track == 'IN PIT' ? 'row-pitting' : ''}">
-                <td>${idx + 1}</td>
+    // ==========================================
+    // LOGICA DB & UTILS
+    // ==========================================
+    function renderDB() {
+        const body = document.getElementById('db-teams-body');
+        body.innerHTML = state.teams.map((t, idx) => `
+            <tr>
+                <td>${t.name}</td>
+                <td><span style="font-weight:900">#${t.num}</span></td>
                 <td><span class="badge-cat ${t.cat.toLowerCase()}">${t.cat}</span></td>
-                <td style="font-weight:900">#${t.num}</td>
-                <td style="font-size:0.9em">${t.team}</td>
-                <td class="col-vgap">+${t.vTotalDeficit.toFixed(1)}s</td>
-                <td style="color:var(--text-dim)">${t.dist}</td>
-                <td>${t.laps}</td>
-                <td>${t.pit}</td>
-                <td>${t.pitTime}</td>
-                <td>${t.last}</td>
-                <td style="color:var(--text-dim)">${t.best}</td>
-                <td style="color:${t.track == 'IN PIT' ? 'var(--warning)' : 'inherit'}">${t.track}</td>
+                <td>#${t.currentKart}</td>
+                <td>${t.pitCount}</td>
+                <td>${t.totalPitTime}</td>
+                <td>
+                    <button class="btn btn-ghost" style="padding:4px;" onclick="deleteTeam(${idx})">🗑️</button>
+                </td>
             </tr>
         `).join('');
     }
 
-    // UTILS TEMPO
-    function parseTime(str) {
-        if (!str || typeof str !== 'string') return 0;
-        const p = str.split(':').reverse();
-        return (parseFloat(p[0]) || 0) + (parseInt(p[1]) * 60 || 0) + (parseInt(p[2]) * 3600 || 0);
-    }
-
-    function formatTime(sec) {
-        const h = Math.floor(sec / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        const s = Math.floor(sec % 60);
-        return [h, m, s].map(v => v < 10 ? "0" + v : v).filter((v, i) => v !== "00" || i > 0).join(":");
-    }
-
-    // ESPORTAZIONE CSV
-    function exportCSV() {
-        let csv = "DATA;KART;RATING;CORSIA\n";
-        state.lanes.forEach(l => {
-            l.karts.forEach(k => {
-                csv += `${new Date().toLocaleDateString()};${k.num};${k.rating};${l.name}\n`;
-            });
+    function addManualTeam() {
+        const name = document.getElementById('new-team-name').value;
+        const num = document.getElementById('new-team-num').value;
+        const cat = document.getElementById('new-team-cat').value;
+        if(!name || !num) return;
+        
+        pushHistory();
+        state.teams.push({
+            name: name, num: num, cat: cat,
+            pitCount: 0, totalPitTime: "00:00", currentKart: num
         });
         
-        csv += "\n\nLOG EVENTI\nORARIO;EVENTO\n";
-        state.logs.forEach(l => csv += `${l.ts};${l.txt}\n`);
+        document.getElementById('new-team-name').value = '';
+        document.getElementById('new-team-num').value = '';
+        save();
+    }
 
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('hidden', '');
-        a.setAttribute('href', url);
-        a.setAttribute('download', `DMS_Titan_Export_${Date.now()}.csv`);
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+    function deleteTeam(idx) {
+        if(!confirm("Eliminare team dal database?")) return;
+        pushHistory();
+        state.teams.splice(idx, 1);
+        save();
+    }
+
+    function addLog(msg) {
+        const now = new Date().toLocaleTimeString();
+        state.logs.push({ ts: now, txt: msg });
+        if(state.logs.length > 100) state.logs.shift();
+        renderLogs();
     }
 
     function renderLogs() {
-        const container = document.getElementById('log-container');
-        container.innerHTML = state.logs.slice(-50).map(l => `
-            <div class="log-entry">
-                <span style="color:var(--accent)">[${l.ts}]</span> ${l.txt}
-            </div>
+        const div = document.getElementById('action-logs');
+        div.innerHTML = state.logs.map(l => `
+            <div class="log-line"><span style="color:var(--accent)">[${l.ts}]</span> ${l.txt}</div>
         `).join('');
     }
 
-    function clearLogs() {
-        if (confirm("Cancellare tutti i log?")) {
-            pushHistory();
-            state.logs = [];
-            save();
-        }
+    function parseTimeToSec(str) {
+        if(!str || typeof str !== 'string') return 0;
+        const parts = str.split(':').reverse();
+        let sec = 0;
+        if(parts[0]) sec += parseFloat(parts[0]); // Secondi
+        if(parts[1]) sec += parseInt(parts[1]) * 60; // Minuti
+        if(parts[2]) sec += parseInt(parts[2]) * 3600; // Ore
+        return sec;
+    }
+
+    function getRandomColor() {
+        const colors = ['#fd5d93', '#00f2c3', '#ff8d72', '#1d8cf8', '#ffdf00', '#e74c3c'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function exportFullCSV() {
+        let csv = "REPORT GARA DMS TITAN\n";
+        csv += "TIMESTAMP;EVENTO\n";
+        state.logs.forEach(l => csv += `${l.ts};${l.txt}\n`);
+        
+        csv += "\nSTATO DATABASE TEAM\n";
+        csv += "TEAM;NUM;CAT;KART;PIT_COUNT;TOT_BOX\n";
+        state.teams.forEach(t => csv += `${t.name};${t.num};${t.cat};${t.currentKart};${t.pitCount};${t.totalPitTime}\n`);
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `DMS_Titan_Export_${Date.now()}.csv`;
+        a.click();
     }
 
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        document.getElementById('theme-toggle').innerText = isLight ? "🌙" : "☀️";
     }
 
-    function autoSearchTeam() {
-        const val = document.getElementById('pit-team-id').value.trim().toLowerCase();
-        if (!val) {
-            document.getElementById('pit-search-res').innerText = "";
-            return;
-        }
-        const team = state.teams.find(t => t.num === val || t.name.toLowerCase().includes(val));
-        if (team) {
-            document.getElementById('pit-search-res').innerText = `RILEVATO: ${team.name} (#${team.num})`;
-            document.getElementById('confirm-pit-btn').style.display = "flex";
-        } else {
-            document.getElementById('pit-search-res').innerText = "NUOVO TEAM";
-            document.getElementById('confirm-pit-btn').style.display = "flex";
-        }
+    function resetEntireRace() {
+        if(!confirm("ATTENZIONE: Questo cancellerà TUTTI i dati della gara (corsie, log, storico grafico). Procedere?")) return;
+        state.logs = [];
+        state.history = [];
+        state.lanes.forEach(l => l.karts = []);
+        state.directCompetitors = [];
+        chartInstance.data.labels = [];
+        chartInstance.data.datasets = [];
+        chartInstance.update();
+        save();
+        location.reload();
+    }
+
+    function renderAll() {
+        renderLanes();
+        renderDB();
+        renderLogs();
+        document.getElementById('our-kart-id').value = state.ourKart;
+    }
+
+    function updateOurKart() {
+        state.ourKart = document.getElementById('our-kart-id').value;
+        save();
     }
 
 </script>
