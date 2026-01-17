@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMS STRATEGY V3.0 - ALL-IN-ONE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DMS STRATEGY V3.0 - ALL-IN-ONE SYSTEM</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -12,327 +12,451 @@
 
     <style>
         :root {
-            /* Transizione fluida */
-            --transition-speed: 0.4s;
-            
-            --bg: #0b0e14; --card: #151921; --text: #e9ecef;
+            /* Palette Dark (Default) */
+            --bg: #0b0e14; --card: #151921; --header: #1d2331;
+            --text: #e9ecef; --text-dim: #888;
             --accent: #1d8cf8; --success: #00f2c3; --warning: #ff4757;
-            --input-border: #2b3548;
+            --border: #2b3548; --pit-row: rgba(0, 242, 195, 0.05);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body.light-theme {
-            --bg: #f4f7f6; --card: #ffffff; --text: #2d3436;
-            --input-border: #dfe6e9;
+            --bg: #f4f7f6; --card: #ffffff; --header: #ebf0f1;
+            --text: #2d3436; --text-dim: #636e72;
+            --border: #dfe6e9;
         }
 
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
         body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            transition: background-color var(--transition-speed), color var(--transition-speed);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            background-color: var(--bg); color: var(--text); 
+            margin: 0; overflow: hidden; height: 100vh;
+            transition: var(--transition);
         }
 
-        /* Layout Principale */
-        .dashboard {
+        /* LAYOUT STRUTTURALE */
+        .app-grid {
             display: grid;
-            grid-template-columns: 400px 1fr 350px; /* Telemetria | Corsie | Database */
-            gap: 10px;
-            padding: 10px;
-            flex: 1;
-            overflow: hidden;
+            grid-template-rows: 60px 1fr 1fr; /* Header | Telemetria | Box Management */
+            height: 100vh; gap: 5px; padding: 5px;
         }
 
         .panel { 
-            background: var(--card); 
-            border-radius: 8px; 
-            border: 1px solid var(--input-border); 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden;
-            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+            background: var(--card); border: 1px solid var(--border); 
+            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; 
         }
 
-        .panel-header {
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* HEADER */
+        .main-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; background: var(--header); border-radius: 8px;
         }
 
-        /* Gestione N-Corsie */
-        #lanes-container {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 10px;
-            flex: 1;
+        /* TELEMETRIA (TOP PANEL) */
+        .telemetry-table-wrapper { flex: 1; overflow: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; table-layout: fixed; }
+        th { 
+            background: var(--header); color: var(--text-dim); position: sticky; top: 0; 
+            padding: 10px; text-align: left; font-size: 0.75em; text-transform: uppercase;
+            border-bottom: 2px solid var(--border); z-index: 10;
+        }
+        td { padding: 8px 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
+        
+        .col-pos { width: 40px; } .col-kart { width: 60px; } .col-team { width: 180px; }
+        .col-vgap { width: 100px; color: var(--success); font-weight: 800; font-size: 1.1em; }
+        
+        .row-us { background: rgba(0, 242, 195, 0.1) !important; color: var(--success); }
+        .row-pitting { animation: pulse-pit 2s infinite; background: rgba(255, 71, 87, 0.1); }
+        @keyframes pulse-pit { 50% { background: rgba(255, 71, 87, 0.2); } }
+
+        /* GESTIONE CAMBI (BOTTOM PANEL) */
+        .management-grid {
+            display: grid; grid-template-columns: 1fr 350px 300px; /* Corsie | Controlli | Log */
+            gap: 10px; height: 100%; padding: 10px;
         }
 
+        /* N-CORSIE DINAMICHE */
+        .lanes-scroll { 
+            display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; 
+            scrollbar-width: thin;
+        }
         .lane {
-            min-width: 250px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            border-top: 5px solid var(--accent);
+            min-width: 200px; background: rgba(0,0,0,0.2); border-radius: 6px;
+            display: flex; flex-direction: column; border-top: 4px solid var(--accent);
         }
-
-        /* Notifiche Telemetria Integrate */
-        #pit-bridge-alert {
-            background: var(--accent);
-            color: white;
-            padding: 15px;
-            margin: 10px;
-            border-radius: 8px;
-            display: none; /* Appare quando Apex rileva ingresso */
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
-        /* Table Style */
-        table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
-        th { background: rgba(0,0,0,0.2); padding: 8px; text-align: left; }
-        td { padding: 6px 8px; border-bottom: 1px solid var(--input-border); }
-
+        .lane-header { padding: 8px; font-weight: bold; font-size: 0.8em; display: flex; justify-content: space-between; }
+        .kart-list { flex: 1; min-height: 100px; padding: 5px; }
+        
         .kart-item {
-            background: var(--card);
-            margin: 5px;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: grab;
-            border: 1px solid var(--input-border);
-            display: flex;
-            justify-content: space-between;
+            background: var(--card); padding: 12px; margin-bottom: 8px; border-radius: 6px;
+            border: 1px solid var(--border); display: flex; justify-content: space-between;
+            cursor: grab; transition: var(--transition);
+        }
+        .kart-item:active { cursor: grabbing; }
+
+        /* BADGES */
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7em; font-weight: 900; }
+        .b-missile { background: #ffdf00; color: #000; }
+        .b-prestazione { background: #00f2c3; color: #000; }
+        .b-normale { background: #34495e; color: #fff; }
+
+        /* PIT BRIDGE NOTIFICATION */
+        #pit-bridge {
+            position: absolute; top: 70px; right: 20px; width: 300px;
+            background: var(--warning); color: white; padding: 15px;
+            border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 1000; transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #pit-bridge.active { display: block; transform: translateX(0); }
+
+        /* CONTROLLI */
+        .btn { 
+            padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; 
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-success { background: var(--success); color: #000; }
+        .btn-accent { background: var(--accent); color: #fff; }
+        .btn-danger { background: var(--warning); color: #fff; }
+
+        input, select { 
+            background: var(--bg); border: 1px solid var(--border); color: var(--text);
+            padding: 8px; border-radius: 4px;
         }
 
-        .scroll-v { overflow-y: auto; flex: 1; }
-
-        .btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: opacity 0.2s;
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .management-grid { grid-template-columns: 1fr; grid-template-rows: auto auto auto; overflow-y: auto; }
+            .app-grid { grid-template-rows: 60px 1.2fr 2fr; }
         }
-        .btn:hover { opacity: 0.8; }
-        .btn-success { background: var(--success); color: black; }
-        .btn-accent { background: var(--accent); color: white; }
     </style>
 </head>
-<body>
+<body class="dark-theme">
 
-<div style="padding: 10px 20px; background: var(--card); border-bottom: 1px solid var(--input-border); display: flex; justify-content: space-between; align-items: center;">
-    <div style="display:flex; gap:20px; align-items: center;">
-        <h2 style="margin:0;">DMS V3.0</h2>
-        <input type="text" id="apexUrl" placeholder="URL Feed Apex..." style="width: 250px; padding: 5px;">
-        <button class="btn btn-success" onclick="startLiveTracking()">CONNETTI APEX</button>
-    </div>
-    
-    <div id="setup-controls">
-        <button class="btn btn-accent" onclick="addNewLane()">+ AGGIUNGI CORSIA</button>
-        <button class="btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+<div id="pit-bridge">
+    <div style="font-weight: 900; margin-bottom: 5px;">⚠️ PIT DETECTED!</div>
+    <div id="pit-bridge-msg" style="font-size: 0.9em; margin-bottom: 10px;"></div>
+    <div style="display:flex; gap:5px;">
+        <button class="btn btn-success" onclick="quickAction('change')" style="flex:1">CAMBIO KART</button>
+        <button class="btn" onclick="quickAction('ignore')" style="background:rgba(255,255,255,0.2); flex:1">IGNORA</button>
     </div>
 </div>
 
-<div class="dashboard">
+<div class="app-grid">
     
-    <div class="panel">
-        <div class="panel-header">LIVE TELEMETRY</div>
-        <div class="scroll-v">
-            <table id="telemetryTable">
+    <header class="main-header">
+        <div style="display:flex; align-items:center; gap:20px;">
+            <h2 style="margin:0; color:var(--accent); letter-spacing:1px;">DMS V3.0</h2>
+            <div id="sync-status" style="font-size:0.7em; color:var(--success)">● DATABASE LIVE</div>
+        </div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <input type="text" id="apexUrl" placeholder="Apex URL..." style="width:250px;">
+            <button class="btn btn-success" onclick="connectApex()">CONNECT</button>
+            <div style="height:20px; width:1px; background:var(--border);"></div>
+            <button class="btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+            <button class="btn btn-danger" onclick="resetSystem()">RESET</button>
+        </div>
+    </header>
+
+    <section class="panel">
+        <div class="telemetry-table-wrapper">
+            <table>
                 <thead>
                     <tr>
-                        <th>POS</th>
-                        <th>TEAM</th>
-                        <th>GAP VIRT.</th>
-                        <th>PIT</th>
+                        <th class="col-pos">Cla</th>
+                        <th class="col-kart">Kart</th>
+                        <th class="col-team">Team</th>
+                        <th>Giri</th>
+                        <th style="color:var(--accent)">V-Gap</th>
+                        <th>Tempo Pit</th>
+                        <th>Ultimo</th>
+                        <th>Distacco</th>
+                        <th>Best</th>
+                        <th>In Pista</th>
+                        <th>Pit</th>
                     </tr>
                 </thead>
-                <tbody id="telemetryBody"></tbody>
+                <tbody id="telemetry-body">
+                    </tbody>
             </table>
         </div>
-        <div style="height: 200px; border-top: 1px solid var(--input-border);">
-            <canvas id="miniChart"></canvas>
-        </div>
-    </div>
+    </section>
 
-    <div class="panel">
-        <div class="panel-header">
-            GESTIONE CAMBI KART
-            <div id="activeTeamStatus" style="font-size: 0.8em; color: var(--success);"></div>
-        </div>
-        
-        <div id="pit-bridge-alert">
-            <div style="font-weight: bold; margin-bottom: 5px;">⚠️ RILEVATO INGRESSO: <span id="alert-team-name">--</span></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-success" id="btn-auto-pit">REGISTRA PIT (STOP)</button>
-                <button class="btn btn-accent" id="btn-auto-change">CAMBIO KART</button>
-                <button class="btn" style="background:gray;" onclick="hideBridge()">IGNORA</button>
+    <section class="panel">
+        <div class="management-grid">
+            
+            <div style="display:flex; flex-direction:column; overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <strong style="font-size:0.8em; color:var(--text-dim)">KART NEI BOX</strong>
+                    <button class="btn btn-accent" style="padding:2px 8px; font-size:0.7em;" onclick="addNewLane()">+ AGGIUNGI CORSIA</button>
+                </div>
+                <div id="lanes-container" class="lanes-scroll">
+                    </div>
             </div>
-        </div>
 
-        <div id="lanes-container">
+            <div style="border-left:1px solid var(--border); padding-left:15px; display:flex; flex-direction:column; gap:10px;">
+                <strong style="font-size:0.8em; color:var(--text-dim)">CONTROLLO MOVIMENTO</strong>
+                <div style="background:var(--bg); padding:10px; border-radius:8px;">
+                    <input type="text" id="pit-team-input" placeholder="Team Entrante (# o Nome)" style="width:100%; margin-bottom:10px;" oninput="syncTeamInfo()">
+                    <div id="pit-team-info" style="min-height:20px; font-weight:bold; color:var(--success); font-size:0.9em;"></div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                    <button class="btn" style="background:#2c2c44;" onclick="prepMove('drop', 'L1')">LASCIATO</button>
+                    <button class="btn" style="background:#2c2c44;" onclick="prepMove('take', 'L1')">PRESO</button>
+                </div>
+                <button class="btn btn-success" id="confirm-pit-btn" style="margin-top:auto; height:60px; font-size:1.2em; display:none;" onclick="finalizePit()">CONFERMA PIT</button>
             </div>
-    </div>
 
-    <div class="panel">
-        <div class="panel-header">DATABASE TEAM</div>
-        <div class="scroll-v">
-            <table style="font-size: 0.7em;">
-                <tbody id="dbTeamsBody"></tbody>
-            </table>
+            <div style="border-left:1px solid var(--border); padding-left:15px; display:flex; flex-direction:column;">
+                <strong style="font-size:0.8em; color:var(--text-dim)">LOG ATTIVITÀ</strong>
+                <div id="action-log" style="flex:1; overflow-y:auto; font-size:0.75em; color:var(--text-dim); margin-top:10px;">
+                    </div>
+                <button class="btn btn-danger" style="margin-top:10px; font-size:0.7em;" onclick="undo()">ANNULLA ULTIMA</button>
+            </div>
+
         </div>
-        <div class="panel-header" style="border-top:1px solid var(--input-border)">LOG AZIONI</div>
-        <div id="actionLog" class="scroll-v" style="font-size: 0.75em; padding: 10px; color: #888;"></div>
-    </div>
+    </section>
 
 </div>
 
 <script>
-    // Configurazione Firebase (usa la tua attuale)
-    const firebaseConfig = { apiKey: "...", databaseURL: "..." };
+    // --- CONFIGURAZIONE E STATO ---
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDKhKjjrVb1EtNosBsO-5dYICBfLU8Feco", 
+        databaseURL: "https://gestione-cambi-kart---dms-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "gestione-cambi-kart---dms" 
+    };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const database = firebase.database();
 
     let state = {
-        lanes: [ {id: 'lane1', name: 'CORSIA 1', karts: []} ],
+        lanes: [
+            { id: 'L1', name: 'CORSIA 1', karts: [] },
+            { id: 'L2', name: 'CORSIA 2', karts: [] }
+        ],
         teams: [],
-        log: []
+        log: [],
+        history: [],
+        ourKartId: "",
+        targetPitSeconds: 2280 // Default 38:00
     };
 
-    let lastApexData = [];
+    let sortableInstances = [];
+    let apexInterval = null;
+    let pendingPit = { teamIdx: null, dropLane: null, takeLane: null };
 
-    // --- LOGICA CORSIA DINAMICA ---
-    function addNewLane() {
-        const newId = 'lane' + (state.lanes.length + 1);
-        state.lanes.push({ id: newId, name: 'CORSIA ' + state.lanes.length, karts: [] });
-        save();
+    // --- INIZIALIZZAZIONE ---
+    window.onload = () => {
+        database.ref('v3_raceState').on('value', (snap) => {
+            const data = snap.val();
+            if (data) {
+                state = data;
+                renderAll();
+            }
+        });
+        loadLocalSettings();
+    };
+
+    // --- LOGICA RENDERING ---
+    function renderAll() {
         renderLanes();
+        renderTelemetry([]); // Verrà popolato da Apex
+        renderLogs();
     }
 
     function renderLanes() {
         const container = document.getElementById('lanes-container');
-        container.innerHTML = state.lanes.map(lane => `
-            <div class="lane" id="${lane.id}">
-                <div style="padding:10px; font-size:0.8em; font-weight:bold; border-bottom:1px solid rgba(255,255,255,0.1)">
-                    ${lane.name}
+        container.innerHTML = '';
+
+        state.lanes.forEach(lane => {
+            const laneEl = document.createElement('div');
+            laneEl.className = 'lane';
+            laneEl.innerHTML = `
+                <div class="lane-header">
+                    <span>${lane.name}</span>
+                    <button onclick="removeLane('${lane.id}')" style="background:none; border:none; color:var(--warning); cursor:pointer;">×</button>
                 </div>
-                <div class="kart-list" style="flex:1;" data-lane-id="${lane.id}">
-                    ${lane.karts.map(k => `
-                        <div class="kart-item" data-num="${k.num}">
-                            #${k.num} <small>${k.rating}</small>
+                <div class="kart-list" id="list-${lane.id}" data-id="${lane.id}">
+                    ${(lane.karts || []).map((k, idx) => `
+                        <div class="kart-item" data-num="${k.num}" data-rating="${k.rating}">
+                            <span style="font-weight:900;">#${k.num}</span>
+                            <span class="badge b-${k.rating}">${k.rating.charAt(0)}</span>
                         </div>
                     `).join('')}
                 </div>
                 <div style="padding:5px; display:flex; gap:2px;">
-                    <input type="text" id="in-${lane.id}" placeholder="#" style="width:40px;">
-                    <button class="btn btn-success" style="padding:2px 8px;" onclick="addKartDirect('${lane.id}')">+</button>
+                    <input type="number" id="in-${lane.id}" placeholder="#" style="width:60px; font-size:0.7em;">
+                    <button class="btn btn-success" style="padding:2px 10px;" onclick="addKartDirect('${lane.id}')">+</button>
                 </div>
-            </div>
-        `).forEach((html, index) => {
-            // Render manuale per non rompere Sortable
+            `;
+            container.appendChild(laneEl);
         });
-        
-        // Versione semplificata per brevità:
-        container.innerHTML = state.lanes.map(lane => renderLaneHtml(lane)).join('');
+
         initSortables();
     }
 
-    function renderLaneHtml(lane) {
-        return `
-            <div class="lane">
-                <div style="padding:10px; font-weight:bold;">${lane.name}</div>
-                <div class="kart-list" id="list-${lane.id}" style="min-height:100px;">
-                    ${(lane.karts || []).map(k => `<div class="kart-item" data-num="${k.num}">#${k.num}</div>`).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- INTEGRAZIONE APEX (BRIDGE) ---
-    async function startLiveTracking() {
-        const url = document.getElementById('apexUrl').value;
-        // ... (Logica fetch già vista nella V2) ...
-        // Simulazione rilevamento ingresso:
-        checkPitEntry(mockData);
-    }
-
-    function checkPitEntry(data) {
-        // Se un team è "In Pit" (tempo sul giro vuoto o flag specifico di Apex)
-        const teamInPit = data.find(t => t.isPitting === true);
-        
-        if(teamInPit) {
-            const bridge = document.getElementById('pit-bridge-alert');
-            document.getElementById('alert-team-name').innerText = teamInPit.name;
-            bridge.style.display = 'block';
-
-            // Collega i bottoni
-            document.getElementById('btn-auto-pit').onclick = () => {
-                registerPit(teamInPit.num, false);
-                hideBridge();
-            };
-            document.getElementById('btn-auto-change').onclick = () => {
-                registerPit(teamInPit.num, true);
-                hideBridge();
-            };
-        }
-    }
-
-    function hideBridge() {
-        document.getElementById('pit-bridge-alert').style.display = 'none';
-    }
-
-    function registerPit(teamNum, isChange) {
-        // 1. Trova il team nel database
-        // 2. Incrementa Pit Count
-        // 3. Se isChange, prendi il primo kart da lane1 e mettilo al team
-        console.log(`Registrato PIT per ${teamNum}. Cambio: ${isChange}`);
-        // Logica di aggiornamento Firebase qui...
-    }
-
-    // --- UX: THEME TRANSITION ---
-    function toggleTheme() {
-        const body = document.body;
-        const isDark = body.classList.contains('dark-theme');
-        body.style.transition = "background-color 0.4s ease, color 0.4s ease";
-        
-        if (isDark) {
-            body.classList.replace('dark-theme', 'light-theme');
-            document.getElementById('themeBtn').innerText = "🌙";
-        } else {
-            body.classList.add('dark-theme');
-            body.classList.remove('light-theme');
-            document.getElementById('themeBtn').innerText = "☀️";
-        }
-    }
-
-    // Inizializzazione
-    window.onload = () => {
-        renderLanes();
-        // Carica dati Firebase...
-    };
-
     function initSortables() {
-        // Rendi ogni lista di ogni corsia trascinabile verso le altre
+        sortableInstances.forEach(i => i.destroy());
+        sortableInstances = [];
+
         state.lanes.forEach(lane => {
-            new Sortable(document.getElementById('list-' + lane.id), {
+            const el = document.getElementById(`list-${lane.id}`);
+            sortableInstances.push(new Sortable(el, {
                 group: 'lanes',
-                animation: 150
-            });
+                animation: 150,
+                onEnd: (evt) => {
+                    updateStateFromDOM();
+                }
+            }));
         });
+    }
+
+    // --- LOGICA TELEMETRIA APEX ---
+    async function connectApex() {
+        const url = document.getElementById('apexUrl').value;
+        if (!url) return;
+        
+        if (apexInterval) clearInterval(apexInterval);
+        
+        // Simulazione fetch ogni 3 secondi (In produzione usa fetch reale col proxy)
+        apexInterval = setInterval(async () => {
+            // Qui andrebbe il fetch al proxy
+            const mockData = generateMockData(); 
+            processTelemetry(mockData);
+        }, 3000);
+    }
+
+    function processTelemetry(data) {
+        // Calcolo Virtual Gap
+        const processed = data.map(t => {
+            const pitSec = parseTime(t.tempoPit);
+            const deficit = Math.max(0, state.targetPitSeconds - pitSec);
+            return { ...t, vTotal: parseTime(t.tempo) + deficit };
+        });
+
+        processed.sort((a,b) => a.vTotal - b.vTotal);
+        const leaderV = processed[0].vTotal;
+        
+        const finalData = processed.map(t => ({
+            ...t,
+            vGap: (t.vTotal - leaderV).toFixed(1)
+        }));
+
+        renderTelemetry(finalData);
+        checkPitBridge(finalData);
+    }
+
+    function renderTelemetry(data) {
+        const body = document.getElementById('telemetry-body');
+        body.innerHTML = data.map((row, idx) => `
+            <tr class="${row.num == state.ourKartId ? 'row-us' : ''} ${row.inPista == 'IN PIT' ? 'row-pitting' : ''}">
+                <td>${idx+1}</td>
+                <td style="font-weight:900">#${row.num}</td>
+                <td style="font-size:0.9em; white-space:nowrap; overflow:hidden;">${row.team}</td>
+                <td>${row.giri}</td>
+                <td class="col-vgap">+${row.vGap}s</td>
+                <td>${row.tempoPit}</td>
+                <td style="font-family:monospace">${row.ultimo}</td>
+                <td>${row.distacco}</td>
+                <td style="color:var(--text-dim)">${row.best}</td>
+                <td style="font-size:0.8em; color:${row.inPista == 'IN PIT' ? 'var(--warning)' : 'inherit'}">${row.inPista}</td>
+                <td>${row.pitCount}</td>
+            </tr>
+        `).join('');
+    }
+
+    // --- PIT BRIDGE (AUTOMAZIONE) ---
+    function checkPitBridge(data) {
+        const pitting = data.find(t => t.inPista === 'IN PIT' && t.num != state.ourKartId); // Esempio: rileva altri
+        const bridge = document.getElementById('pit-bridge');
+        
+        if (pitting) {
+            document.getElementById('pit-bridge-msg').innerText = `${pitting.team} (#${pitting.num}) è entrato ai box!`;
+            bridge.classList.add('active');
+            // Auto-fill input
+            document.getElementById('pit-team-input').value = pitting.num;
+            syncTeamInfo();
+        } else {
+            bridge.classList.remove('active');
+        }
+    }
+
+    // --- AZIONI CORE ---
+    function addNewLane() {
+        const newId = 'L' + (state.lanes.length + 1);
+        state.lanes.push({ id: newId, name: 'CORSIA ' + (state.lanes.length + 1), karts: [] });
+        save();
+    }
+
+    function addKartDirect(laneId) {
+        const input = document.getElementById(`in-${laneId}`);
+        if (!input.value) return;
+        const lane = state.lanes.find(l => l.id === laneId);
+        lane.karts.push({ num: input.value, rating: 'normale' });
+        input.value = '';
+        save();
+    }
+
+    function finalizePit() {
+        const teamInput = document.getElementById('pit-team-input').value;
+        const logMsg = `PIT: Team ${teamInput} ha effettuato sosta.`;
+        
+        state.log.push({ ts: new Date().toLocaleTimeString(), txt: logMsg });
+        // Logica cambio kart automatizzata...
+        
+        document.getElementById('pit-team-input').value = '';
+        document.getElementById('confirm-pit-btn').style.display = 'none';
+        save();
+    }
+
+    // --- UTILS ---
+    function save() {
+        database.ref('v3_raceState').set(state);
+    }
+
+    function updateStateFromDOM() {
+        state.lanes.forEach(lane => {
+            const el = document.getElementById(`list-${lane.id}`);
+            const items = Array.from(el.querySelectorAll('.kart-item'));
+            lane.karts = items.map(item => ({
+                num: item.dataset.num,
+                rating: item.dataset.rating
+            }));
+        });
+        save();
+    }
+
+    function parseTime(str) {
+        if (!str || str.includes('Giri')) return 0;
+        const parts = str.split(':').reverse();
+        let sec = 0;
+        if (parts[0]) sec += parseFloat(parts[0]);
+        if (parts[1]) sec += parseInt(parts[1]) * 60;
+        if (parts[2]) sec += parseInt(parts[2]) * 3600;
+        return sec;
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        document.getElementById('themeBtn').innerText = isLight ? "🌙" : "☀️";
+    }
+
+    function generateMockData() {
+        // Funzione per test senza Apex Live
+        return [
+            { num: "22", team: "DMS RACING", giri: 526, tempo: "10:00:15", tempoPit: "38:02", ultimo: "1:02.8", distacco: "LEADER", best: "1:02.1", inPista: "0:45", pitCount: 12 },
+            { num: "1", team: "NAC TEAM", giri: 526, tempo: "10:00:20", tempoPit: "38:01", ultimo: "1:03.1", distacco: "+5.2", best: "1:02.7", inPista: "IN PIT", pitCount: 14 }
+        ];
+    }
+
+    function renderLogs() {
+        const container = document.getElementById('action-log');
+        container.innerHTML = state.log.slice().reverse().map(l => `
+            <div style="margin-bottom:4px; border-bottom:1px solid rgba(255,255,255,0.05)">
+                <span style="color:var(--accent)">[${l.ts}]</span> ${l.txt}
+            </div>
+        `).join('');
     }
 </script>
 
